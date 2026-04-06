@@ -1,0 +1,44 @@
+{
+  "id": "cell_mitosis",
+  "domain": "biology",
+  "title": "Cell Division (Mitosis)",
+  "description": "Watch one cell become two through mitosis — the fundamental process of growth, repair, and reproduction.",
+  "maxTicks": 1440,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "initial_cells": { "type": "int", "min": 1, "max": 8, "default": 3, "step": 1, "label": "Starting Cells", "description": "How many cells begin dividing" },
+    "division_rate": { "type": "float", "min": 0.005, "max": 0.03, "default": 0.012, "step": 0.005, "label": "Division Rate", "description": "How quickly cells divide" }
+  },
+  "visualConfig": {
+    "host_cell": { "shape": "circle", "radius": 18, "color": "#2DD4BF", "borderColor": "#0D9488", "borderStyle": "solid", "glowColor": "#2DD4BF", "glowIntensity": 0.3 }
+  },
+  "rules": [
+    {
+      "id": "cell_divides",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "cell" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "host_cell", "count": 120 },
+        { "type": "random_chance", "probability": 0.012 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "host_cell", "position": { "x": 0, "y": 0 }, "tags": ["cell"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#2DD4BF" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 180
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "host_cell", "countFormula": "initial_cells", "distribution": "clustered", "tags": ["cell"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Each cell contains a complete copy of the organism's DNA. Mitosis duplicates this DNA and divides it into two identical cells." },
+    { "tick": 200, "text": "A cell preparing to divide replicates all its chromosomes first, then aligns them at the cell's centre." },
+    { "tick": 400, "text": "The chromosomes are pulled to opposite ends of the cell. A new membrane forms down the middle." },
+    { "tick": 700, "text": "Division complete. Two genetically identical daughter cells, each with a full set of chromosomes." },
+    { "tick": 1000, "text": "This is how you grew from a single fertilised egg to 37 trillion cells — the same process, repeated billions of times." },
+    { "tick": 1300, "text": "When mitosis goes wrong and cells divide without stopping, the result is cancer. The process you're watching is normally tightly regulated." }
+  ]
+}

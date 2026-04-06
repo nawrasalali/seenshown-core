@@ -1,0 +1,58 @@
+{
+  "id": "echo_chamber",
+  "domain": "social",
+  "title": "Echo Chamber Formation",
+  "description": "Watch how people with similar views cluster together and disconnect from opposing views — until two completely separate information worlds exist.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "population": { "type": "int", "min": 40, "max": 120, "default": 80, "step": 10, "label": "Population", "description": "Total number of people" },
+    "homophily": { "type": "float", "min": 0.2, "max": 0.95, "default": 0.7, "step": 0.05, "label": "Homophily", "description": "Tendency to prefer similar others (0=random, 1=only connect with identical views)" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 10, "color": "#3B82F6", "borderColor": "#1D4ED8", "borderStyle": "solid", "glowColor": "#3B82F6", "glowIntensity": 0.2 },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#EF4444", "borderColor": "#DC2626", "borderStyle": "solid", "glowColor": "#EF4444", "glowIntensity": 0.2 }
+  },
+  "rules": [
+    {
+      "id": "similar_attract",
+      "conditions": [
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 80, "state": "alive" },
+        { "type": "random_chance", "probability": 0.02 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#475569" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 60
+    },
+    {
+      "id": "cross_view_weakens",
+      "conditions": [
+        { "type": "entity_state", "state": "unaware" },
+        { "type": "neighbor_within", "distance": 40, "state": "spreading" },
+        { "type": "random_chance", "probability": 0.015 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "deflect", "color": "#94A3B8" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 40
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_unaware", "countFormula": "Math.round(population * 0.5)", "distribution": "random", "tags": ["blue_view"] },
+    { "entityType": "person_spreading", "countFormula": "Math.round(population * 0.5)", "distribution": "random", "tags": ["red_view"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Blue and red represent people with different views — randomly distributed, as in the real world at the start of most social networks." },
+    { "tick": 400, "text": "People subtly move toward those who agree with them. Each small step seems harmless — who doesn't prefer agreeable company?" },
+    { "tick": 800, "text": "Clusters are forming. Blues and reds are increasingly separated. Cross-view interactions are becoming rare." },
+    { "tick": 1200, "text": "Two distinct communities now exist. Information flows freely within each group but rarely crosses between them." },
+    { "tick": 1600, "text": "Each community now has different facts, different threats, different heroes. They're not just disagreeing — they're living in different information realities." },
+    { "tick": 2200, "text": "This happened with no central control, no algorithm, no conspiracy. Just the individual preference to spend time with people who agree. Homophily at scale." }
+  ]
+}

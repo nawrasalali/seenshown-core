@@ -1,0 +1,64 @@
+{
+  "id": "muscle_contraction",
+  "domain": "biology",
+  "title": "Muscle Contraction",
+  "description": "The sliding filament model — how actin and myosin generate force at the molecular level every time you move.",
+  "maxTicks": 1440,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "atp_available": { "type": "float", "min": 0.2, "max": 1.0, "default": 0.8, "step": 0.1, "label": "ATP Available", "description": "Energy available for contraction (lower = fatigue)" },
+    "calcium_signal": { "type": "float", "min": 0.1, "max": 1.0, "default": 0.85, "step": 0.05, "label": "Calcium Signal", "description": "Neural signal strength — controls whether myosin heads can bind" }
+  },
+  "visualConfig": {
+    "immune_cell": { "shape": "circle", "radius": 12, "color": "#F97316", "borderColor": "#EA580C", "borderStyle": "solid", "glowColor": "#F97316", "glowIntensity": 0.4 },
+    "host_cell": { "shape": "circle", "radius": 8, "color": "#3B82F6", "borderColor": "#1D4ED8", "borderStyle": "solid", "glowColor": "#3B82F6", "glowIntensity": 0.2 },
+    "antibiotic_molecule": { "shape": "circle", "radius": 4, "color": "#FCD34D", "borderColor": "#F59E0B", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "myosin_power_stroke",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "myosin" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 22, "tag": "actin" },
+        { "type": "random_chance", "probability": 0.09 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "infected" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "bind", "color": "#F97316" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 25
+    },
+    {
+      "id": "atp_resets_myosin",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "myosin" },
+        { "type": "entity_state", "state": "infected" },
+        { "type": "ticks_in_state_gt", "ticks": 30 },
+        { "type": "neighbor_within", "distance": 25, "tag": "atp" }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "alive" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#FCD34D" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "immune_cell", "countFormula": "20", "distribution": "random", "tags": ["myosin"] },
+    { "entityType": "host_cell", "countFormula": "30", "distribution": "random", "tags": ["actin"] },
+    { "entityType": "antibiotic_molecule", "countFormula": "Math.round(atp_available * 50)", "distribution": "random", "tags": ["atp"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Orange = myosin (motor proteins). Blue = actin (tracks). Yellow = ATP (energy). Muscle contraction is entirely molecular." },
+    { "tick": 150, "text": "A nerve signal triggers calcium release. Calcium exposes binding sites on actin, allowing myosin heads to attach." },
+    { "tick": 350, "text": "Power stroke: each myosin head pivots 45°, pulling actin filaments 10nm. Simultaneously. Across millions of motor proteins. This is what moves your finger." },
+    { "tick": 600, "text": "ATP is essential to detach the myosin head after the power stroke. Without ATP, myosin locks onto actin permanently — this is rigor mortis." },
+    { "tick": 900, "text": "One muscle fibre contains billions of myosin-actin interactions happening in synchrony. The force you can generate is the sum of all these 10nm steps." },
+    { "tick": 1200, "text": "Reduce ATP available with the slider. Watch contraction slow and stall — exactly how muscle fatigue works during intense exercise." }
+  ]
+}

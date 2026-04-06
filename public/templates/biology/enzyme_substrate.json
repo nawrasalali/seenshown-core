@@ -1,0 +1,63 @@
+{
+  "id": "enzyme_substrate",
+  "domain": "biology",
+  "title": "Enzyme-Substrate Binding",
+  "description": "The lock-and-key mechanism — watch enzymes bind substrates with geometric precision and catalyse reactions at impossible speed.",
+  "maxTicks": 1440,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "enzyme_count": { "type": "int", "min": 3, "max": 20, "default": 8, "step": 1, "label": "Enzyme Count", "description": "Number of enzyme molecules" },
+    "substrate_count": { "type": "int", "min": 10, "max": 80, "default": 40, "step": 5, "label": "Substrate Count", "description": "Substrate molecules to be catalysed" },
+    "temperature": { "type": "float", "min": 0.3, "max": 1.0, "default": 0.7, "step": 0.05, "label": "Temperature Factor", "description": "Higher = faster reaction but denaturing risk above 1.0" }
+  },
+  "visualConfig": {
+    "immune_cell": { "shape": "circle", "radius": 16, "color": "#6366F1", "borderColor": "#4F46E5", "borderStyle": "double", "glowColor": "#6366F1", "glowIntensity": 0.4 },
+    "glucose_molecule": { "shape": "hexagon", "radius": 7, "color": "#FCD34D", "borderColor": "#F59E0B", "borderStyle": "solid" },
+    "antibiotic_molecule": { "shape": "circle", "radius": 5, "color": "#2DD4BF", "borderColor": "#0D9488", "borderStyle": "solid", "glowColor": "#2DD4BF", "glowIntensity": 0.3 }
+  },
+  "rules": [
+    {
+      "id": "enzyme_binds_substrate",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "enzyme" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 20, "tag": "substrate" },
+        { "type": "random_chance", "probability": 0.1 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "bind", "color": "#6366F1" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 30
+    },
+    {
+      "id": "catalysis_produces_product",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "enzyme" },
+        { "type": "entity_state", "state": "infected" },
+        { "type": "ticks_in_state_gt", "ticks": 20 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "alive" },
+        { "type": "SPAWN_ENTITY", "template": "antibiotic_molecule", "position": { "x": 0, "y": 0 }, "tags": ["product"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#2DD4BF" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "immune_cell", "countFormula": "enzyme_count", "distribution": "random", "tags": ["enzyme"] },
+    { "entityType": "glucose_molecule", "countFormula": "substrate_count", "distribution": "random", "tags": ["substrate"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Purple = enzymes. Yellow hexagons = substrate molecules. Enzymes are proteins folded into precise 3D shapes — their active site matches only specific substrate shapes." },
+    { "tick": 180, "text": "Enzymes and substrates collide randomly in solution. When the shapes match perfectly, the substrate fits the active site — like a key in a lock." },
+    { "tick": 360, "text": "Binding triggers catalysis. The enzyme strains the substrate's chemical bonds, lowering the activation energy needed to break them — from millions of years to milliseconds." },
+    { "tick": 600, "text": "The enzyme releases the product (teal) and is instantly free to bind another substrate. One enzyme can catalyse thousands of reactions per second — unchanged." },
+    { "tick": 900, "text": "Notice the enzyme is never consumed. This is what makes enzymes extraordinary — they enable reactions without being used up." },
+    { "tick": 1200, "text": "Drugs like aspirin, antibiotics, and HIV antiretrovirals work by fitting into enzyme active sites and blocking them — competitive inhibition, preventing the catalysis entirely." }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "id": "phagocytosis",
+  "domain": "biology",
+  "title": "Phagocytosis — Immune Cell Eating a Pathogen",
+  "description": "Watch a white blood cell extend pseudopods, engulf a pathogen, and digest it inside a phagosome.",
+  "maxTicks": 1440,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "pathogen_count": { "type": "int", "min": 5, "max": 40, "default": 18, "step": 1, "label": "Pathogens", "description": "Number of pathogens" },
+    "macrophage_count": { "type": "int", "min": 1, "max": 8, "default": 3, "step": 1, "label": "Macrophages", "description": "Number of immune cells" }
+  },
+  "visualConfig": {
+    "immune_cell": { "shape": "circle", "radius": 16, "color": "#3B82F6", "borderColor": "#1D4ED8", "borderStyle": "solid", "glowColor": "#3B82F6", "glowIntensity": 0.4 },
+    "virus": { "shape": "circle", "radius": 6, "color": "#F97316", "borderColor": "#EA580C", "borderStyle": "jagged", "glowColor": "#F97316", "glowIntensity": 0.3 }
+  },
+  "rules": [
+    {
+      "id": "macrophage_engulfs",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "macrophage" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 22, "tag": "pathogen" },
+        { "type": "random_chance", "probability": 0.08 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "absorb", "color": "#3B82F6" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 25
+    },
+    {
+      "id": "pathogen_wanders",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "pathogen" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "random_chance", "probability": 0.005 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#F97316" }
+      ],
+      "priority": 3,
+      "cooldownTicks": 120
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "immune_cell", "countFormula": "macrophage_count", "distribution": "random", "tags": ["macrophage"] },
+    { "entityType": "virus", "countFormula": "pathogen_count", "distribution": "random", "tags": ["pathogen"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Macrophages (blue) patrol the tissue. Pathogens (orange) are present but haven't been detected yet." },
+    { "tick": 150, "text": "A macrophage detects chemical signals from the pathogen — a process called chemotaxis. It moves toward the threat." },
+    { "tick": 300, "text": "Contact. The macrophage extends membrane projections called pseudopods that wrap around the pathogen." },
+    { "tick": 500, "text": "Engulfment complete. The pathogen is now inside a membrane-bound sac called a phagosome, sealed inside the cell." },
+    { "tick": 700, "text": "The phagosome fuses with a lysosome — an organelle filled with digestive enzymes. The pathogen is broken down into harmless fragments." },
+    { "tick": 1100, "text": "These fragments are displayed on the macrophage's surface — alerting the adaptive immune system and enabling targeted antibody production for future defence." }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "id": "collective_panic",
+  "domain": "social",
+  "title": "Collective Panic in a Crowd",
+  "description": "How individual fear responses cascade into crowd panics — and why the crowd itself becomes the danger.",
+  "maxTicks": 1800,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "crowd_size": { "type": "int", "min": 30, "max": 120, "default": 70, "step": 5, "label": "Crowd Size" },
+    "initial_panic": { "type": "int", "min": 1, "max": 6, "default": 3, "step": 1, "label": "Initial Panic Source", "description": "How many people panic first (triggering the cascade)" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 9, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_heard": { "shape": "circle", "radius": 9, "color": "#F59E0B", "borderColor": "#D97706", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#EF4444", "borderColor": "#DC2626", "borderStyle": "solid", "glowColor": "#EF4444", "glowIntensity": 0.6 },
+    "person_dismissed": { "shape": "circle", "radius": 9, "color": "#6366F1", "borderColor": "#4F46E5", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "panic_is_contagious",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "neighbor_within", "distance": 40, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.06 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "heard" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#F59E0B" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 8
+    },
+    {
+      "id": "alarm_triggers_flight",
+      "conditions": [
+        { "type": "entity_state", "state": "heard" },
+        { "type": "neighbor_within", "distance": 35, "state": "spreading" },
+        { "type": "ticks_in_state_gt", "ticks": 20 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "spreading" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "spread", "color": "#EF4444" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "calm_anchor_steadies",
+      "conditions": [
+        { "type": "entity_state", "state": "heard" },
+        { "type": "entity_has_tag", "tag": "anchor" },
+        { "type": "ticks_in_state_gt", "ticks": 40 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dismissed" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_spreading", "countFormula": "initial_panic", "distribution": "clustered", "tags": ["panicking"] },
+    { "entityType": "person_dismissed", "countFormula": "Math.round(crowd_size * 0.1)", "distribution": "random", "tags": ["anchor"] },
+    { "entityType": "person_unaware", "countFormula": "crowd_size - initial_panic", "distribution": "random", "tags": [] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "A dense crowd. A few people suddenly panic — perhaps a false alarm, a sound, a rumour. Those nearby don't know the cause, they only see the fear response." },
+    { "tick": 150, "text": "Fear is evolutionarily contagious. Seeing others flee triggers your flight response before your conscious mind can evaluate the threat. Instinct moves faster than thought." },
+    { "tick": 400, "text": "The cascade accelerates. People are now responding to other people's panic — not the original stimulus. The source doesn't matter anymore." },
+    { "tick": 700, "text": "Purple anchors — calm individuals — resist the contagion and can stabilise their immediate area. Trained staff in crowds serve this function." },
+    { "tick": 1100, "text": "In real crowd crushes (Hillsborough 1989, Love Parade 2010, Astroworld 2021), people were not trampled by others running — they were compressed by the crowd's collective pressure. Panic creates the danger." },
+    { "tick": 1500, "text": "Crowd safety design response: multiple clearly visible exits, trained anchor staff, PA systems that provide clear calm instruction. The goal is to reduce ambiguity — panic fills information voids." }
+  ]
+}

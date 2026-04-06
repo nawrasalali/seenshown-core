@@ -1,0 +1,79 @@
+{
+  "id": "viral_misinformation",
+  "domain": "social",
+  "title": "How Misinformation Goes Viral",
+  "description": "The anatomy of a viral false claim — from origin to saturation, and why platforms accelerate it.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "network_size": { "type": "int", "min": 50, "max": 150, "default": 100, "step": 10, "label": "Network Size" },
+    "emotional_charge": { "type": "float", "min": 0.2, "max": 1.0, "default": 0.75, "step": 0.05, "label": "Emotional Charge", "description": "Fear, anger, outrage — higher charge = faster sharing without verification" },
+    "media_literacy": { "type": "float", "min": 0.1, "max": 0.7, "default": 0.3, "step": 0.05, "label": "Media Literacy", "description": "Fraction who verify before sharing" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 9, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#EF4444", "borderColor": "#DC2626", "borderStyle": "solid", "glowColor": "#EF4444", "glowIntensity": 0.5 },
+    "person_dismissed": { "shape": "circle", "radius": 10, "color": "#22C55E", "borderColor": "#16A34A", "borderStyle": "solid" },
+    "person_immune": { "shape": "circle", "radius": 15, "color": "#F59E0B", "borderColor": "#D97706", "borderStyle": "solid", "glowColor": "#F59E0B", "glowIntensity": 0.6 }
+  },
+  "rules": [
+    {
+      "id": "misinfo_spreads_emotionally",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "neighbor_within", "distance": 70, "state": "unaware" },
+        { "type": "entity_not_has_tag", "tag": "literate" },
+        { "type": "random_chance", "probability": 0.05 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "spread", "color": "#EF4444" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 18
+    },
+    {
+      "id": "hub_amplifies",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "entity_has_tag", "tag": "hub" },
+        { "type": "neighbor_within", "distance": 160, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.1 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "spread", "color": "#DC2626" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 8
+    },
+    {
+      "id": "literate_person_checks",
+      "conditions": [
+        { "type": "entity_state", "state": "heard" },
+        { "type": "entity_has_tag", "tag": "literate" },
+        { "type": "ticks_in_state_gt", "ticks": 60 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dismissed" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_immune", "countFormula": "3", "distribution": "clustered", "tags": ["hub"] },
+    { "entityType": "person_spreading", "countFormula": "2", "distribution": "clustered", "tags": ["origin"] },
+    { "entityType": "person_unaware", "countFormula": "Math.round(network_size * (1 - media_literacy))", "distribution": "random", "tags": [] },
+    { "entityType": "person_heard", "countFormula": "Math.round(network_size * media_literacy)", "distribution": "random", "tags": ["literate"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Misinformation starts (red dots). Large gold circles = high-follower accounts (hubs). Green = media-literate individuals who verify claims." },
+    { "tick": 200, "text": "Hubs broadcast to hundreds instantly. Each share is frictionless — one tap, no verification required." },
+    { "tick": 500, "text": "High emotional charge drives sharing without reading. Outrage, fear, and disgust are the emotions most associated with viral misinformation." },
+    { "tick": 900, "text": "Media-literate individuals (green) slow down, verify, and don't share. But they're outnumbered. Verification takes 4 minutes. Sharing takes 1 second." },
+    { "tick": 1400, "text": "Saturation. The claim has reached most of the network before a single fact-check has been published." },
+    { "tick": 2000, "text": "Prebunking — explaining manipulation tactics in advance — reduces susceptibility by 20-30% (Cambridge, 2022). Fact-checking after viral spread reaches only 1-3% of those who saw the original." }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "bacterial_colony",
+  "domain": "biology",
+  "title": "Bacterial Colony Growth",
+  "description": "Exponential growth hitting a resource ceiling — the J-curve becoming an S-curve in real time.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "initial_bacteria": { "type": "int", "min": 1, "max": 10, "default": 3, "step": 1, "label": "Seed Bacteria", "description": "Starting colony size" },
+    "carrying_capacity": { "type": "int", "min": 50, "max": 400, "default": 200, "step": 25, "label": "Carrying Capacity", "description": "Maximum sustainable population (nutrient limit)" },
+    "doubling_rate": { "type": "float", "min": 0.005, "max": 0.03, "default": 0.014, "step": 0.002, "label": "Doubling Rate", "description": "How quickly each bacterium divides" }
+  },
+  "visualConfig": {
+    "bacterium_normal": { "shape": "circle", "radius": 7, "color": "#4ADE80", "borderColor": "#22C55E", "borderStyle": "solid", "glowColor": "#4ADE80", "glowIntensity": 0.2 }
+  },
+  "rules": [
+    {
+      "id": "bacterium_divides_exponential",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "bacterium" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "bacterium_normal", "count": 200 },
+        { "type": "random_chance", "probability": 0.014 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "bacterium_normal", "position": { "x": 0, "y": 0 }, "tags": ["bacterium"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#4ADE80" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 90
+    },
+    {
+      "id": "resource_competition_kills",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "bacterium" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 18, "tag": "bacterium" },
+        { "type": "random_chance", "probability": 0.004 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dying" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 120
+    },
+    {
+      "id": "dying_removed",
+      "conditions": [
+        { "type": "entity_state", "state": "dying" },
+        { "type": "ticks_in_state_gt", "ticks": 60 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "die", "color": "#4ADE80" },
+        { "type": "DESTROY_ENTITY", "entityId": "__self__" }
+      ],
+      "priority": 0,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "bacterium_normal", "countFormula": "initial_bacteria", "distribution": "clustered", "tags": ["bacterium"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "3 bacteria. Each divides every 20 minutes in ideal conditions. The math is brutal: 3 → 6 → 12 → 24 → 48 → 96..." },
+    { "tick": 300, "text": "Exponential phase. Growth is accelerating — each new bacterium also divides. This is the J-curve: slow start, then vertical." },
+    { "tick": 700, "text": "The colony is doubling rapidly. One bacterium can theoretically produce 5 million descendants in 24 hours at this rate." },
+    { "tick": 1100, "text": "Growth is slowing. Bacteria are crowding each other out — competing for nutrients, oxygen, and space. The J-curve is bending into an S-curve." },
+    { "tick": 1500, "text": "Carrying capacity reached. Births equal deaths. The population stabilises — this is the logistic growth model, seen in every ecosystem with finite resources." },
+    { "tick": 2000, "text": "This S-curve governs bacterial infections, human population growth, technology adoption, and financial market cycles. Exponential growth always hits a ceiling." }
+  ]
+}

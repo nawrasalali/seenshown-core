@@ -1,0 +1,75 @@
+{
+  "id": "natural_selection",
+  "domain": "biology",
+  "title": "Natural Selection",
+  "description": "Watch how environmental pressure eliminates unfit variants and causes advantageous traits to spread through a population.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "population_size": { "type": "int", "min": 30, "max": 150, "default": 80, "step": 10, "label": "Population Size", "description": "Starting population" },
+    "selection_pressure": { "type": "float", "min": 0.1, "max": 1.0, "default": 0.6, "step": 0.1, "label": "Selection Pressure", "description": "How strongly the environment favours the adapted variant" },
+    "adapted_fraction": { "type": "float", "min": 0.05, "max": 0.3, "default": 0.1, "step": 0.05, "label": "Adapted Fraction", "description": "Initial fraction with advantageous trait" }
+  },
+  "visualConfig": {
+    "bacterium_normal": { "shape": "circle", "radius": 8, "color": "#94A3B8", "borderColor": "#64748B", "borderStyle": "solid" },
+    "bacterium_resistant": { "shape": "circle", "radius": 9, "color": "#22C55E", "borderColor": "#16A34A", "borderStyle": "solid", "glowColor": "#22C55E", "glowIntensity": 0.3 }
+  },
+  "rules": [
+    {
+      "id": "unadapted_dies_from_pressure",
+      "conditions": [
+        { "type": "entity_not_has_tag", "tag": "adapted" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "random_chance", "probability": 0.004 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dying" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "adapted_thrives",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "adapted" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "bacterium_resistant", "count": 400 },
+        { "type": "random_chance", "probability": 0.01 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "bacterium_resistant", "position": { "x": 0, "y": 0 }, "tags": ["adapted"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#22C55E" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 100
+    },
+    {
+      "id": "dying_removed",
+      "conditions": [
+        { "type": "entity_state", "state": "dying" },
+        { "type": "ticks_in_state_gt", "ticks": 50 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "die", "color": "#94A3B8" },
+        { "type": "DESTROY_ENTITY", "entityId": "__self__" }
+      ],
+      "priority": 0,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "bacterium_normal", "countFormula": "Math.round(population_size * (1 - adapted_fraction))", "distribution": "random", "tags": [] },
+    { "entityType": "bacterium_resistant", "countFormula": "Math.round(population_size * adapted_fraction)", "distribution": "random", "tags": ["adapted"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "A population has two variants: grey (no advantage) and green (adapted to the current environment). Both reproduce." },
+    { "tick": 300, "text": "Environmental pressure — predation, disease, competition — kills unadapted individuals at a higher rate. No intent. No direction. Just differential survival." },
+    { "tick": 700, "text": "The adapted green variant reproduces more successfully. Its proportion in the population grows — not because it 'tries', but because it survives longer." },
+    { "tick": 1200, "text": "Grey individuals are now rare. The adapted trait has 'spread' through the population entirely through differential reproduction — not through choice." },
+    { "tick": 1800, "text": "This is evolution by natural selection. No designer. No goal. Just variants, environment, survival, and time." },
+    { "tick": 2200, "text": "Given a new environmental pressure, the process repeats — favouring whatever variant happens to suit the new conditions." }
+  ]
+}

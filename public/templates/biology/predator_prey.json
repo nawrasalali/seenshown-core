@@ -1,0 +1,102 @@
+{
+  "id": "predator_prey",
+  "domain": "biology",
+  "title": "Predator-Prey Population Cycles",
+  "description": "The Lotka-Volterra model made visible — watch populations oscillate in perfect out-of-phase cycles.",
+  "maxTicks": 3600,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "prey_start": { "type": "int", "min": 20, "max": 100, "default": 60, "step": 5, "label": "Initial Prey", "description": "Starting prey (rabbit) population" },
+    "predator_start": { "type": "int", "min": 5, "max": 30, "default": 15, "step": 1, "label": "Initial Predators", "description": "Starting predator (fox) population" }
+  },
+  "visualConfig": {
+    "bacterium_normal": { "shape": "circle", "radius": 7, "color": "#86EFAC", "borderColor": "#4ADE80", "borderStyle": "solid" },
+    "immune_cell": { "shape": "circle", "radius": 12, "color": "#F97316", "borderColor": "#EA580C", "borderStyle": "solid", "glowColor": "#F97316", "glowIntensity": 0.3 }
+  },
+  "rules": [
+    {
+      "id": "prey_reproduces",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "prey" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "bacterium_normal", "count": 300 },
+        { "type": "random_chance", "probability": 0.008 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "bacterium_normal", "position": { "x": 0, "y": 0 }, "tags": ["prey"] }
+      ],
+      "priority": 2,
+      "cooldownTicks": 80
+    },
+    {
+      "id": "predator_eats_prey",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "predator" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 25, "tag": "prey" },
+        { "type": "random_chance", "probability": 0.06 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "absorb", "color": "#F97316" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 30
+    },
+    {
+      "id": "predator_reproduces_when_fed",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "predator" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "immune_cell", "count": 80 },
+        { "type": "random_chance", "probability": 0.004 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "immune_cell", "position": { "x": 0, "y": 0 }, "tags": ["predator"] }
+      ],
+      "priority": 3,
+      "cooldownTicks": 150
+    },
+    {
+      "id": "predator_starves",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "predator" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "random_chance", "probability": 0.003 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dying" }
+      ],
+      "priority": 4,
+      "cooldownTicks": 200
+    },
+    {
+      "id": "dying_fades",
+      "conditions": [
+        { "type": "entity_state", "state": "dying" },
+        { "type": "ticks_in_state_gt", "ticks": 60 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "DESTROY_ENTITY", "entityId": "__self__" }
+      ],
+      "priority": 0,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "bacterium_normal", "countFormula": "prey_start", "distribution": "random", "tags": ["prey"] },
+    { "entityType": "immune_cell", "countFormula": "predator_start", "distribution": "random", "tags": ["predator"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Green = prey (rabbits). Orange = predators (foxes). Prey reproduce freely when predators are few." },
+    { "tick": 400, "text": "Prey population surges. More food means predators reproduce faster too — the predator count begins to rise." },
+    { "tick": 800, "text": "Predator peak. So many predators that prey is being consumed faster than it can reproduce. The prey population crashes." },
+    { "tick": 1200, "text": "Prey crashes, so predators starve. The predator population falls. With fewer predators, prey recovers — the cycle restarts." },
+    { "tick": 1800, "text": "Notice the cycles are out of phase: predator peaks always follow prey peaks. This is the Lotka-Volterra cycle — observed in real lynx and hare populations in Canada." },
+    { "tick": 2800, "text": "No individual animal 'knows' about the cycle. It emerges purely from the local interactions — eat or be eaten — scaled across a population." }
+  ]
+}

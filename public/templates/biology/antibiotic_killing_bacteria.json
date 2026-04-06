@@ -1,0 +1,161 @@
+{
+  "id": "antibiotic_killing_bacteria",
+  "domain": "biology",
+  "title": "Antibiotics vs Bacteria",
+  "description": "Watch antibiotics destroy bacterial cells — and see how resistant bacteria survive to dominate the colony.",
+  "maxTicks": 1800,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "initial_bacteria": {
+      "type": "int", "min": 20, "max": 300, "default": 100,
+      "step": 10, "label": "Initial Bacteria", "description": "Starting population size"
+    },
+    "resistant_fraction": {
+      "type": "float", "min": 0.0, "max": 0.5, "default": 0.1,
+      "step": 0.05, "label": "Resistant Fraction", "description": "Fraction of bacteria with resistance gene"
+    },
+    "antibiotic_dose": {
+      "type": "float", "min": 0.1, "max": 1.0, "default": 0.7,
+      "step": 0.1, "label": "Antibiotic Dose", "description": "Concentration of antibiotic molecules"
+    }
+  },
+  "visualConfig": {
+    "bacterium_normal": {
+      "shape": "circle", "radius": 8, "color": "#F97316",
+      "borderColor": "#EA580C", "borderStyle": "jagged", "glowColor": "#F97316", "glowIntensity": 0.3
+    },
+    "bacterium_resistant": {
+      "shape": "circle", "radius": 9, "color": "#DC2626",
+      "borderColor": "#991B1B", "borderStyle": "double", "glowColor": "#DC2626", "glowIntensity": 0.5
+    },
+    "antibiotic_molecule": {
+      "shape": "hexagon", "radius": 5, "color": "#E2E8F0",
+      "borderColor": "#94A3B8", "borderStyle": "solid", "glowColor": "#FFFFFF", "glowIntensity": 0.6
+    }
+  },
+  "rules": [
+    {
+      "id": "antibiotic_damages_normal",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "bacterium" },
+        { "type": "entity_not_has_tag", "tag": "resistant" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 18, "tag": "antibiotic" }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_COMPONENT", "entityId": "__self__", "component": { "health": { "decayRate": 4 } } }
+      ],
+      "priority": 1,
+      "cooldownTicks": 10
+    },
+    {
+      "id": "dying_bacterium_removed",
+      "conditions": [
+        { "type": "entity_state", "state": "dying" },
+        { "type": "ticks_in_state_gt", "ticks": 60 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "die", "color": "#F97316" },
+        { "type": "DESTROY_ENTITY", "entityId": "__self__" }
+      ],
+      "priority": 0,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "resistant_deflects_antibiotic",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "resistant" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 15, "tag": "antibiotic" },
+        { "type": "random_chance", "probability": 0.15 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "deflect", "color": "#DC2626" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 20
+    },
+    {
+      "id": "bacterium_reproduces",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "bacterium" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "component_gt", "component": "health.current", "value": 70 },
+        { "type": "world_count_lt", "entityType": "bacterium_normal", "count": 400 },
+        { "type": "random_chance", "probability": 0.008 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "bacterium_normal", "position": { "x": 0, "y": 0 } },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#F97316" }
+      ],
+      "priority": 3,
+      "cooldownTicks": 120
+    },
+    {
+      "id": "resistant_reproduces",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "resistant" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "bacterium_resistant", "count": 400 },
+        { "type": "random_chance", "probability": 0.012 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "bacterium_resistant", "position": { "x": 0, "y": 0 }, "tags": ["bacterium", "resistant"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#DC2626" }
+      ],
+      "priority": 3,
+      "cooldownTicks": 100
+    }
+  ],
+  "initialSpawn": [
+    {
+      "entityType": "bacterium_normal",
+      "countFormula": "Math.round(initial_bacteria * (1 - resistant_fraction))",
+      "distribution": "random",
+      "tags": ["bacterium"]
+    },
+    {
+      "entityType": "bacterium_resistant",
+      "countFormula": "Math.round(initial_bacteria * resistant_fraction)",
+      "distribution": "random",
+      "tags": ["bacterium", "resistant"]
+    },
+    {
+      "entityType": "antibiotic_molecule",
+      "countFormula": "Math.round(antibiotic_dose * 140)",
+      "distribution": "brownian_field",
+      "tags": ["antibiotic"]
+    }
+  ],
+  "narration": [
+    {
+      "tick": 0,
+      "text": "A colony of bacteria is growing. Most are normal — but about 10% carry a resistance gene."
+    },
+    {
+      "tick": 120,
+      "text": "Antibiotic molecules flood the colony. They bind to normal bacteria and begin breaking down their cell walls."
+    },
+    {
+      "tick": 300,
+      "text": "Normal bacteria are dying rapidly. Resistant bacteria are completely unaffected — the antibiotic cannot penetrate their modified cell wall."
+    },
+    {
+      "tick": 600,
+      "text": "With the normal bacteria gone, resistant bacteria face no competition. They reproduce freely."
+    },
+    {
+      "tick": 900,
+      "text": "The colony is now almost entirely resistant. The antibiotic is useless against this population. This is natural selection — in real time."
+    },
+    {
+      "tick": 1500,
+      "text": "This is how antibiotic resistance develops in hospitals and communities. Each course of antibiotics that fails to eliminate all bacteria creates a more resistant population."
+    }
+  ]
+}

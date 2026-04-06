@@ -1,0 +1,89 @@
+{
+  "id": "virus_infecting_cell",
+  "domain": "biology",
+  "title": "Virus Infecting a Cell",
+  "description": "Watch a virus hijack a host cell — attaching, injecting genetic material, and turning it into a virus factory.",
+  "maxTicks": 1800,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "virus_count": { "type": "int", "min": 5, "max": 60, "default": 20, "step": 5, "label": "Virus Count", "description": "Number of virus particles" },
+    "host_cells": { "type": "int", "min": 3, "max": 20, "default": 8, "step": 1, "label": "Host Cells", "description": "Number of host cells" }
+  },
+  "visualConfig": {
+    "virus": { "shape": "triangle", "radius": 7, "color": "#A855F7", "borderColor": "#7C3AED", "borderStyle": "solid", "glowColor": "#A855F7", "glowIntensity": 0.5 },
+    "host_cell": { "shape": "circle", "radius": 22, "color": "#2DD4BF", "borderColor": "#0D9488", "borderStyle": "solid", "glowColor": "#2DD4BF", "glowIntensity": 0.2 }
+  },
+  "rules": [
+    {
+      "id": "virus_seeks_cell",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "virus" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 120, "tag": "host_cell" }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [],
+      "priority": 1,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "virus_attaches",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "virus" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 28, "tag": "host_cell" },
+        { "type": "random_chance", "probability": 0.05 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "infected" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "bind", "color": "#A855F7" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "infected_cell_replicates_virus",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "host_cell" },
+        { "type": "entity_state", "state": "infected" },
+        { "type": "ticks_in_state_gt", "ticks": 120 },
+        { "type": "random_chance", "probability": 0.04 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "virus", "position": { "x": 0, "y": 0 }, "tags": ["virus"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "spread", "color": "#A855F7" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 30
+    },
+    {
+      "id": "infected_cell_dies",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "host_cell" },
+        { "type": "entity_state", "state": "infected" },
+        { "type": "ticks_in_state_gt", "ticks": 400 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dying" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "die", "color": "#2DD4BF" }
+      ],
+      "priority": 0,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "host_cell", "countFormula": "host_cells", "distribution": "random", "tags": ["host_cell"] },
+    { "entityType": "virus", "countFormula": "virus_count", "distribution": "random", "tags": ["virus"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Virus particles drift through the cellular environment, searching for host cells to infect." },
+    { "tick": 150, "text": "A virus binds to a receptor on the cell surface. It injects its genetic material directly into the cell." },
+    { "tick": 300, "text": "The hijacked cell reads the viral DNA as its own instructions. It now manufactures new virus particles instead of its normal proteins." },
+    { "tick": 600, "text": "New virus particles burst from the infected cell, each capable of infecting more cells. The infection spreads exponentially." },
+    { "tick": 900, "text": "Cells collapse after being drained. The virus has effectively converted healthy tissue into a virus factory." },
+    { "tick": 1400, "text": "This replication cycle — attach, inject, replicate, burst — is how all viruses from flu to COVID spread through your body." }
+  ]
+}

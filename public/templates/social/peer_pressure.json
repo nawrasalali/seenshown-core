@@ -1,0 +1,75 @@
+{
+  "id": "peer_pressure",
+  "domain": "social",
+  "title": "Peer Pressure & Conformity",
+  "description": "Watch Asch's conformity experiment play out at scale — how group consensus overrides individual judgment.",
+  "maxTicks": 1800,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "group_size": { "type": "int", "min": 10, "max": 80, "default": 40, "step": 5, "label": "Group Size" },
+    "conformist_fraction": { "type": "float", "min": 0.3, "max": 0.9, "default": 0.65, "step": 0.05, "label": "Conformity Rate", "description": "Fraction who will eventually yield to group pressure" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 10, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_heard": { "shape": "circle", "radius": 10, "color": "#F59E0B", "borderColor": "#D97706", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#EF4444", "borderColor": "#DC2626", "borderStyle": "solid" },
+    "person_dismissed": { "shape": "circle", "radius": 10, "color": "#6366F1", "borderColor": "#4F46E5", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "majority_pressures_individual",
+      "conditions": [
+        { "type": "entity_state", "state": "unaware" },
+        { "type": "neighbor_within", "distance": 55, "state": "spreading" },
+        { "type": "random_chance", "probability": 0.02 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "heard" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#F59E0B" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 30
+    },
+    {
+      "id": "conformist_yields",
+      "conditions": [
+        { "type": "entity_state", "state": "heard" },
+        { "type": "entity_has_tag", "tag": "conformist" },
+        { "type": "ticks_in_state_gt", "ticks": 80 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "spreading" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "independent_resists",
+      "conditions": [
+        { "type": "entity_state", "state": "heard" },
+        { "type": "entity_has_tag", "tag": "independent" },
+        { "type": "ticks_in_state_gt", "ticks": 60 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dismissed" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_spreading", "countFormula": "5", "distribution": "clustered", "tags": ["conformist"] },
+    { "entityType": "person_unaware", "countFormula": "Math.round(group_size * conformist_fraction)", "distribution": "random", "tags": ["conformist"] },
+    { "entityType": "person_unaware", "countFormula": "Math.round(group_size * (1 - conformist_fraction))", "distribution": "random", "tags": ["independent"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Red individuals assert a view — even a wrong one. Others are undecided. Asch (1951): when confederates said the wrong answer, 75% of subjects conformed at least once." },
+    { "tick": 300, "text": "Pressure spreads outward. Yellow individuals are conflicted — they know the answer but feel the pull of consensus." },
+    { "tick": 600, "text": "Conformists (majority) yield to the group. Purple independents maintain their position despite pressure. Both choices have social costs." },
+    { "tick": 1000, "text": "The conforming view now dominates — even if it started wrong. This is how groupthink forms in boardrooms, juries, and governments." },
+    { "tick": 1400, "text": "One dissenter changes everything. Asch found that a single ally reduced conformity from 75% to 5%. Independents protect group accuracy." }
+  ]
+}

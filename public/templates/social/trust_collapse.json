@@ -1,0 +1,78 @@
+{
+  "id": "trust_collapse",
+  "domain": "social",
+  "title": "Trust Collapse in a Community",
+  "description": "How a single betrayal propagates through a trust network — and why recovery is asymmetric to the original damage.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "community_size": { "type": "int", "min": 30, "max": 100, "default": 60, "step": 5, "label": "Community Size" },
+    "initial_trust": { "type": "float", "min": 0.4, "max": 0.95, "default": 0.75, "step": 0.05, "label": "Initial Trust Level", "description": "How trusting the community starts (high = more vulnerable to cascade)" },
+    "transparency": { "type": "float", "min": 0.1, "max": 0.8, "default": 0.4, "step": 0.05, "label": "Transparency", "description": "How quickly betrayal information spreads (higher = faster collapse but faster recovery)" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 10, "color": "#22C55E", "borderColor": "#16A34A", "borderStyle": "solid", "glowColor": "#22C55E", "glowIntensity": 0.2 },
+    "person_heard": { "shape": "circle", "radius": 10, "color": "#F59E0B", "borderColor": "#D97706", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#EF4444", "borderColor": "#DC2626", "borderStyle": "solid", "glowColor": "#EF4444", "glowIntensity": 0.4 },
+    "person_dismissed": { "shape": "circle", "radius": 10, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_immune": { "shape": "circle", "radius": 13, "color": "#1E293B", "borderColor": "#334155", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "betrayal_spreads_distrust",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "neighbor_within", "distance": 55, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.035 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "heard" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#F59E0B" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 25
+    },
+    {
+      "id": "distrust_becomes_withdrawal",
+      "conditions": [
+        { "type": "entity_state", "state": "heard" },
+        { "type": "ticks_in_state_gt", "ticks": 60 },
+        { "type": "random_chance", "probability": 0.5 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dismissed" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "withdrawn_slowly_recovers",
+      "conditions": [
+        { "type": "entity_state", "state": "dismissed" },
+        { "type": "ticks_in_state_gt", "ticks": 400 },
+        { "type": "random_chance", "probability": 0.008 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "unaware" }
+      ],
+      "priority": 3,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_immune", "countFormula": "1", "distribution": "clustered", "tags": ["betrayer"] },
+    { "entityType": "person_spreading", "countFormula": "2", "distribution": "clustered", "tags": ["betrayed"] },
+    { "entityType": "person_unaware", "countFormula": "community_size - 3", "distribution": "random", "tags": [] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "A high-trust community (green = trusting). One betrayal — a scam, a lie, a breach of confidence — starts spreading information about the untrustworthy actor." },
+    { "tick": 300, "text": "Distrust spreads faster than the original trust was built. Trust requires consistent positive experience. Distrust requires only one data point." },
+    { "tick": 700, "text": "People withdraw from the community (grey). Not because they were personally betrayed — but because uncertainty about who to trust makes engagement feel risky." },
+    { "tick": 1200, "text": "The community is fractured. Cooperation has fallen. This is the economic cost of low-trust environments — every transaction now requires verification, contract, and caution." },
+    { "tick": 1700, "text": "Slow recovery begins. Trust rebuilds through consistent demonstrated reliability — much slower than collapse. Nassim Taleb: trust is fragile, distrust is sticky." },
+    { "tick": 2200, "text": "Robert Putnam's research: communities with higher social trust have better health outcomes, economic growth, and civic participation. Trust is infrastructure." }
+  ]
+}

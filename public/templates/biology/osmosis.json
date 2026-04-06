@@ -1,0 +1,47 @@
+{
+  "id": "osmosis",
+  "domain": "biology",
+  "title": "Osmosis Across a Membrane",
+  "description": "Watch water molecules move from high to low concentration across a semi-permeable membrane — the force that drives all of cell biology.",
+  "maxTicks": 1800,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "concentration_left": { "type": "float", "min": 0.1, "max": 0.9, "default": 0.2, "step": 0.1, "label": "Left Concentration", "description": "Solute concentration on the left side (more solute = less water)" },
+    "concentration_right": { "type": "float", "min": 0.1, "max": 0.9, "default": 0.8, "step": 0.1, "label": "Right Concentration", "description": "Solute concentration on the right side" }
+  },
+  "visualConfig": {
+    "antibiotic_molecule": { "shape": "circle", "radius": 5, "color": "#60A5FA", "borderColor": "#3B82F6", "borderStyle": "solid", "glowColor": "#60A5FA", "glowIntensity": 0.3 },
+    "glucose_molecule": { "shape": "hexagon", "radius": 7, "color": "#FCD34D", "borderColor": "#F59E0B", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "water_crosses_membrane",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "water" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 30, "tag": "membrane_zone" },
+        { "type": "random_chance", "probability": 0.02 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#60A5FA" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 30
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "antibiotic_molecule", "countFormula": "Math.round((1 - concentration_left) * 80)", "distribution": "random", "tags": ["water", "left_side"] },
+    { "entityType": "antibiotic_molecule", "countFormula": "Math.round((1 - concentration_right) * 40)", "distribution": "random", "tags": ["water", "right_side"] },
+    { "entityType": "glucose_molecule", "countFormula": "Math.round(concentration_left * 40)", "distribution": "random", "tags": ["solute", "left_side"] },
+    { "entityType": "glucose_molecule", "countFormula": "Math.round(concentration_right * 60)", "distribution": "random", "tags": ["solute", "right_side"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Blue = water molecules. Yellow = solute (e.g. salt). The membrane in the middle lets water through but blocks solute." },
+    { "tick": 200, "text": "Water moves by random motion — but there are more water molecules on the left (less solute), so more cross to the right by sheer probability." },
+    { "tick": 500, "text": "Osmosis is not 'attracted' by anything. Water doesn't 'want' to move. It's purely statistical: more molecules on one side means more crossings per second." },
+    { "tick": 900, "text": "As water moves right, the right side swells. This is osmotic pressure — the force driving water into cells, inflating plant cells, and governing kidney function." },
+    { "tick": 1400, "text": "Equilibrium approaches. The concentrations equalise. Water still crosses in both directions — but at equal rates. Net movement stops." },
+    { "tick": 1700, "text": "Every cell in your body uses osmosis. Dehydration, IV drips, and food preservation all work by manipulating this concentration difference." }
+  ]
+}

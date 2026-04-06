@@ -1,0 +1,76 @@
+{
+  "id": "immune_response",
+  "domain": "biology",
+  "title": "Immune Response",
+  "description": "Watch the body's immune system detect, respond to, and eliminate an infection.",
+  "maxTicks": 1800,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "pathogen_count": { "type": "int", "min": 10, "max": 100, "default": 40, "step": 5, "label": "Pathogens", "description": "Initial infection size" },
+    "immune_response_speed": { "type": "float", "min": 0.3, "max": 1.0, "default": 0.6, "step": 0.1, "label": "Immune Speed", "description": "How quickly the immune system responds" }
+  },
+  "visualConfig": {
+    "virus": { "shape": "triangle", "radius": 6, "color": "#F97316", "borderColor": "#EA580C", "borderStyle": "jagged", "glowColor": "#F97316", "glowIntensity": 0.4 },
+    "immune_cell": { "shape": "circle", "radius": 14, "color": "#3B82F6", "borderColor": "#1D4ED8", "borderStyle": "solid", "glowColor": "#3B82F6", "glowIntensity": 0.5 },
+    "antibody": { "shape": "star", "radius": 5, "color": "#F1F5F9", "borderColor": "#94A3B8", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "pathogen_replicates",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "pathogen" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "virus", "count": 300 },
+        { "type": "random_chance", "probability": 0.008 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "virus", "position": { "x": 0, "y": 0 }, "tags": ["pathogen"] }
+      ],
+      "priority": 2,
+      "cooldownTicks": 90
+    },
+    {
+      "id": "immune_cell_destroys_pathogen",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "immune" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 20, "tag": "pathogen" },
+        { "type": "random_chance", "probability": 0.15 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "absorb", "color": "#3B82F6" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 20
+    },
+    {
+      "id": "immune_system_recruits",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "immune" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "immune_cell", "count": 60 },
+        { "type": "random_chance", "probability": 0.006 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "immune_cell", "position": { "x": 0, "y": 0 }, "tags": ["immune"] }
+      ],
+      "priority": 3,
+      "cooldownTicks": 120
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "virus", "countFormula": "pathogen_count", "distribution": "clustered", "tags": ["pathogen"] },
+    { "entityType": "immune_cell", "countFormula": "3", "distribution": "random", "tags": ["immune"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Pathogens enter the body. The immune system hasn't detected the threat yet — there are only 3 immune cells patrolling." },
+    { "tick": 180, "text": "First contact. An immune cell detects a pathogen's surface proteins (antigens) and triggers an alarm signal." },
+    { "tick": 360, "text": "The alarm signal recruits more immune cells. The immune system is ramping up — this takes 4-7 days in a real infection." },
+    { "tick": 600, "text": "Immune cells are now outnumbering pathogens. They engulf and destroy pathogens — a process called phagocytosis." },
+    { "tick": 900, "text": "The infection is being cleared. Inflammation symptoms (fever, fatigue) are side effects of this battle." },
+    { "tick": 1400, "text": "Memory B cells are created from this encounter. Next time this pathogen arrives, the response will be days faster." }
+  ]
+}

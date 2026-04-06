@@ -1,0 +1,70 @@
+{
+  "id": "neural_signal",
+  "domain": "biology",
+  "title": "Neural Signal Propagation",
+  "description": "Watch an electrical signal travel down a neuron via action potentials — the language of the brain.",
+  "maxTicks": 1440,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "chain_length": { "type": "int", "min": 5, "max": 20, "default": 12, "step": 1, "label": "Neuron Chain Length", "description": "Number of neurons in the signal pathway" },
+    "signal_strength": { "type": "float", "min": 0.3, "max": 1.0, "default": 0.8, "step": 0.1, "label": "Signal Strength", "description": "Action potential threshold — below threshold, signal dies" }
+  },
+  "visualConfig": {
+    "neuron": { "shape": "circle", "radius": 12, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 13, "color": "#FBBF24", "borderColor": "#F59E0B", "borderStyle": "solid", "glowColor": "#FBBF24", "glowIntensity": 0.8 }
+  },
+  "rules": [
+    {
+      "id": "action_potential_propagates",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "neighbor_within", "distance": 90, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.12 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#FBBF24" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 15
+    },
+    {
+      "id": "neuron_refractory_period",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "ticks_in_state_gt", "ticks": 40 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dismissed" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "neuron_recovers",
+      "conditions": [
+        { "type": "entity_state", "state": "dismissed" },
+        { "type": "ticks_in_state_gt", "ticks": 60 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "unaware" }
+      ],
+      "priority": 3,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_spreading", "countFormula": "1", "distribution": "clustered", "tags": ["neuron", "trigger"] },
+    { "entityType": "person_unaware", "countFormula": "chain_length", "distribution": "random", "tags": ["neuron"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "One neuron fires — an action potential. Sodium ions rush in, creating an electrical spike that travels down the axon at up to 120 metres per second." },
+    { "tick": 150, "text": "The signal reaches the axon terminal. Neurotransmitters are released into the synapse — the gap between neurons." },
+    { "tick": 300, "text": "Neurotransmitters bind to receptors on the next neuron. If enough bind, the next action potential fires. This is all-or-nothing — signals don't fade, they either fire or don't." },
+    { "tick": 500, "text": "Notice neurons briefly turning grey after firing — the refractory period. Sodium channels are reset. The neuron cannot fire again for ~1-2 milliseconds, ensuring signals travel in one direction." },
+    { "tick": 800, "text": "The signal has propagated through the entire chain. Your brain runs 86 billion of these simultaneously to process a single thought." },
+    { "tick": 1200, "text": "Anaesthetics block sodium channels — stopping action potentials from firing. Pain signals literally cannot reach the brain." }
+  ]
+}

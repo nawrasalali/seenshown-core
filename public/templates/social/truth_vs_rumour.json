@@ -1,0 +1,64 @@
+{
+  "id": "truth_vs_rumour",
+  "domain": "social",
+  "title": "Truth vs Misinformation Speed",
+  "description": "A 2018 MIT study found false news spreads 6× faster than true news. Watch why — and what it means.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "population": { "type": "int", "min": 50, "max": 150, "default": 100, "step": 10, "label": "Population" },
+    "misinformation_appeal": { "type": "float", "min": 0.4, "max": 0.9, "default": 0.7, "step": 0.05, "label": "Misinformation Appeal", "description": "Emotional salience of false news (novel, outrageous, fear-inducing)" },
+    "truth_appeal": { "type": "float", "min": 0.1, "max": 0.5, "default": 0.25, "step": 0.05, "label": "Truth Appeal", "description": "Emotional salience of accurate correction (boring, nuanced)" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 9, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#EF4444", "borderColor": "#DC2626", "borderStyle": "solid", "glowColor": "#EF4444", "glowIntensity": 0.4 },
+    "person_dismissed": { "shape": "circle", "radius": 10, "color": "#22C55E", "borderColor": "#16A34A", "borderStyle": "solid" },
+    "person_immune": { "shape": "circle", "radius": 10, "color": "#6366F1", "borderColor": "#4F46E5", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "misinformation_spreads_fast",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "entity_has_tag", "tag": "misinfo_carrier" },
+        { "type": "neighbor_within", "distance": 65, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.045 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "spread", "color": "#EF4444" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 20
+    },
+    {
+      "id": "truth_spreads_slow",
+      "conditions": [
+        { "type": "entity_state", "state": "dismissed" },
+        { "type": "entity_has_tag", "tag": "truth_carrier" },
+        { "type": "neighbor_within", "distance": 40, "state": "spreading" },
+        { "type": "random_chance", "probability": 0.015 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#22C55E" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 40
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_unaware", "countFormula": "population - 4", "distribution": "random", "tags": [] },
+    { "entityType": "person_spreading", "countFormula": "2", "distribution": "clustered", "tags": ["misinfo_carrier"] },
+    { "entityType": "person_dismissed", "countFormula": "2", "distribution": "clustered", "tags": ["truth_carrier"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Red = misinformation spreading. Green = truth spreading. Both start with 2 people. Same network. Different content." },
+    { "tick": 300, "text": "Misinformation is outpacing truth. Why? It's novel, emotionally charged, and triggers the brain's threat-detection system — making it more shareable." },
+    { "tick": 700, "text": "Truth is accurate but boring. It's nuanced. It often requires context. The brain doesn't release dopamine for 'actually, it's complicated'." },
+    { "tick": 1100, "text": "By the time truth reaches people who've already heard the false version, the false version has emotional primacy — it arrived first and felt more real." },
+    { "tick": 1600, "text": "MIT study (Vosoughi et al., 2018): false news reached 1,500 people 6× faster than true news on Twitter. And humans, not bots, were responsible for most of the spread." },
+    { "tick": 2200, "text": "Corrections rarely catch up. The optimal intervention is prebunking — warning people about manipulation tactics before they see the misinformation." }
+  ]
+}

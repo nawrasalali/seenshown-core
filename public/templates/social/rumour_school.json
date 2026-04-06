@@ -1,0 +1,181 @@
+{
+  "id": "rumour_school",
+  "domain": "social",
+  "title": "Rumour Spreads Through a School",
+  "description": "Watch how a single rumour travels through social networks — and see why popular kids amplify it while skeptics stop it cold.",
+  "maxTicks": 1800,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "school_size": {
+      "type": "int", "min": 20, "max": 150, "default": 80,
+      "step": 10, "label": "School Size", "description": "Total number of students"
+    },
+    "initial_spreaders": {
+      "type": "int", "min": 1, "max": 5, "default": 2,
+      "step": 1, "label": "Starting Spreaders", "description": "Students who start with the rumour"
+    },
+    "credulity": {
+      "type": "float", "min": 0.1, "max": 1.0, "default": 0.6,
+      "step": 0.1, "label": "Believability", "description": "How easily students believe and pass on the rumour"
+    },
+    "skeptic_fraction": {
+      "type": "float", "min": 0.0, "max": 0.4, "default": 0.2,
+      "step": 0.05, "label": "Skeptic Fraction", "description": "Students who critically evaluate rumours"
+    }
+  },
+  "visualConfig": {
+    "person_unaware": {
+      "shape": "circle", "radius": 10, "color": "#475569",
+      "borderColor": "#334155", "borderStyle": "solid"
+    },
+    "person_heard": {
+      "shape": "circle", "radius": 10, "color": "#F59E0B",
+      "borderColor": "#D97706", "borderStyle": "solid", "glowColor": "#FCD34D", "glowIntensity": 0.4
+    },
+    "person_spreading": {
+      "shape": "circle", "radius": 11, "color": "#EF4444",
+      "borderColor": "#DC2626", "borderStyle": "solid", "glowColor": "#FCA5A5", "glowIntensity": 0.6
+    },
+    "person_dismissed": {
+      "shape": "circle", "radius": 10, "color": "#22C55E",
+      "borderColor": "#16A34A", "borderStyle": "solid"
+    },
+    "person_immune": {
+      "shape": "circle", "radius": 10, "color": "#6366F1",
+      "borderColor": "#4F46E5", "borderStyle": "solid"
+    }
+  },
+  "rules": [
+    {
+      "id": "spreading_infects_unaware",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "neighbor_within", "distance": 55, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.04 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "whisper", "color": "#F59E0B" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 40
+    },
+    {
+      "id": "popular_amplifies_spread",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "entity_has_tag", "tag": "popular" },
+        { "type": "neighbor_within", "distance": 90, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.07 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "spread", "color": "#EF4444" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 30
+    },
+    {
+      "id": "heard_becomes_spreading",
+      "conditions": [
+        { "type": "entity_state", "state": "heard" },
+        { "type": "entity_not_has_tag", "tag": "skeptic" },
+        { "type": "ticks_in_state_gt", "ticks": 45 },
+        { "type": "random_chance", "probability": 0.7 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "spreading" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "skeptic_dismisses",
+      "conditions": [
+        { "type": "entity_state", "state": "heard" },
+        { "type": "entity_has_tag", "tag": "skeptic" },
+        { "type": "ticks_in_state_gt", "ticks": 30 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dismissed" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "isolated_rarely_hears",
+      "conditions": [
+        { "type": "entity_state", "state": "unaware" },
+        { "type": "entity_has_tag", "tag": "isolated" },
+        { "type": "neighbor_within", "distance": 30, "state": "spreading" },
+        { "type": "random_chance", "probability": 0.015 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "heard" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 60
+    }
+  ],
+  "initialSpawn": [
+    {
+      "entityType": "person_spreading",
+      "countFormula": "initial_spreaders",
+      "distribution": "clustered",
+      "tags": ["student", "mid"]
+    },
+    {
+      "entityType": "person_unaware",
+      "countFormula": "Math.round(school_size * 0.15)",
+      "distribution": "clustered",
+      "tags": ["student", "popular"]
+    },
+    {
+      "entityType": "person_unaware",
+      "countFormula": "Math.round(school_size * 0.6)",
+      "distribution": "random",
+      "tags": ["student", "mid"]
+    },
+    {
+      "entityType": "person_unaware",
+      "countFormula": "Math.round(school_size * skeptic_fraction)",
+      "distribution": "random",
+      "tags": ["student", "mid", "skeptic"]
+    },
+    {
+      "entityType": "person_unaware",
+      "countFormula": "Math.round(school_size * 0.15)",
+      "distribution": "random",
+      "tags": ["student", "isolated"]
+    }
+  ],
+  "narration": [
+    {
+      "tick": 0,
+      "text": "A rumour starts with just 2 students in a school of 80. Watch how far it travels — and who stops it."
+    },
+    {
+      "tick": 180,
+      "text": "The rumour has reached the popular group. Their large social networks and close proximity mean they spread it to many students at once."
+    },
+    {
+      "tick": 360,
+      "text": "Notice the green students — they heard the rumour but evaluated it critically and dismissed it. Skeptics break the chain of transmission."
+    },
+    {
+      "tick": 600,
+      "text": "The isolated students at the edges of the social network are the last to hear it — or may never hear it at all. Social position determines information access."
+    },
+    {
+      "tick": 1000,
+      "text": "The rumour reaches saturation. It spread to most of the school in under 3 minutes of social time. Notice it spread faster than any individual could have predicted."
+    },
+    {
+      "tick": 1500,
+      "text": "This same pattern — viral spread, hubs amplifying, skeptics dampening — governs misinformation, news, trends, and social movements at every scale."
+    }
+  ]
+}

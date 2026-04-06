@@ -1,0 +1,58 @@
+{
+  "id": "ingroup_outgroup",
+  "domain": "social",
+  "title": "In-Group / Out-Group Formation",
+  "description": "Tajfel's minimal group paradigm made visible — how arbitrary categories create loyalty, bias, and discrimination.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "group_size": { "type": "int", "min": 20, "max": 100, "default": 60, "step": 5, "label": "Total Population" },
+    "boundary_strength": { "type": "float", "min": 0.2, "max": 0.9, "default": 0.6, "step": 0.05, "label": "Boundary Strength", "description": "How strongly group membership drives behaviour" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 10, "color": "#3B82F6", "borderColor": "#1D4ED8", "borderStyle": "solid", "glowColor": "#3B82F6", "glowIntensity": 0.2 },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#F97316", "borderColor": "#EA580C", "borderStyle": "solid", "glowColor": "#F97316", "glowIntensity": 0.2 }
+  },
+  "rules": [
+    {
+      "id": "ingroup_cooperation",
+      "conditions": [
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 50, "state": "alive" },
+        { "type": "random_chance", "probability": 0.015 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#60A5FA" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 50
+    },
+    {
+      "id": "outgroup_avoidance",
+      "conditions": [
+        { "type": "entity_state", "state": "unaware" },
+        { "type": "neighbor_within", "distance": 30, "state": "spreading" },
+        { "type": "random_chance", "probability": 0.02 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "deflect", "color": "#94A3B8" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 30
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_unaware", "countFormula": "Math.round(group_size / 2)", "distribution": "clustered", "tags": ["blue_team"] },
+    { "entityType": "person_spreading", "countFormula": "Math.round(group_size / 2)", "distribution": "clustered", "tags": ["orange_team"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Two groups — blue and orange. The division is completely arbitrary: Tajfel (1971) created groups by coin flip and still found immediate favouritism toward one's own group." },
+    { "tick": 400, "text": "Within-group cooperation increases. Blue individuals help blue neighbours. Orange helps orange. Resources flow within groups, not between them." },
+    { "tick": 800, "text": "Inter-group contact triggers avoidance. The groups are clustering spatially — a physical boundary forming from an invisible psychological one." },
+    { "tick": 1200, "text": "Each group now has different information, different resources, different norms. The initial arbitrary division has become a real social difference." },
+    { "tick": 1700, "text": "This is social identity theory. People derive self-esteem from their group's status — so they're motivated to see their group as better. Bias emerges from ordinary psychology, not hatred." },
+    { "tick": 2200, "text": "Contact theory (Allport, 1954): in-group/out-group bias weakens when groups cooperate toward shared goals under equal status. Division is learned. It can be unlearned." }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "antibiotic_resistance",
+  "domain": "biology",
+  "title": "Antibiotic Resistance Evolution",
+  "description": "Run multiple antibiotic courses and watch resistance build generation by generation — the crisis in real time.",
+  "maxTicks": 3600,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "courses": { "type": "int", "min": 1, "max": 4, "default": 3, "step": 1, "label": "Antibiotic Courses", "description": "How many rounds of treatment are applied" },
+    "incomplete_course": { "type": "float", "min": 0.0, "max": 0.7, "default": 0.4, "step": 0.1, "label": "Incomplete Rate", "description": "Fraction who stop treatment early (before all bacteria die)" }
+  },
+  "visualConfig": {
+    "bacterium_normal": { "shape": "circle", "radius": 7, "color": "#F97316", "borderColor": "#EA580C", "borderStyle": "solid" },
+    "bacterium_resistant": { "shape": "circle", "radius": 8, "color": "#DC2626", "borderColor": "#991B1B", "borderStyle": "double", "glowColor": "#DC2626", "glowIntensity": 0.5 },
+    "antibiotic_molecule": { "shape": "hexagon", "radius": 5, "color": "#E2E8F0", "borderColor": "#94A3B8", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "antibiotic_kills_susceptible",
+      "conditions": [
+        { "type": "entity_not_has_tag", "tag": "resistant" },
+        { "type": "entity_has_tag", "tag": "bacterium" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 16, "tag": "antibiotic" },
+        { "type": "random_chance", "probability": 0.06 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dying" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "die", "color": "#F97316" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 0
+    },
+    {
+      "id": "survivor_passes_resistance",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "resistant" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "bacterium_resistant", "count": 500 },
+        { "type": "random_chance", "probability": 0.014 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "bacterium_resistant", "position": { "x": 0, "y": 0 }, "tags": ["bacterium", "resistant"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#DC2626" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 90
+    },
+    {
+      "id": "dying_removed",
+      "conditions": [
+        { "type": "entity_state", "state": "dying" },
+        { "type": "ticks_in_state_gt", "ticks": 45 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "DESTROY_ENTITY", "entityId": "__self__" }
+      ],
+      "priority": 0,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "bacterium_normal", "countFormula": "80", "distribution": "random", "tags": ["bacterium"] },
+    { "entityType": "bacterium_resistant", "countFormula": "8", "distribution": "random", "tags": ["bacterium", "resistant"] },
+    { "entityType": "antibiotic_molecule", "countFormula": "120", "distribution": "brownian_field", "tags": ["antibiotic"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "First course of antibiotics begins. 90% of bacteria are susceptible (orange), 10% carry resistance genes (red)." },
+    { "tick": 300, "text": "Susceptible bacteria are dying rapidly. The 10% resistant survive untouched — the antibiotic is powerless against their modified cell walls." },
+    { "tick": 700, "text": "Course ends — either finished or abandoned early. Resistant bacteria repopulate freely. The colony is now majority-resistant." },
+    { "tick": 1200, "text": "Second course applied. This time, very few bacteria respond to treatment. The resistant population dominates." },
+    { "tick": 1800, "text": "Each course accelerates the problem. The antibiotic is selecting FOR resistance — killing the bacteria it can reach, leaving only the survivors who were already immune." },
+    { "tick": 2800, "text": "This is why WHO lists antibiotic resistance as one of the greatest threats to global health. Not because bacteria learned to fight back — because we selected the ones that were already resistant." }
+  ]
+}

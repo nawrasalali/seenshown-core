@@ -1,0 +1,65 @@
+{
+  "id": "influencer_vs_wordofmouth",
+  "domain": "social",
+  "title": "Influencer vs Word of Mouth",
+  "description": "Broadcast reach vs organic trust — which spreads more effectively and why marketing strategy depends on the answer.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "population": { "type": "int", "min": 60, "max": 150, "default": 100, "step": 10, "label": "Population" },
+    "influencer_reach": { "type": "int", "min": 5, "max": 40, "default": 20, "step": 5, "label": "Influencer Reach", "description": "How many people the influencer broadcasts to immediately" },
+    "wom_trust": { "type": "float", "min": 0.3, "max": 0.9, "default": 0.65, "step": 0.05, "label": "WoM Trust Factor", "description": "Trust multiplier for peer recommendations vs broadcast" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 9, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_heard": { "shape": "circle", "radius": 9, "color": "#F59E0B", "borderColor": "#D97706", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#A855F7", "borderColor": "#7C3AED", "borderStyle": "solid", "glowColor": "#A855F7", "glowIntensity": 0.5 },
+    "person_dismissed": { "shape": "circle", "radius": 10, "color": "#22C55E", "borderColor": "#16A34A", "borderStyle": "solid" },
+    "person_immune": { "shape": "circle", "radius": 18, "color": "#F59E0B", "borderColor": "#D97706", "borderStyle": "solid", "glowColor": "#F59E0B", "glowIntensity": 0.8 }
+  },
+  "rules": [
+    {
+      "id": "influencer_broadcasts",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "influencer" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 200, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.08 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "spread", "color": "#F59E0B" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 10
+    },
+    {
+      "id": "wom_converts",
+      "conditions": [
+        { "type": "entity_state", "state": "dismissed" },
+        { "type": "entity_has_tag", "tag": "wom" },
+        { "type": "neighbor_within", "distance": 45, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.035 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "whisper", "color": "#22C55E" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 25
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_immune", "countFormula": "1", "distribution": "clustered", "tags": ["influencer"] },
+    { "entityType": "person_dismissed", "countFormula": "3", "distribution": "random", "tags": ["wom"] },
+    { "entityType": "person_unaware", "countFormula": "population - 4", "distribution": "random", "tags": [] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Gold large circle = influencer. Small green = word-of-mouth advocates. The influencer broadcasts to many instantly. WoM spreads slowly, peer to peer." },
+    { "tick": 200, "text": "The influencer reaches many quickly — yellow 'heard' signals spread wide. But 'heard' doesn't mean 'converted'. Broadcast creates awareness, not trust." },
+    { "tick": 600, "text": "Word-of-mouth is slower but converts more deeply. A recommendation from a friend triggers purchase behaviour at 4× the rate of advertising." },
+    { "tick": 1000, "text": "The influencer has plateaued — it reached everyone it could reach. WoM is still growing because each converted person becomes a new source." },
+    { "tick": 1500, "text": "For most products: influencers for initial awareness, WoM for conversion and loyalty. The mistake is paying for reach when you need trust." },
+    { "tick": 2000, "text": "Net Promoter Score measures this: how many customers become active word-of-mouth advocates? One advocate creates 3-5 customers over their lifetime." }
+  ]
+}

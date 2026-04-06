@@ -1,0 +1,46 @@
+{
+  "id": "social_norm_tipping",
+  "domain": "social",
+  "title": "Social Norm Tipping Point",
+  "description": "How does a minority opinion become the majority norm? Watch the threshold at which preference cascades become inevitable.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "population": { "type": "int", "min": 40, "max": 120, "default": 80, "step": 10, "label": "Population", "description": "Group size" },
+    "initial_adopters": { "type": "float", "min": 0.05, "max": 0.45, "default": 0.2, "step": 0.05, "label": "Initial Adopters", "description": "Fraction who start with the new norm" },
+    "conformity_threshold": { "type": "float", "min": 0.1, "max": 0.5, "default": 0.25, "step": 0.05, "label": "Conformity Threshold", "description": "Fraction needed before others switch (lower = faster cascade)" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 10, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#2DD4BF", "borderColor": "#0D9488", "borderStyle": "solid", "glowColor": "#2DD4BF", "glowIntensity": 0.4 }
+  },
+  "rules": [
+    {
+      "id": "threshold_reached_convert",
+      "conditions": [
+        { "type": "entity_state", "state": "unaware" },
+        { "type": "neighbor_within", "distance": 60, "state": "spreading" },
+        { "type": "random_chance", "probability": 0.025 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "spreading" },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "signal", "color": "#2DD4BF" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_unaware", "countFormula": "Math.round(population * (1 - initial_adopters))", "distribution": "random", "tags": ["old_norm"] },
+    { "entityType": "person_spreading", "countFormula": "Math.round(population * initial_adopters)", "distribution": "clustered", "tags": ["new_norm"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Teal = people with the new behaviour/belief. Grey = people following the old norm. The new norm starts as a small minority." },
+    { "tick": 300, "text": "Early adopters influence those nearby. Each convert is one more signal to the undecided: 'this is becoming normal'." },
+    { "tick": 600, "text": "The cascade begins. Once enough people adopt the new norm, the social pressure overwhelms the cost of switching." },
+    { "tick": 1000, "text": "Notice the wave — it doesn't spread uniformly. It spreads faster where adopters are clustered, slower at the edges of the group." },
+    { "tick": 1500, "text": "The tipping point is behind us. The minority has become the majority. The old norm is now the deviant behaviour." },
+    { "tick": 2000, "text": "This pattern governs: smoking becoming socially unacceptable, seatbelt adoption, marriage equality, mask-wearing. Small committed minorities + social proof = tipping point." }
+  ]
+}

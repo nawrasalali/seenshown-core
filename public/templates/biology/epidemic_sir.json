@@ -1,0 +1,61 @@
+{
+  "id": "epidemic_sir",
+  "domain": "biology",
+  "title": "Epidemic Spread (SIR Model)",
+  "description": "The classic Susceptible → Infected → Recovered model. Watch herd immunity emerge and the epidemic curve in real time.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "population": { "type": "int", "min": 50, "max": 200, "default": 120, "step": 10, "label": "Population", "description": "Total population size" },
+    "transmission_rate": { "type": "float", "min": 0.1, "max": 1.0, "default": 0.55, "step": 0.05, "label": "Transmission Rate (R₀)", "description": "How easily the disease spreads on contact" },
+    "recovery_time": { "type": "int", "min": 60, "max": 400, "default": 200, "step": 20, "label": "Recovery Time", "description": "Ticks until an infected person recovers" },
+    "initial_infected": { "type": "int", "min": 1, "max": 5, "default": 2, "step": 1, "label": "Patient Zero(s)", "description": "Initial infected individuals" }
+  },
+  "visualConfig": {
+    "person_unaware": { "shape": "circle", "radius": 9, "color": "#475569", "borderColor": "#334155", "borderStyle": "solid" },
+    "person_spreading": { "shape": "circle", "radius": 10, "color": "#EF4444", "borderColor": "#DC2626", "borderStyle": "solid", "glowColor": "#EF4444", "glowIntensity": 0.4 },
+    "person_dismissed": { "shape": "circle", "radius": 9, "color": "#22C55E", "borderColor": "#16A34A", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "infected_spreads",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "neighbor_within", "distance": 35, "state": "unaware" },
+        { "type": "random_chance", "probability": 0.03 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "spread", "color": "#EF4444" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 15
+    },
+    {
+      "id": "infected_recovers",
+      "conditions": [
+        { "type": "entity_state", "state": "spreading" },
+        { "type": "ticks_in_state_gt", "ticks": 200 },
+        { "type": "random_chance", "probability": 0.015 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dismissed" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 0
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "person_unaware", "countFormula": "population - initial_infected", "distribution": "random", "tags": ["person", "susceptible"] },
+    { "entityType": "person_spreading", "countFormula": "initial_infected", "distribution": "clustered", "tags": ["person", "infected"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "2 infected individuals in a population of 120. Everyone else is susceptible — no prior immunity." },
+    { "tick": 200, "text": "Early exponential growth. Each infected person contacts multiple susceptibles. The epidemic is doubling rapidly." },
+    { "tick": 500, "text": "The curve is steepening. This is the phase where hospitals fill up — most people infected in a short window." },
+    { "tick": 800, "text": "Peak infection. Notice it slows not because the virus weakened, but because susceptible individuals are running out — recovered individuals block transmission chains." },
+    { "tick": 1200, "text": "The epidemic is declining. This is herd immunity in action — enough recovered individuals breaking chains of transmission to protect the remaining susceptible." },
+    { "tick": 1800, "text": "Not everyone got infected. The epidemic ended before reaching everyone because transmission chains broke. This is why vaccination works — it creates immune individuals without infection." }
+  ]
+}

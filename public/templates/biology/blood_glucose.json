@@ -1,0 +1,60 @@
+{
+  "id": "blood_glucose",
+  "domain": "biology",
+  "title": "Blood Glucose Regulation",
+  "description": "The pancreas as a thermostat — watch insulin and glucagon maintain blood sugar in a tight range through negative feedback.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "meal_size": { "type": "float", "min": 0.2, "max": 1.0, "default": 0.7, "step": 0.1, "label": "Meal Size", "description": "How much glucose enters the bloodstream" },
+    "insulin_response": { "type": "float", "min": 0.3, "max": 1.0, "default": 0.75, "step": 0.05, "label": "Insulin Response", "description": "Pancreatic beta cell sensitivity (low = Type 2 diabetes pattern)" }
+  },
+  "visualConfig": {
+    "glucose_molecule": { "shape": "hexagon", "radius": 6, "color": "#FCD34D", "borderColor": "#F59E0B", "borderStyle": "solid", "glowColor": "#FCD34D", "glowIntensity": 0.3 },
+    "insulin_molecule": { "shape": "circle", "radius": 5, "color": "#34D399", "borderColor": "#10B981", "borderStyle": "solid", "glowColor": "#34D399", "glowIntensity": 0.4 },
+    "host_cell": { "shape": "circle", "radius": 18, "color": "#1E3A5F", "borderColor": "#2563EB", "borderStyle": "solid" }
+  },
+  "rules": [
+    {
+      "id": "insulin_clears_glucose",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "insulin" },
+        { "type": "neighbor_within", "distance": 25, "tag": "glucose" },
+        { "type": "random_chance", "probability": 0.08 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "absorb", "color": "#34D399" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 15
+    },
+    {
+      "id": "glucose_triggers_insulin",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "glucose" },
+        { "type": "world_count_lt", "entityType": "insulin_molecule", "count": 80 },
+        { "type": "random_chance", "probability": 0.006 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "insulin_molecule", "position": { "x": 0, "y": 0 }, "tags": ["insulin"] }
+      ],
+      "priority": 2,
+      "cooldownTicks": 30
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "glucose_molecule", "countFormula": "Math.round(meal_size * 120)", "distribution": "random", "tags": ["glucose"] },
+    { "entityType": "insulin_molecule", "countFormula": "5", "distribution": "random", "tags": ["insulin"] },
+    { "entityType": "host_cell", "countFormula": "8", "distribution": "random", "tags": ["body_cell"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "After a meal, glucose (yellow hexagons) floods the bloodstream. Blood glucose spikes. Pancreatic beta cells detect this and release insulin (green circles)." },
+    { "tick": 200, "text": "Insulin acts as a key — it binds to receptors on cells, unlocking glucose channels. Cells absorb glucose for energy. Blood levels fall." },
+    { "tick": 500, "text": "As glucose falls, the insulin signal weakens. The pancreas reduces insulin release. This is negative feedback — the system corrects itself." },
+    { "tick": 900, "text": "If blood glucose drops too low, the pancreas releases glucagon instead — the opposite hormone. It signals the liver to release stored glucose. Balance restored." },
+    { "tick": 1400, "text": "In Type 1 diabetes, beta cells are destroyed — no insulin is produced. In Type 2, cells become resistant to insulin — the keys no longer fit the locks." },
+    { "tick": 2000, "text": "This tight 4-8 mmol/L blood glucose range is critical. Too high: damages blood vessels. Too low: brain stops functioning within minutes." }
+  ]
+}

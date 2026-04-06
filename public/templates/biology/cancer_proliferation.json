@@ -1,0 +1,77 @@
+{
+  "id": "cancer_proliferation",
+  "domain": "biology",
+  "title": "Cancer Cell Proliferation",
+  "description": "Contrast normal controlled cell division with cancerous uncontrolled growth — and watch how tumours form.",
+  "maxTicks": 2400,
+  "ticksPerSecond": 60,
+  "parameters": {
+    "normal_cells": { "type": "int", "min": 10, "max": 40, "default": 20, "step": 2, "label": "Normal Cells", "description": "Healthy cells with division limits" },
+    "cancer_seed": { "type": "int", "min": 1, "max": 5, "default": 2, "step": 1, "label": "Cancer Seed", "description": "Initial mutated cells that ignore division signals" }
+  },
+  "visualConfig": {
+    "host_cell": { "shape": "circle", "radius": 14, "color": "#2DD4BF", "borderColor": "#0D9488", "borderStyle": "solid", "glowColor": "#2DD4BF", "glowIntensity": 0.2 },
+    "bacterium_resistant": { "shape": "circle", "radius": 14, "color": "#DC2626", "borderColor": "#991B1B", "borderStyle": "jagged", "glowColor": "#DC2626", "glowIntensity": 0.5 }
+  },
+  "rules": [
+    {
+      "id": "normal_cell_divides_limited",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "normal" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "host_cell", "count": 50 },
+        { "type": "random_chance", "probability": 0.004 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "host_cell", "position": { "x": 0, "y": 0 }, "tags": ["normal"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#2DD4BF" }
+      ],
+      "priority": 2,
+      "cooldownTicks": 300
+    },
+    {
+      "id": "cancer_cell_ignores_limits",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "cancer" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "world_count_lt", "entityType": "bacterium_resistant", "count": 500 },
+        { "type": "random_chance", "probability": 0.015 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SPAWN_ENTITY", "template": "bacterium_resistant", "position": { "x": 0, "y": 0 }, "tags": ["cancer"] },
+        { "type": "EMIT_PARTICLE", "position": { "x": 0, "y": 0 }, "effect": "divide", "color": "#DC2626" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 80
+    },
+    {
+      "id": "tumour_displaces_normal",
+      "conditions": [
+        { "type": "entity_has_tag", "tag": "normal" },
+        { "type": "entity_state", "state": "alive" },
+        { "type": "neighbor_within", "distance": 20, "tag": "cancer" },
+        { "type": "random_chance", "probability": 0.003 }
+      ],
+      "conditionLogic": "AND",
+      "mutations": [
+        { "type": "SET_STATE", "entityId": "__self__", "state": "dying" }
+      ],
+      "priority": 1,
+      "cooldownTicks": 200
+    }
+  ],
+  "initialSpawn": [
+    { "entityType": "host_cell", "countFormula": "normal_cells", "distribution": "random", "tags": ["normal"] },
+    { "entityType": "bacterium_resistant", "countFormula": "cancer_seed", "distribution": "clustered", "tags": ["cancer"] }
+  ],
+  "narration": [
+    { "tick": 0, "text": "Teal = normal cells. Red = cancer cells. Normal cells have stop signals — they halt division when tissue is full." },
+    { "tick": 300, "text": "Cancer cells have mutations that disable these stop signals. They divide whether or not the tissue needs more cells." },
+    { "tick": 700, "text": "The tumour is growing. Cancer cells outpace normal cells because they divide 3-4× faster with no limit." },
+    { "tick": 1200, "text": "Normal cells are being physically displaced — crowded out by the tumour mass competing for space, oxygen, and nutrients." },
+    { "tick": 1700, "text": "This is how a benign tumour becomes malignant — when cancer cells gain the ability to invade surrounding tissue and trigger blood vessel growth to feed the tumour." },
+    { "tick": 2100, "text": "Chemotherapy works by targeting rapidly dividing cells. The side effect: it also hits fast-dividing healthy cells — hair follicles, gut lining, bone marrow." }
+  ]
+}

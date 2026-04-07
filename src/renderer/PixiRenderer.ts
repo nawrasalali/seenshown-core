@@ -1,282 +1,212 @@
-// ============================================
-// PIXI RENDERER
-// WebGL simulation canvas via PixiJS v7
-// Entities → sprites, particles, connections
-// ============================================
+// ========================================
+// PIXI RENDERER — FIXED
+// Reads visualConfig from template JSON
+// Draws correct shapes: circle, triangle, hexagon, spike
+// ========================================
 
 import { useEffect, useRef, useCallback } from 'react';
 import * as PIXI from 'pixi.js';
-import { Entity, EntityVisualConfig } from '../types/index';
 import { runtime } from '../store/simulationStore';
 import { useSimulationStore } from '../store/simulationStore';
 
-// Visual config per entity type (hardcoded for MVP — loaded from template later)
-const VISUAL_DEFAULTS: Record<string, { color: number; radius: number; glowColor?: number }> = {
-  bacterium_normal:    { color: 0xF97316, radius: 8,  glowColor: 0xF97316 },
-  bacterium_resistant: { color: 0xDC2626, radius: 9,  glowColor: 0xDC2626 },
-  antibiotic_molecule: { color: 0xE2E8F0, radius: 5,  glowColor: 0xFFFFFF },
-  virus:               { color: 0xA855F7, radius: 6,  glowColor: 0xA855F7 },
-  host_cell:           { color: 0x2DD4BF, radius: 22, glowColor: 0x2DD4BF },
-  immune_cell:         { color: 0x3B82F6, radius: 14, glowColor: 0x3B82F6 },
-  person_unaware:      { color: 0x475569, radius: 10 },
-  person_heard:        { color: 0xF59E0B, radius: 10, glowColor: 0xFCD34D },
-  person_spreading:    { color: 0xEF4444, radius: 11, glowColor: 0xFCA5A5 },
-  person_dismissed:    { color: 0x22C55E, radius: 10 },
-  person_immune:       { color: 0x6366F1, radius: 10 },
-};
+function hexStrToNum(hex: string): number {
+  return parseInt(hex.replace('#', ''), 16);
+}
+
+function drawEntityShape(
+  g: PIXI.Graphics,
+  shape: string,
+  radius: number,
+  fillColor: number,
+  borderColor: number,
+  alpha: number,
+  glowColor?: number,
+  glowIntensity?: number
+) {
+  g.clear();
+  if (glowColor !== undefined && glowIntensity && glowIntensity > 0) {
+    g.beginFill(glowColor, glowIntensity * alpha * 0.4);
+    g.drawCircle(0, 0, radius * 2.2);
+    g.endFill();
+  }
+  g.lineStyle(1.5, borderColor || fillColor, alpha);
+  g.beginFill(fillColor, alpha);
+  switch (shape) {
+    case 'triangle': {
+      const r = radius;
+      g.moveTo(0, -r);
+      g.lineTo(r * 0.866, r * 0.5);
+      g.lineTo(-r * 0.866, r * 0.5);
+      g.closePath();
+      break;
+    }
+    case 'hexagon': {
+      const r = radius;
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i - Math.PI / 6;
+        if (i === 0) g.moveTo(r * Math.cos(angle), r * Math.sin(angle));
+        else g.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+      }
+      g.closePath();
+      break;
+    }
+    case 'spike': {
+      const r = radius;
+      const spikes = 8;
+      const innerR = r * 0.65;
+      for (let i = 0; i < spikes * 2; i++) {
+        const angle = (Math.PI / spikes) * i - Math.PI / 2;
+        const dist = i % 2 === 0 ? r : innerR;
+        if (i === 0) g.moveTo(dist * Math.cos(angle), dist * Math.sin(angle));
+        else g.lineTo(dist * Math.cos(angle), dist * Math.sin(angle));
+      }
+      g.closePath();
+      break;
+    }
+    case 'diamond': {
+      const r = radius;
+      g.moveTo(0, -r); g.lineTo(r * 0.6, 0); g.lineTo(0, r); g.lineTo(-r * 0.6, 0); g.closePath();
+      break;
+    }
+    case 'star': {
+      const outerR = radius; const innerR = radius * 0.45; const points = 5;
+      for (let i = 0; i < points * 2; i++) {
+        const angle = (Math.PI / points) * i - Math.PI / 2;
+        const r = i % 2 === 0 ? outerR : innerR;
+        if (i === 0) g.moveTo(r * Math.cos(angle), r * Math.sin(angle));
+        else g.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+      }
+      g.closePath();
+      break;
+    }
+    default:
+      g.drawCircle(0, 0, radius);
+  }
+  g.endFill();
+}
+
+function getVisualConfig(entityType: string, templateVisualConfig: Record<string, any> | null) {
+  if (templateVisualConfig && templateVisualConfig[entityType]) {
+    const cfg = templateVisualConfig[entityType];
+    return {
+      shape: cfg.shape || 'circle',
+      radius: cfg.radius || 8,
+      color: hexStrToNum(cfg.color || '#888888'),
+      borderColor: hexStrToNum(cfg.borderColor || cfg.color || '#888888'),
+      glowColor: cfg.glowColor ? hexStrToNum(cfg.glowColor) : undefined,
+      glowIntensity: cfg.glowIntensity || 0,
+    };
+  }
+  const fallbacks: Record<string, any> = {
+    virus:               { shape: 'triangle', radius: 7,  color: 0xA855F7, borderColor: 0x7C3AED, glowColor: 0xA855F7, glowIntensity: 0.5 },
+    host_cell:           { shape: 'circle',   radius: 22, color: 0x2DD4BF, borderColor: 0x0D9488, glowColor: 0x2DD4BF, glowIntensity: 0.2 },
+    bacterium_normal:    { shape: 'spike',    radius: 8,  color: 0xF97316, borderColor: 0xC2410C, glowColor: 0xF97316, glowIntensity: 0.3 },
+    bacterium_resistant: { shape: 'spike',    radius: 9,  color: 0xDC2626, borderColor: 0x991B1B, glowColor: 0xDC2626, glowIntensity: 0.4 },
+    antibiotic_molecule: { shape: 'diamond',  radius: 5,  color: 0xE2E8F0, borderColor: 0x94A3B8 },
+    immune_cell:         { shape: 'hexagon',  radius: 14, color: 0x3B82F6, borderColor: 0x1D4ED8, glowColor: 0x3B82F6, glowIntensity: 0.3 },
+    person_unaware:      { shape: 'circle',   radius: 10, color: 0x475569, borderColor: 0x334155 },
+    person_heard:        { shape: 'circle',   radius: 10, color: 0xF59E0B, borderColor: 0xD97706, glowColor: 0xF59E0B, glowIntensity: 0.4 },
+    person_spreading:    { shape: 'star',     radius: 11, color: 0xEF4444, borderColor: 0xDC2626, glowColor: 0xEF4444, glowIntensity: 0.5 },
+    person_dismissed:    { shape: 'circle',   radius: 10, color: 0x22C55E, borderColor: 0x16A34A },
+    person_immune:       { shape: 'hexagon',  radius: 10, color: 0x6366F1, borderColor: 0x4F46E5 },
+  };
+  return fallbacks[entityType] || { shape: 'circle', radius: 8, color: 0x64748B, borderColor: 0x475569 };
+}
 
 const STATE_ALPHA: Record<string, number> = {
-  alive:     1.0,
-  active:    1.0,
-  spreading: 1.0,
-  unaware:   0.75,
-  heard:     1.0,
-  dismissed: 1.0,
-  infected:  1.0,
-  dying:     0.4,
-  dead:      0.0,
+  alive: 1.0, active: 1.0, spreading: 1.0, unaware: 0.75,
+  heard: 1.0, dismissed: 1.0, infected: 1.0, dying: 0.4, dead: 0.0,
 };
-
-interface ParticleEffect {
-  x: number; y: number;
-  vx: number; vy: number;
-  color: number;
-  alpha: number;
-  life: number;
-  maxLife: number;
-  radius: number;
-  type: string;
-}
 
 export function usePixiRenderer(containerRef: React.RefObject<HTMLDivElement>) {
   const appRef = useRef<PIXI.Application | null>(null);
   const entitySprites = useRef<Map<string, PIXI.Graphics>>(new Map());
-  const particleLayer = useRef<PIXI.Container | null>(null);
   const entityLayer = useRef<PIXI.Container | null>(null);
-  const particles = useRef<ParticleEffect[]>([]);
-  const selectEntity = useSimulationStore(s => s.selectEntity);
   const zoom = useSimulationStore(s => s.ui.zoom);
 
-  // Init PixiJS
   useEffect(() => {
     if (!containerRef.current || appRef.current) return;
-
     const app = new PIXI.Application({
       width: containerRef.current.clientWidth || 1100,
-      height: containerRef.current.clientHeight || 680,
-      backgroundColor: 0x0A0E1A,
+      height: containerRef.current.clientHeight || 600,
+      backgroundColor: 0x080E1A,
       antialias: true,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
     });
-
     containerRef.current.appendChild(app.view as HTMLCanvasElement);
     appRef.current = app;
 
-    // Layers
     const bg = new PIXI.Container();
     const entities = new PIXI.Container();
-    const parts = new PIXI.Container();
-    const ui = new PIXI.Container();
-
-    app.stage.addChild(bg, entities, parts, ui);
+    app.stage.addChild(bg, entities);
     entityLayer.current = entities;
-    particleLayer.current = parts;
 
-    // Grid background
-    drawGrid(bg, app.screen.width, app.screen.height);
-
-    // Ticker: render particles + connections
-    app.ticker.add(() => {
-      updateParticles(parts);
-    });
+    const grid = new PIXI.Graphics();
+    grid.lineStyle(0.5, 0x1A2744, 0.4);
+    for (let x = 0; x < 1200; x += 40) { grid.moveTo(x, 0); grid.lineTo(x, 700); }
+    for (let y = 0; y < 700; y += 40) { grid.moveTo(0, y); grid.lineTo(1200, y); }
+    bg.addChild(grid);
 
     return () => {
-      app.destroy(true, { children: true, texture: true });
+      app.destroy(true);
       appRef.current = null;
       entitySprites.current.clear();
     };
-  }, [containerRef]);
+  }, []);
 
-  // Zoom
   useEffect(() => {
-    if (!entityLayer.current || !particleLayer.current) return;
+    if (!entityLayer.current) return;
     entityLayer.current.scale.set(zoom);
-    particleLayer.current.scale.set(zoom);
-    // Center pivot
-    entityLayer.current.pivot.set(550, 340);
-    entityLayer.current.position.set(
-      (appRef.current?.screen.width ?? 1100) / 2,
-      (appRef.current?.screen.height ?? 680) / 2
-    );
   }, [zoom]);
 
-  // Render entities (called every tick from runtime event)
-  const renderEntities = useCallback(() => {
-    if (!entityLayer.current || !appRef.current) return;
-
+  const renderFrame = useCallback(() => {
     const layer = entityLayer.current;
-    const liveEntities = runtime.pool.getLiving();
-    const liveIds = new Set(liveEntities.map(e => e.id));
+    if (!layer) return;
 
-    // Remove sprites for destroyed entities
-    for (const [id, sprite] of entitySprites.current) {
-      if (!liveIds.has(id)) {
-        layer.removeChild(sprite);
-        sprite.destroy();
+    const entities = runtime?.pool?.entities;
+    const graph = runtime?.graph;
+    const visualConfig = graph?.visualConfig || null;
+
+    if (!entities) return;
+
+    const activeIds = new Set<string>();
+
+    for (const [id, entity] of entities) {
+      if (!entity || entity.state === 'dead') continue;
+      activeIds.add(id);
+
+      const cfg = getVisualConfig(entity.type, visualConfig);
+      const alpha = STATE_ALPHA[entity.state] ?? 1.0;
+
+      let g = entitySprites.current.get(id);
+      if (!g) {
+        g = new PIXI.Graphics();
+        layer.addChild(g);
+        entitySprites.current.set(id, g);
+      }
+
+      drawEntityShape(g, cfg.shape, cfg.radius, cfg.color, cfg.borderColor, alpha, cfg.glowColor, cfg.glowIntensity);
+      g.x = entity.position.x;
+      g.y = entity.position.y;
+      g.alpha = alpha;
+
+      if (entity.state === 'spreading' || entity.state === 'infected') {
+        const pulse = 1 + Math.sin(Date.now() * 0.005 + entity.position.x) * 0.08;
+        g.scale.set(pulse);
+      } else {
+        g.scale.set(1);
+      }
+    }
+
+    for (const [id, g] of entitySprites.current) {
+      if (!activeIds.has(id)) {
+        layer.removeChild(g);
+        g.destroy();
         entitySprites.current.delete(id);
       }
     }
-
-    // Update or create sprites
-    for (const entity of liveEntities) {
-      let sprite = entitySprites.current.get(entity.id);
-
-      if (!sprite) {
-        sprite = createEntitySprite(entity);
-        sprite.interactive = true;
-        sprite.cursor = 'pointer';
-        sprite.on('pointerdown', () => selectEntity(entity));
-        layer.addChild(sprite);
-        entitySprites.current.set(entity.id, sprite);
-      }
-
-      // Update position + visual state
-      const visual = VISUAL_DEFAULTS[entity.type] ?? { color: 0x888888, radius: 8 };
-      const alpha = STATE_ALPHA[entity.state] ?? 1.0;
-
-      // Smooth visual position interpolation (renderer only — actual position owned by engine)
-      sprite.x += (entity.position.x - sprite.x) * 0.18;
-      sprite.y += (entity.position.y - sprite.y) * 0.18;
-
-      // Alpha fade
-      sprite.alpha += (alpha - sprite.alpha) * 0.1;
-
-      // Pulse for spreading/infected states
-      if (entity.state === 'spreading' || entity.state === 'infected') {
-        const pulse = 1 + Math.sin(Date.now() * 0.004 + entity.id.charCodeAt(2)) * 0.08;
-        sprite.scale.set(pulse);
-      } else if (entity.state === 'dying') {
-        sprite.scale.set(Math.max(0.05, sprite.scale.x - 0.004));
-      } else {
-        sprite.scale.x += (1 - sprite.scale.x) * 0.1;
-        sprite.scale.y = sprite.scale.x;
-      }
-    }
-  }, [selectEntity]);
-
-  // Emit a particle effect
-  const emitParticle = useCallback((x: number, y: number, type: string, color: number) => {
-    const count = type === 'die' ? 8 : type === 'divide' ? 6 : 4;
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
-      const speed = 0.8 + Math.random() * 1.5;
-      particles.current.push({
-        x, y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        color,
-        alpha: 0.9,
-        life: 0,
-        maxLife: 40 + Math.random() * 20,
-        radius: type === 'die' ? 4 : 3,
-        type,
-      });
-    }
   }, []);
 
-  // Wire to runtime
-  useEffect(() => {
-    const unsubscribe = runtime.on((event) => {
-      if (event.type === 'tick') {
-        renderEntities();
-      }
-      if (event.type === 'mutation') {
-        for (const mutation of event.mutations) {
-          if (mutation.type === 'EMIT_PARTICLE') {
-            const colorHex = parseInt((mutation.color ?? '#ffffff').replace('#', ''), 16);
-            emitParticle(mutation.position.x, mutation.position.y, mutation.effect, colorHex);
-          }
-        }
-      }
-    });
-    return unsubscribe;
-  }, [renderEntities, emitParticle]);
-
-  function updateParticles(layer: PIXI.Container) {
-    layer.removeChildren();
-    const alive: ParticleEffect[] = [];
-
-    for (const p of particles.current) {
-      p.life++;
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vx *= 0.95;
-      p.vy *= 0.95;
-      p.alpha = (1 - p.life / p.maxLife) * 0.9;
-
-      if (p.life < p.maxLife) {
-        const g = new PIXI.Graphics();
-        g.beginFill(p.color, p.alpha);
-        g.drawCircle(0, 0, p.radius * (1 - p.life / p.maxLife));
-        g.endFill();
-        g.x = p.x;
-        g.y = p.y;
-        layer.addChild(g);
-        alive.push(p);
-      }
-    }
-    particles.current = alive;
-  }
-}
-
-function createEntitySprite(entity: Entity): PIXI.Graphics {
-  const visual = VISUAL_DEFAULTS[entity.type] ?? { color: 0x888888, radius: 8 };
-  const g = new PIXI.Graphics();
-
-  // Glow effect
-  if (visual.glowColor) {
-    g.beginFill(visual.glowColor, 0.12);
-    g.drawCircle(0, 0, visual.radius * 2.2);
-    g.endFill();
-  }
-
-  // Main body
-  g.beginFill(visual.color, 1);
-  g.lineStyle(1.5, darken(visual.color, 0.7), 0.8);
-  g.drawCircle(0, 0, visual.radius);
-  g.endFill();
-
-  // Inner highlight
-  g.beginFill(0xFFFFFF, 0.15);
-  g.drawCircle(-visual.radius * 0.2, -visual.radius * 0.2, visual.radius * 0.4);
-  g.endFill();
-
-  g.x = entity.position.x;
-  g.y = entity.position.y;
-
-  return g;
-}
-
-function drawGrid(container: PIXI.Container, width: number, height: number) {
-  const g = new PIXI.Graphics();
-  g.lineStyle(1, 0x1E293B, 0.4);
-
-  for (let x = 0; x < width; x += 40) {
-    g.moveTo(x, 0);
-    g.lineTo(x, height);
-  }
-  for (let y = 0; y < height; y += 40) {
-    g.moveTo(0, y);
-    g.lineTo(width, y);
-  }
-
-  container.addChild(g);
-}
-
-function darken(color: number, factor: number): number {
-  const r = ((color >> 16) & 0xFF) * factor;
-  const g = ((color >> 8) & 0xFF) * factor;
-  const b = (color & 0xFF) * factor;
-  return (Math.round(r) << 16) | (Math.round(g) << 8) | Math.round(b);
+  return { renderFrame };
 }

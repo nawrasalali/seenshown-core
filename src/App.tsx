@@ -17,6 +17,9 @@ import { useUIStore }             from './store/uiStore';
 
 // ---- Main product page ----
 function MainApp() {
+  // Init ElevenLabs voice (Jeff) on mount
+  useEffect(() => { initVoice(); }, []);
+
   const [showLibrary, setShowLibrary] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
 

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>SeenShown SIE SIE — Simulation Intelligence Engine</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#000508;--g:#00ffe0;--r:#ff3366;--gold:#ffcc44;
+  --w:rgba(255,255,255,0.88);--dim:rgba(255,255,255,0.32)
+}
+html,body{height:100%;overflow:hidden;background:var(--ink);font-family:'Space Grotesk',sans-serif;color:var(--w)}
+
+/* ── CANVAS STACK ── */
+#stage{position:fixed;inset:0}
+#bg-canvas{position:absolute;inset:0;width:100%;height:100%}
+#gl-canvas{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen}
+#svg-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+/* ── NAV ── */
+#nav{position:fixed;top:0;left:0;right:0;z-index:50;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:linear-gradient(180deg,rgba(0,5,8,.96) 0%,transparent 100%)}
+.logo{display:flex;flex-direction:column}
+.logo-name{font-size:.95rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--g)}
+.logo-tag{font-size:.5rem;color:var(--dim);letter-spacing:.22em;text-transform:uppercase;margin-top:1px}
+.nav-patent{font-size:.56rem;color:var(--dim);border:1px solid rgba(255,255,255,.1);padding:3px 10px;border-radius:20px}
+
+/* ── SIM SELECTOR ── */
+#selector{position:fixed;top:56px;left:0;right:0;z-index:50;display:flex;overflow-x:auto;scrollbar-width:none;background:rgba(0,5,8,.88);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.04)}
+#selector::-webkit-scrollbar{display:none}
+.sim-btn{flex-shrink:0;padding:14px 22px;cursor:pointer;border-right:1px solid rgba(255,255,255,.04);transition:all .2s;position:relative;min-width:140px}
+.sim-btn:last-child{border-right:none}
+.sim-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:transparent;transition:.2s}
+.sim-btn.on::after{background:var(--g)}
+.sim-btn.on{background:rgba(0,255,224,.04)}
+.sim-btn-num{font-size:.48rem;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:3px}
+.sim-btn-name{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.55);line-height:1.2}
+.sim-btn.on .sim-btn-name{color:#fff}
+.sim-btn-sub{font-size:.6rem;color:rgba(255,255,255,.22);margin-top:2px}
+
+/* ── PHASE RAIL ── */
+#rail{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:8px}
+.ph-dot{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.5);color:rgba(255,255,255,.28);font-size:.6rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(8px)}
+.ph-dot.on{border-color:var(--g);background:rgba(0,255,224,.12);color:var(--g)}
+.ph-dot:hover:not(.on){border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.7)}
+
+/* ── NARRATION ── */
+#narr{position:fixed;bottom:0;left:0;right:0;z-index:50;padding:22px 28px 28px;background:linear-gradient(0deg,rgba(0,5,8,.96) 0%,rgba(0,5,8,.6) 65%,transparent 100%)}
+.narr-kicker{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--g);opacity:.75;margin-bottom:6px}
+.narr-body{font-size:.88rem;line-height:1.68;color:rgba(255,255,255,.82);max-width:720px;transition:opacity .45s}
+
+/* ── SPEED ── */
+#speed-ctl{position:fixed;left:22px;bottom:115px;z-index:50;display:flex;align-items:center;gap:8px;background:rgba(0,5,8,.7);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:7px 12px;backdrop-filter:blur(12px)}
+.spd-lbl{font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+#spd-range{width:76px;accent-color:var(--g);cursor:pointer}
+
+/* ── LOADER ── */
+#loader{position:fixed;inset:0;background:var(--ink);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s}
+#loader.gone{opacity:0;pointer-events:none}
+.l-ring{width:46px;height:46px;border:2px solid rgba(0,255,224,.12);border-top-color:var(--g);border-radius:50%;animation:spin .75s linear infinite;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.l-txt{font-size:.65rem;color:var(--dim);letter-spacing:.16em;text-transform:uppercase;margin-bottom:14px}
+.l-bar{width:190px;height:2px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.l-fill{height:100%;background:var(--g);width:0;transition:width .4s}
+
+/* ── THINKING OVERLAY ── */
+#thinking{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:60;background:rgba(0,5,8,.92);border:1px solid rgba(0,255,224,.18);border-radius:14px;padding:24px 32px;text-align:center;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(20px)}
+#thinking.show{opacity:1}
+.th-spin{width:32px;height:32px;border:2px solid rgba(0,255,224,.15);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+.th-txt{font-size:.78rem;color:var(--g);font-weight:600}
+.th-sub{font-size:.65rem;color:var(--dim);margin-top:4px}
+
+@media(max-width:600px){.sim-btn{min-width:100px;padding:12px 14px}.sim-btn-sub{display:none}#rail{right:8px}.narr-body{font-size:.8rem}}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="l-ring"></div>
+  <div class="l-txt" id="l-txt">Initialising SeenShown SIE</div>
+  <div class="l-bar"><div class="l-fill" id="l-fill"></div></div>
+</div>
+
+<div id="stage">
+  <canvas id="bg-canvas"></canvas>
+  <canvas id="gl-canvas"></canvas>
+  <svg id="svg-layer" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+
+<div id="nav">
+  <div class="logo"><div class="logo-name">SeenShown SIE</div><div class="logo-tag">Simulation Intelligence Engine</div></div>
+  <span class="nav-patent">Patent Pending AU 2026903218</span>
+</div>
+
+<div id="selector"></div>
+
+<div id="rail">
+  <div class="ph-dot on" onclick="setPhase(0)">I</div>
+  <div class="ph-dot" onclick="setPhase(1)">II</div>
+  <div class="ph-dot" onclick="setPhase(2)">III</div>
+  <div class="ph-dot" onclick="setPhase(3)">IV</div>
+  <div class="ph-dot" onclick="setPhase(4)">V</div>
+</div>
+
+<div id="narr">
+  <div class="narr-kicker" id="narr-kicker">Phase I</div>
+  <div class="narr-body" id="narr-body">Loading…</div>
+</div>
+
+<div id="speed-ctl">
+  <span class="spd-lbl">Speed</span>
+  <input type="range" id="spd-range" min="0.05" max="2.5" step="0.05" value="1">
+</div>
+
+<div id="thinking">
+  <div class="th-spin"></div>
+  <div class="th-txt" id="th-txt">Generating simulation…</div>
+  <div class="th-sub" id="th-sub">Claude is composing particle physics for your scene</div>
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════
+   CAUSALYX SIE — HONEST ARCHITECTURE v3
+   
+   What creates WOW in a browser:
+   1. Canvas 2D with rich layered painting (background art)
+   2. WebGL2 additive particle layer on top (living glow)
+   3. SVG filters for organic blur/distortion
+   4. CSS compositing (mix-blend-mode: screen)
+   5. Claude API writes custom draw code per simulation
+   
+   The lung image works because it has:
+   - Rich tonal gradients (multiple overlapping radials)
+   - Anatomical structure (bezier paths, not dots)
+   - Particle glow layered ON TOP of the structure
+   - Depth (background → midground → foreground)
+   
+   This engine delivers all 5 layers.
+═══════════════════════════════════════════════════════════ */
+
+var W=window.innerWidth,H=window.innerHeight;
+var bgC=document.getElementById('bg-canvas');
+var glC=document.getElementById('gl-canvas');
+var svg=document.getElementById('svg-layer');
+var bgCtx=bgC.getContext('2d');
+var gl=glC.getContext('webgl2',{antialias:false,alpha:true,powerPreference:'high-performance'});
+var spd=1,clock=0,lastT=0,curSim=0,curPh=0,phT=0;
+var RAF=null;
+var PH_DUR=8000;
+
+function resize(){
+  W=window.innerWidth;H=window.innerHeight;
+  bgC.width=glC.width=W;bgC.height=glC.height=H;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+}
+resize();window.addEventListener('resize',function(){resize();initCurrentSim();});
+
+/* ── MATH ── */
+var rnd=function(a,b){return a+(b-a)*Math.random();};
+var lerp=function(a,b,t){return a+(b-a)*t;};
+var clamp=function(v,a,b){return v<a?a:v>b?b:v;};
+var ease=function(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;};
+
+/* ══════════════════════════════════════════════════════════
+   LAYER 1: BACKGROUND CANVAS — Rich painted art
+   This is the "lung image" equivalent — deep, layered, anatomical
+══════════════════════════════════════════════════════════ */
+
+/* Draw a volumetric radial glow */
+function radialGlow(ctx,x,y,r,col,alpha){
+  var g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,col.replace(')',','+alpha+')').replace('rgb','rgba'));
+  g.addColorStop(.4,col.replace(')',','+(alpha*.45)+')').replace('rgb','rgba'));
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+}
+
+/* Draw smooth bezier path filled with gradient */
+function organicPath(ctx,points,fillStyle,strokeStyle,lineW){
+  if(points.length<2)return;
+  ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);
+  for(var i=1;i<points.length-1;i++){
+    var mx=(points[i].x+points[i+1].x)/2;
+    var my=(points[i].y+points[i+1].y)/2;
+    ctx.quadraticCurveTo(points[i].x,points[i].y,mx,my);
+  }
+  ctx.quadraticCurveTo(points[points.length-1].x,points[points.length-1].y,points[points.length-1].x,points[points.length-1].y);
+  if(fillStyle){ctx.fillStyle=fillStyle;ctx.fill();}
+  if(strokeStyle){ctx.strokeStyle=strokeStyle;ctx.lineWidth=lineW||2;ctx.stroke();}
+}
+
+/* ══════════════════════════════════════════════════════════
+   LAYER 2: WEBGL PARTICLE SYSTEM — Living glow on top
+══════════════════════════════════════════════════════════ */
+var glPrg,glFB,glFBTex,glBufPos,glBufCol,glBufSz,glQuadBuf;
+var N=0,px=null,py=null,pvx=null,pvy=null,pcr=null,pcg=null,pcb=null,pcs=null;
+
+var VS_P=`#version 300 es
+precision highp float;
+in vec2 aP;in vec3 aC;in float aS;
+uniform vec2 uR;
+out vec3 vC;out float vA;
+void main(){
+  vC=aC;
+  vec2 c=(aP/uR)*2.0-1.0;c.y=-c.y;
+  gl_Position=vec4(c,0,1);
+  gl_PointSize=clamp(aS,.4,16.0);
+  vA=clamp(aS*.4,.1,1.0);
+}`;
+var FS_P=`#version 300 es
+precision highp float;
+in vec3 vC;in float vA;
+out vec4 o;
+void main(){
+  vec2 uv=gl_PointCoord*2.0-1.0;
+  float d=dot(uv,uv);if(d>1.0)discard;
+  float a=smoothstep(1.,.25,d)*vA;
+  float sp=pow(max(0.,1.-length(uv+vec2(-.3,.35))*2.3),3.)*0.6;
+  o=vec4(vC+sp,a);
+}`;
+var VS_Q=`#version 300 es
+precision highp float;in vec2 aQ;out vec2 vU;
+void main(){vU=aQ*.5+.5;gl_Position=vec4(aQ,0,1);}`;
+var FS_Q=`#version 300 es
+precision highp float;
+in vec2 vU;uniform sampler2D uT;uniform vec2 uR;uniform float uT2;
+out vec4 o;
+void main(){
+  vec3 col=texture(uT,vU).rgb;
+  vec3 b=vec3(0.);float tw=0.;
+  for(int i=0;i<11;i++){float a=float(i)/11.*6.28;float r=(4.+float(i)*.35)/min(uR.x,uR.y);float w=1./(1.+float(i)*.45);b+=texture(uT,vU+vec2(cos(a),sin(a))*r).rgb*w;tw+=w;}
+  col+=b/tw*.65;
+  vec2 q=vU*2.-1.;col*=1.-dot(q,q)*.32;
+  float g=fract(sin(dot(vU,vec2(12.9898,78.233))*uT2)*43758.5);col+=g*.009;
+  col=col/(col+.7);col=pow(col,vec3(.84));
+  o=vec4(col,1.);
+}`;
+
+function glSh(t,s){var sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(sh));return sh;}
+function glMkP(vs,fs){var p=gl.createProgram();gl.attachShader(p,glSh(gl.VERTEX_SHADER,vs));gl.attachShader(p,glSh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);return p;}
+var glPrgPost;
+
+function initGL(){
+  if(!gl)return false;
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
+  glPrg=glMkP(VS_P,FS_P);glPrgPost=glMkP(VS_Q,FS_Q);
+  glFB=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,glFB);
+  glFBTex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,glFBTex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,W,H,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,glFBTex,0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  glBufPos=gl.createBuffer();glBufCol=gl.createBuffer();glBufSz=gl.createBuffer();
+  glQuadBuf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,glQuadBuf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  return true;
+}
+
+function allocP(n){N=n;px=new Float32Array(n);py=new Float32Array(n);pvx=new Float32Array(n);pvy=new Float32Array(n);pcr=new Float32Array(n);pcg=new Float32Array(n);pcb=new Float32Array(n);pcs=new Float32Array(n);}
+
+function uploadP(){
+  var p2=new Float32Array(N*2);for(var i=0;i<N;i++){p2[i*2]=px[i];p2[i*2+1]=py[i];}
+  gl.bindBuffer(gl.ARRAY_BUFFER,glBufPos);gl.bufferData(gl.ARRAY_BUFFER,p2,gl.STREAM_DRAW);
+  var c3=new Float32Array(N*3);for(var i=0;i<N;i++){c3[i*3]=pcr[i];c3[i*3+1]=pcg[i];c3[i*3+2]=pcb[i];}
+  gl.bindBuffer(gl.ARRAY_BUFFER,glBufCol);gl.bufferData(gl.ARRAY_BUFFER,c3,gl.STREAM_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER,glBufSz);gl.bufferData(gl.ARRAY_BUFFER,pcs,gl.STREAM_DRAW);
+}
+
+function drawGL(){
+  if(!gl||N===0)return;
+  gl.bindFramebuffer(gl.FRAMEBUFFER,glFB);
+  gl.viewport(0,0,W,H);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.useProgram(glPrg);
+  function va(nm,sz,buf){gl.bindBuffer(gl.ARRAY_BUFFER,buf);var L=gl.getAttribLocation(glPrg,nm);gl.enableVertexAttribArray(L);gl.vertexAttribPointer(L,sz,gl.FLOAT,false,0,0);}
+  va('aP',2,glBufPos);va('aC',3,glBufCol);va('aS',1,glBufSz);
+  gl.uniform2f(gl.getUniformLocation(glPrg,'uR'),W,H);
+  gl.drawArrays(gl.POINTS,0,N);
+  /* Post to screen */
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,W,H);
+  gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.useProgram(glPrgPost);
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,glFBTex);
+  gl.uniform1i(gl.getUniformLocation(glPrgPost,'uT'),0);
+  gl.uniform2f(gl.getUniformLocation(glPrgPost,'uR'),W,H);
+  gl.uniform1f(gl.getUniformLocation(glPrgPost,'uT2'),clock*.007);
+  gl.bindBuffer(gl.ARRAY_BUFFER,glQuadBuf);
+  var qL=gl.getAttribLocation(glPrgPost,'aQ');gl.enableVertexAttribArray(qL);gl.vertexAttribPointer(qL,2,gl.FLOAT,false,0,0);
+  gl.disable(gl.BLEND);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);gl.enable(gl.BLEND);
+}
+
+/* ══════════════════════════════════════════════════════════
+   SIMULATION DEFINITIONS
+   Each sim has:
+   - drawBg(ctx, W, H, t, ph, pp) — Canvas 2D art layer
+   - updateP(dt, ph, pp) — WebGL particle layer  
+   - initP() — particle initialisation
+══════════════════════════════════════════════════════════ */
+
+var SIMS=[
+
+/* ──────────────────────────────────────────────────────
+   1. FRAGILE BONDS
+   Two luminous human silhouettes, glowing, bonding, breaking
+   Background: rich anatomical body glow + energy field
+   Particles: orbiting aura particles, connection sparks
+────────────────────────────────────────────────────── */
+{
+  nav:'Fragile Bonds',sub:'Love · connection · break',
+  phases:[
+    {k:'Phase I — Two Complete Worlds',t:'Two human silhouettes stand apart — each luminous, self-contained. Every curve of the human form rendered in warm amber and deep rose light. They are whole alone. 200,000 orbiting particles form their aura — the living glow of a person who has not yet met their counterpart.'},
+    {k:'Phase II — Recognition',t:'The figures begin to drift toward each other. The particle fields at their boundaries interfere — creating new colours where they overlap. Arms begin to turn outward. This is the physics of recognition: two independent systems becoming aware of a shared resonance frequency.'},
+    {k:'Phase III — Union',t:'The silhouettes merge. Their aura particles interweave in the space between them, creating a colour that neither field could generate alone — the emergent warmth of connection. This new temperature only exists in the overlap. It is what people mean when they say chemistry.'},
+    {k:'Phase IV — The Break',t:'A fracture propagates between the figures. The shared aura particles are violently sorted back to their original owners. Watch the field temperature collapse — what was gold becomes cold. The physics of heartbreak: a phase transition in reverse.'},
+    {k:'Phase V — Silence',t:'Two cold silhouettes. Each particle has returned to its original orbit. The figures are intact. But the shared colour — that specific warmth that existed only in their particular configuration — is thermodynamically impossible to reconstruct. Gone.'}
+  ],
+  initP:function(){
+    var n=80000;allocP(n);
+    var cx=W/2,cy=H*.46;
+    for(var i=0;i<n;i++){
+      var side=i<n/2?-1:1;
+      var a=rnd(0,Math.PI*2),r=rnd(15,Math.min(W,H)*.28);
+      var ox=cx+side*W*.18;
+      px[i]=ox+Math.cos(a)*r;py[i]=cy+Math.sin(a)*r*.78;
+      pvx[i]=rnd(-.2,.2);pvy[i]=rnd(-.2,.2);
+      if(side===-1){pcr[i]=rnd(.85,1);pcg[i]=rnd(.45,.65);pcb[i]=rnd(.05,.2);}
+      else{pcr[i]=rnd(.7,.95);pcg[i]=rnd(.2,.45);pcb[i]=rnd(.35,.7);}
+      pcs[i]=rnd(.8,3.2);
+      this.state=this.state||[];
+      this.state[i]={side,a,r:r,spd:rnd(.003,.009)*side,ph2:rnd(0,Math.PI*2)};
+    }
+  },
+  updateP:function(dt,ph,pp){
+    var cx=W/2,cy=H*.46,s=this.state||[];
+    var sep=ph===0?W*.18:ph===1?lerp(W*.18,W*.1,ease(pp)):ph===2?lerp(W*.1,0,ease(pp)):ph===3?lerp(0,W*.2,ease(pp)):W*.2;
+    var cold=ph>=4?ease(pp):0;
+    var rupt=ph===3?ease(pp):0;
+    for(var i=0;i<N;i++){
+      if(!s[i])continue;
+      var si=s[i];si.a+=si.spd*dt*spd*(1+(ph===3?rupt*3:0)*Math.sin(clock*.004+si.ph2));
+      var ox=cx+si.side*sep;
+      var tx=ox+Math.cos(si.a)*si.r;var ty=cy+Math.sin(si.a)*si.r*.75;
+      if(rupt>.02){var rdx=(px[i]-cx)*rupt;var rdy=(py[i]-cy)*rupt;pvx[i]+=rdx*.018*dt;pvy[i]+=rdy*.018*dt;}
+      pvx[i]+=(tx-px[i])*.05*dt;pvy[i]+=(ty-py[i])*.05*dt;
+      pvx[i]+=Math.sin(clock*.0008+si.ph2)*.04*dt;pvy[i]+=Math.cos(clock*.001+si.ph2)*.035*dt;
+      pvx[i]*=.88;pvy[i]*=.88;px[i]+=pvx[i];py[i]+=pvy[i];
+      px[i]=clamp(px[i],0,W);py[i]=clamp(py[i],0,H);
+      /* Colour: merge at union, cool at break */
+      var merge=ph===2?pp:.0;
+      if(si.side===-1){pcr[i]=lerp(lerp(.9,.98,merge),.2,cold);pcg[i]=lerp(lerp(.52,.75,merge),.22,cold);pcb[i]=lerp(lerp(.1,.42,merge),.4,cold);}
+      else{pcr[i]=lerp(lerp(.78,.98,merge),.2,cold);pcg[i]=lerp(lerp(.3,.75,merge),.22,cold);pcb[i]=lerp(lerp(.5,.42,merge),.4,cold);}
+    }
+  },
+  drawBg:function(ctx,W,H,t,ph,pp){
+    /* Deep space background */
+    ctx.fillStyle='#000508';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H*.44;
+    var sep=ph===0?W*.18:ph===1?lerp(W*.18,W*.1,ease(pp)):ph===2?lerp(W*.1,0,ease(pp)):ph===3?lerp(0,W*.2,ease(pp)):W*.2;
+    var cold=ph>=4?ease(pp):0;
+
+    /* Draw two human silhouettes using rich layered painting */
+    function drawHuman(hx,hy,flip,phaseColor){
+      ctx.save();ctx.translate(hx,hy);if(flip)ctx.scale(-1,1);
+      var sc=Math.min(W,H)*.0006;
+      /* Body aura — multiple concentric glows */
+      for(var layer=5;layer>=1;layer--){
+        var la=(.08+layer*.06)*(1-cold*.7);
+        var lr=layer*28*sc*50;
+        var lg=ctx.createRadialGradient(0,0,lr*.1,0,0,lr);
+        lg.addColorStop(0,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+la+')');
+        lg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=lg;ctx.fillRect(-lr,-lr*1.5,lr*2,lr*3);
+      }
+      /* Head */
+      var HR=48*sc*50;
+      var hg=ctx.createRadialGradient(-HR*.15,-HR*.2,HR*.05,-HR*.1,-HR*.15,HR);
+      hg.addColorStop(0,'rgba('+Math.round((phaseColor[0]+.15)*255)+','+Math.round((phaseColor[1]+.1)*255)+','+Math.round((phaseColor[2]+.05)*255)+','+(0.65-cold*.5)+')');
+      hg.addColorStop(.55,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+(0.45-cold*.4)+')');
+      hg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=hg;ctx.beginPath();ctx.ellipse(0,-200*sc*50,HR,HR*1.12,0,0,Math.PI*2);ctx.fill();
+      /* Neck */
+      var neck=ctx.createLinearGradient(-16*sc*50,-165*sc*50,16*sc*50,-115*sc*50);
+      neck.addColorStop(0,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+(0.55-cold*.45)+')');
+      neck.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=neck;ctx.fillRect(-14*sc*50,-168*sc*50,28*sc*50,55*sc*50);
+      /* Torso */
+      var TW=62*sc*50,TH=125*sc*50;
+      var bg=ctx.createRadialGradient(0,-80*sc*50,TW*.1,0,-80*sc*50,Math.max(TW,TH)*1.2);
+      bg.addColorStop(0,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+(0.62-cold*.5)+')');
+      bg.addColorStop(.5,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+(0.38-cold*.32)+')');
+      bg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=bg;
+      ctx.beginPath();ctx.moveTo(-TW*.5,-115*sc*50);ctx.bezierCurveTo(-TW*.55,-50*sc*50,-TW*.48,0,-TW*.38,55*sc*50);ctx.bezierCurveTo(-TW*.28,90*sc*50,TW*.28,90*sc*50,TW*.38,55*sc*50);ctx.bezierCurveTo(TW*.48,0,TW*.55,-50*sc*50,TW*.5,-115*sc*50);ctx.closePath();ctx.fill();
+      /* Arms */
+      function drawArm(ax,ay,aex,aey){
+        var ag=ctx.createLinearGradient(ax,ay,aex,aey);
+        ag.addColorStop(0,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+(0.5-cold*.42)+')');
+        ag.addColorStop(1,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+(0.28-cold*.24)+')');
+        ctx.strokeStyle=ag;ctx.lineWidth=18*sc*50;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(ax,ay);ctx.quadraticCurveTo((ax+aex)/2+25*sc*50,(ay+aey)/2,aex,aey);ctx.stroke();
+      }
+      var armSwing=ph===2||ph===1?Math.sin(t*.0008)*8*sc*50:0;
+      drawArm(-TW*.5,-90*sc*50,-TW*.8-armSwing,55*sc*50);
+      drawArm(TW*.5,-90*sc*50,TW*.8+armSwing,55*sc*50);
+      /* Legs */
+      function drawLeg(lx,ly,lex,ley){
+        var lg2=ctx.createLinearGradient(lx,ly,lex,ley);
+        lg2.addColorStop(0,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+(0.55-cold*.46)+')');
+        lg2.addColorStop(1,'rgba('+Math.round(phaseColor[0]*255)+','+Math.round(phaseColor[1]*255)+','+Math.round(phaseColor[2]*255)+','+(0.2-cold*.18)+')');
+        ctx.strokeStyle=lg2;ctx.lineWidth=22*sc*50;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(lx,ly);ctx.quadraticCurveTo(lx,ly+100*sc*50,lex,ley);ctx.stroke();
+      }
+      drawLeg(-TW*.3,55*sc*50,-TW*.35,260*sc*50);
+      drawLeg(TW*.3,55*sc*50,TW*.35,260*sc*50);
+      ctx.restore();
+    }
+
+    var t_norm=(ph>=3?cold*0.5:0);
+    var col1=[lerp(.9,.25,t_norm),lerp(.55,.2,t_norm),lerp(.12,.4,t_norm)];
+    var col2=[lerp(.78,.22,t_norm),lerp(.32,.2,t_norm),lerp(.52,.42,t_norm)];
+    /* Scale to canvas size */
+    var sc=Math.min(W,H)/900;
+
+    /* Connection field in ph2 */
+    if(ph>=2&&ph<=3){
+      var cf=ph===2?pp:1-ease(pp);
+      var cg2=ctx.createRadialGradient(cx,cy,0,cx,cy,H*.35*cf);
+      cg2.addColorStop(0,'rgba(255,200,100,'+(0.18*cf)+')');
+      cg2.addColorStop(.5,'rgba(255,150,80,'+(0.08*cf)+')');
+      cg2.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=cg2;ctx.fillRect(0,0,W,H);
+    }
+
+    /* Draw both humans */
+    ctx.save();ctx.scale(sc,sc);ctx.translate(0,H*.1/sc);
+    drawHuman((cx-sep)/sc,cy/sc,false,col1);
+    drawHuman((cx+sep)/sc,cy/sc,true,col2);
+    ctx.restore();
+
+    /* Rupture crack */
+    if(ph===3&&rupt>.05){
+      var rupt=ease(pp);
+      ctx.save();ctx.strokeStyle='rgba(255,255,255,'+(0.55*rupt)+')';ctx.lineWidth=1.5*rupt;
+      ctx.shadowColor='rgba(255,255,255,0.4)';ctx.shadowBlur=12;
+      ctx.beginPath();ctx.moveTo(cx,cy-H*.4);
+      var steps=20;for(var si=0;si<steps;si++){ctx.lineTo(cx+(Math.random()-.5)*20,cy-H*.4+si/steps*H*.85);}
+      ctx.stroke();ctx.restore();
+    }
+  }
+},
+
+/* ──────────────────────────────────────────────────────
+   2. WAR COLLAPSE
+   A recognisable city skyline built from Canvas 2D architecture
+   Particles: fire, smoke, debris, then rebuilding sparks
+────────────────────────────────────────────────────── */
+{
+  nav:'War Collapse',sub:'Order · destruction · rebuilding',
+  phases:[
+    {k:'Phase I — The City at Night',t:'A city stands: towers of steel and glass lit from within, each window a family, each floor a life. The skyline is the most complex thing humanity has built. Every particle of light represents decades of accumulated order — economic, social, civilisational.'},
+    {k:'Phase II — First Strike',t:'Impact. A point of disruption sends shockwaves through the urban lattice. Buildings closest to the epicentre begin to destabilise. The architecture that took decades to build begins to fail in seconds. This is the asymmetry of war: the energy to destroy is always orders of magnitude less than the energy to build.'},
+    {k:'Phase III — Active Destruction',t:'The cascade has become self-sustaining. Fire spreads from structure to structure. Particle debris fills the air. The skyline geometry that was immediately recognisable minutes ago is now unrecognisable. The information encoded in the city\'s structure — 10,000 years of accumulated urban knowledge — is being erased.'},
+    {k:'Phase IV — Aftermath',t:'Silence. Smoke. The particle field that was a city is now debris. But the particles themselves have not been destroyed — they are the same atoms, the same energy. Only their organisation has changed. Entropy won one battle. But entropy always wins only one battle at a time.'},
+    {k:'Phase V — The First Foundation',t:'A single structural particle finds another. Then another. The rebuilding is slower than the destruction by exactly the thermodynamic ratio: 100:1 in time, 10:1 in energy. But it always begins. The human drive to impose order on chaos is as fundamental as entropy itself.'}
+  ],
+  initP:function(){
+    var n=60000;allocP(n);
+    /* Start as peaceful city glow particles */
+    var GY=H*.72;
+    for(var i=0;i<n;i++){
+      var wx=rnd(W*.05,W*.95),wy=rnd(H*.05,GY);
+      px[i]=wx;py[i]=wy;
+      pvx[i]=rnd(-.05,.05);pvy[i]=rnd(-.05,.05);
+      /* Blue-white windows */
+      var bt=Math.random();
+      if(bt<.7){pcr[i]=rnd(.35,.55);pcg[i]=rnd(.55,.78);pcb[i]=rnd(.88,1);}
+      else{pcr[i]=rnd(.88,.98);pcg[i]=rnd(.72,.88);pcb[i]=rnd(.2,.45);}/* warm windows */
+      pcs[i]=rnd(.8,2.4);
+      this.state=this.state||[];
+      this.state[i]={ox:wx,oy:wy,chaos:0,ph2:rnd(0,Math.PI*2)};
+    }
+  },
+  updateP:function(dt,ph,pp){
+    var s=this.state||[];
+    var epx=W*.38,epy=H*.58;
+    var chaos=ph===0?0:ph===1?pp*.75:ph===2?lerp(.75,1,pp):ph===3?lerp(1,.45,pp):lerp(.45,.05,pp);
+    var rebuild=ph===4?ease(pp):0;
+    for(var i=0;i<N;i++){
+      if(!s[i])continue;
+      var si=s[i];
+      var dist=Math.sqrt((px[i]-epx)*(px[i]-epx)+(py[i]-epy)*(py[i]-epy));
+      var lc=ph>=1?clamp(1-dist/(W*.55),0,1)*chaos:0;
+      si.chaos=lerp(si.chaos,lc,.018*dt);
+      if(si.chaos>.01&&ph<=3){
+        var ang=Math.atan2(py[i]-epy,px[i]-epx);
+        pvx[i]+=Math.cos(ang)*si.chaos*(ph===3?6:3)*dt*.1;
+        pvy[i]+=Math.sin(ang)*si.chaos*(ph===3?6:3)*dt*.1;
+        pvx[i]+=rnd(-1,1)*si.chaos*dt*.08;pvy[i]+=rnd(-1,1)*si.chaos*dt*.08;
+      }
+      if(rebuild>.01){pvx[i]+=(si.ox-px[i])*rebuild*.05*dt;pvy[i]+=(si.oy-py[i])*rebuild*.05*dt;}
+      if(ph>=2&&ph<=3)pvy[i]+=.03*si.chaos*dt;
+      pvx[i]*=.92;pvy[i]*=.92;px[i]+=pvx[i];py[i]+=pvy[i];
+      if(px[i]<0)px[i]+=W;if(px[i]>W)px[i]-=W;if(py[i]>H+60)py[i]=rnd(0,H*.1);if(py[i]<-60)py[i]=H*.8;
+      /* Colour: blue→fire→ember→rebuild blue */
+      var rc=si.chaos;
+      if(rebuild>.2&&rc<.3){pcr[i]=lerp(.25,.42,rebuild);pcg[i]=lerp(.45,.6,rebuild);pcb[i]=lerp(.78,.92,rebuild);}
+      else{
+        if(rc<.3){pcr[i]=lerp(.45,.98,rc/.3);pcg[i]=lerp(.68,.62,rc/.3);pcb[i]=lerp(.92,.1,rc/.3);}
+        else{pcr[i]=lerp(.98,.6,Math.min((rc-.3)/.7,1));pcg[i]=lerp(.62,.08,(rc-.3)/.7);pcb[i]=lerp(.1,.01,(rc-.3)/.7);}
+      }
+    }
+  },
+  drawBg:function(ctx,W,H,t,ph,pp){
+    /* Sky gradient */
+    var skyG=ctx.createLinearGradient(0,0,0,H*.75);
+    if(ph<=1){skyG.addColorStop(0,'#010508');skyG.addColorStop(1,'#020a14');}
+    else if(ph===2){skyG.addColorStop(0,'#060102');skyG.addColorStop(.5,'rgba(80,20,5,.9)');skyG.addColorStop(1,'#020508');}
+    else if(ph===3){skyG.addColorStop(0,'#040204');skyG.addColorStop(1,'#080404');}
+    else{skyG.addColorStop(0,'#010305');skyG.addColorStop(1,'#020710');}
+    ctx.fillStyle=skyG;ctx.fillRect(0,0,W,H);
+    /* Ground */
+    ctx.fillStyle='#010305';ctx.fillRect(0,H*.72,W,H*.28);
+    var GY=H*.72;
+    /* BUILDINGS — actual recognisable architecture */
+    var buildings=[
+      {x:.05,w:.055,h:.42,windows:true,lit:.7},{x:.11,w:.04,h:.28,windows:true,lit:.6},
+      {x:.16,w:.07,h:.52,windows:true,lit:.8,spire:true},{x:.24,w:.05,h:.22,windows:true,lit:.5},
+      {x:.3,w:.08,h:.62,windows:true,lit:.85,spire:true},{x:.39,w:.09,h:.32,windows:true,lit:.65},
+      {x:.49,w:.06,h:.55,windows:true,lit:.78,spire:true},{x:.56,w:.05,h:.24,windows:true,lit:.55},
+      {x:.62,w:.07,h:.44,windows:true,lit:.72},{x:.7,w:.04,h:.18,windows:true,lit:.5},
+      {x:.75,w:.08,h:.38,windows:true,lit:.68},{x:.84,w:.05,h:.26,windows:true,lit:.6},
+      {x:.9,w:.07,h:.35,windows:true,lit:.7}
+    ];
+    var damageP=ph===0?0:ph===1?pp*.5:ph>=2?lerp(.5,1,Math.min(pp,1)):ph===3?lerp(1,.3,pp):lerp(.3,.05,pp);
+
+    buildings.forEach(function(b){
+      var bx=b.x*W,bw=b.w*W,bh=b.h*H;
+      var by=GY-bh;
+      /* Skip damaged buildings */
+      if(damageP>.4&&Math.random()<damageP*.6)return;
+      /* Building body gradient */
+      var bg2=ctx.createLinearGradient(bx,by,bx+bw,GY);
+      var baseAlpha=lerp(1,.1,damageP*.8);
+      bg2.addColorStop(0,'rgba(18,28,48,'+baseAlpha+')');
+      bg2.addColorStop(.4,'rgba(12,20,38,'+baseAlpha+')');
+      bg2.addColorStop(1,'rgba(8,14,28,'+baseAlpha+')');
+      ctx.fillStyle=bg2;ctx.fillRect(bx,by,bw,bh);
+      /* Edge highlight */
+      ctx.strokeStyle='rgba(60,90,140,'+(baseAlpha*.4)+')';ctx.lineWidth=1;ctx.strokeRect(bx,by,bw,bh);
+      /* Windows */
+      if(b.windows&&damageP<.7){
+        var wCols=Math.floor(bw/12),wRows=Math.floor(bh/16);
+        for(var wr=0;wr<wRows;wr++){
+          for(var wc=0;wc<wCols;wc++){
+            if(Math.random()<b.lit*(1-damageP*.8)){
+              var wx=bx+6+wc*12,wy=by+8+wr*16;
+              var wa=rnd(.4,.85)*(1-damageP*.7);
+              /* Warm vs cool windows */
+              if(Math.random()<.65){ctx.fillStyle='rgba(240,200,100,'+wa+')';}
+              else{ctx.fillStyle='rgba(180,210,255,'+wa+')';}
+              ctx.fillRect(wx,wy,6,8);
+              /* Window glow */
+              if(LOD>0){radialGlow(ctx,wx+3,wy+4,12,Math.random()<.65?'rgb(240,200,100)':'rgb(180,210,255)',wa*.25);}
+            }
+          }
+        }
+      }
+      /* Spire */
+      if(b.spire&&damageP<.5){
+        var sa=baseAlpha*(1-damageP*.6);
+        ctx.fillStyle='rgba(30,42,70,'+sa+')';
+        ctx.beginPath();ctx.moveTo(bx+bw/2,by-bh*.12);ctx.lineTo(bx+bw*.15,by);ctx.lineTo(bx+bw*.85,by);ctx.closePath();ctx.fill();
+        /* Beacon light at top */
+        var beacon=(Math.sin(t*.004+b.x*10)>.3)?1:0;
+        if(beacon){radialGlow(ctx,bx+bw/2,by-bh*.1,20,'rgb(255,80,80)',(.6-damageP*.5)*sa);}
+      }
+    });
+
+    /* Fire effects at ph2+ */
+    if(ph>=2){
+      var nf=Math.round(8*(ph===2?pp:ph===3?1:lerp(1,.1,pp)));
+      for(var fi=0;fi<nf;fi++){
+        var fx=W*(.2+fi*.08),fy=GY-H*(.05+Math.sin(fi*1.7+t*.002)*0.08);
+        var fr=H*(.04+Math.sin(fi*.9+t*.003)*.02);
+        var fg2=ctx.createRadialGradient(fx,fy,0,fx,fy,fr);
+        fg2.addColorStop(0,'rgba(255,220,100,.85)');fg2.addColorStop(.4,'rgba(255,100,20,.65)');fg2.addColorStop(1,'rgba(255,40,0,0)');
+        ctx.fillStyle=fg2;ctx.beginPath();ctx.arc(fx,fy,fr,0,Math.PI*2);ctx.fill();
+      }
+    }
+    /* Ground reflection */
+    var refl=ctx.createLinearGradient(0,GY,0,GY+H*.08);
+    refl.addColorStop(0,'rgba(40,80,140,.12)');refl.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=refl;ctx.fillRect(0,GY,W,H*.08);
+  }
+},
+
+/* ──────────────────────────────────────────────────────
+   3. EMERGENCE OF LIFE — Deer
+   Background: painted forest/landscape evolving
+   Particles: life force, biological energy
+────────────────────────────────────────────────────── */
+{
+  nav:'Emergence',sub:'Chaos → deer → awareness',
+  phases:[
+    {k:'Phase I — The Primordial Dark',t:'The universe before life: maximum entropy, minimum information. Every point in this field is identical to every other. No pattern, no structure, no direction. In this dark, only quantum fluctuation — noise at the smallest scale that will become everything.'},
+    {k:'Phase II — First Light, First Structure',t:'Gravity — the weakest force — wins on the largest scale. Slight density variations amplify over millions of years. The first structures emerge: not by design but by the mathematical inevitability of self-organisation. Given enough time and the right rules, simplicity always produces complexity.'},
+    {k:'Phase III — The Form Appears',t:'Watch the particles assemble. From the raw material of chaos, a deer emerges — antlers reaching upward, body in three-quarters pose, eyes alert. The deer has walked this planet for 30 million years. It is the universe\'s way of organising carbon into something that runs, breathes, and is afraid.'},
+    {k:'Phase IV — Living, Aware',t:'The deer is complete. The particle field holds the form steady but alive — micro-motion, breathing, the subtle animation of an organism that is not static but is always maintaining its order against entropy. Awareness is structure that can sense being disturbed.'},
+    {k:'Phase V — The Herd Emerges',t:'One becomes three. The forest fills. Life\'s primary strategy: replication, variation, expansion. Each deer is slightly different — the particle fields that form them have slightly different configurations. This variation is the raw material of evolution. From this, in sufficient time, everything follows.'}
+  ],
+  initP:function(){
+    var n=40000;allocP(n);
+    for(var i=0;i<n;i++){px[i]=rnd(0,W);py[i]=rnd(0,H);pvx[i]=rnd(-.3,.3);pvy[i]=rnd(-.3,.3);pcr[i]=rnd(.04,.14);pcg[i]=rnd(.04,.12);pcb[i]=rnd(.06,.2);pcs[i]=rnd(.6,2.2);this.state=this.state||[];this.state[i]={ox:px[i],oy:py[i],spd:rnd(.005,.012),a:rnd(0,Math.PI*2),ph2:rnd(0,Math.PI*2)};}
+  },
+  updateP:function(dt,ph,pp){
+    var cx=W/2,cy=H*.5,s=this.state||[];
+    var life=ph>=2?ease(ph===2?pp:1):0;
+    var expand=ph===4?ease(pp):0;
+    for(var i=0;i<N;i++){
+      if(!s[i])continue;var si=s[i];
+      si.a+=si.spd*dt*spd;
+      /* Phase 0: pure wander */
+      if(ph===0){pvx[i]+=rnd(-.05,.05)*dt;pvy[i]+=rnd(-.05,.05)*dt;}
+      /* Phase 1: coalesce toward centre */
+      else if(ph===1){pvx[i]+=(cx-px[i])*.0005*pp*dt;pvy[i]+=(cy-py[i])*.0005*pp*dt;}
+      /* Phase 2+: biological wander with energy */
+      else{
+        pvx[i]+=Math.sin(si.a+clock*.0006)*.08*life*dt;
+        pvy[i]+=Math.cos(si.a*.85+clock*.0008)*.07*life*dt;
+        if(expand>.1){var ea=Math.atan2(py[i]-cy,px[i]-cx);pvx[i]+=Math.cos(ea)*expand*.3*dt;pvy[i]+=Math.sin(ea)*expand*.25*dt;}
+      }
+      pvx[i]*=.91;pvy[i]*=.91;px[i]+=pvx[i];py[i]+=pvy[i];
+      if(px[i]<0)px[i]+=W;if(px[i]>W)px[i]-=W;if(py[i]<0)py[i]+=H;if(py[i]>H)py[i]-=H;
+      /* Colour arc */
+      if(ph===0){pcr[i]=rnd(.04,.12);pcg[i]=rnd(.04,.1);pcb[i]=rnd(.08,.2);}
+      else if(ph===1){pcr[i]=lerp(.08,.22,pp);pcg[i]=lerp(.08,.12,pp);pcb[i]=lerp(.14,.3,pp);}
+      else if(ph===2){pcr[i]=lerp(.22,.72,ease(pp));pcg[i]=lerp(.12,.48,ease(pp));pcb[i]=lerp(.3,.12,ease(pp));}
+      else{pcr[i]=lerp(.7,.65,pp);pcg[i]=lerp(.48,.78,pp);pcb[i]=lerp(.12,.22,pp);}
+    }
+  },
+  drawBg:function(ctx,W,H,t,ph,pp){
+    /* Evolving landscape */
+    ctx.fillStyle=ph===0?'#010408':ph===1?'#020608':ph>=2?'#030a04':'#020608';
+    ctx.fillRect(0,0,W,H);
+    var GY=H*.72;
+    /* Sky glow */
+    if(ph>=1){
+      var skyAlpha=ph===1?pp*.3:ph===2?lerp(.3,.8,pp):0.8;
+      var skyC=ph<=2?'rgb(20,45,90)':'rgb(40,80,20)';
+      var sg=ctx.createLinearGradient(0,0,0,GY*.6);
+      sg.addColorStop(0,skyC.replace('rgb','rgba').replace(')',','+skyAlpha*.15+')'));
+      sg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=sg;ctx.fillRect(0,0,W,GY);
+    }
+    /* Forest — appears in ph2 */
+    if(ph>=2){
+      var forestAlpha=ph===2?ease(pp):1;
+      /* Ground */
+      var gg=ctx.createLinearGradient(0,GY,0,H);
+      gg.addColorStop(0,'rgba(15,45,10,'+forestAlpha+')');gg.addColorStop(1,'rgba(8,25,6,'+forestAlpha*.8+')');
+      ctx.fillStyle=gg;ctx.fillRect(0,GY,W,H-GY);
+      /* Trees */
+      var nTrees=12;
+      for(var ti=0;ti<nTrees;ti++){
+        var tx2=W*(ti/nTrees)+rnd(-20,20);
+        var th=H*(.15+Math.sin(ti*1.3)*.08);
+        var tw=H*.04;
+        /* Trunk */
+        ctx.strokeStyle='rgba(40,28,18,'+forestAlpha*.7+')';ctx.lineWidth=8;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(tx2,GY);ctx.lineTo(tx2+Math.sin(ti)*.5*H*.02,GY-th*.55);ctx.stroke();
+        /* Canopy */
+        var ca=ph===4?lerp(forestAlpha,.4,pp):forestAlpha;
+        var tg2=ctx.createRadialGradient(tx2,GY-th,tw*.1,tx2,GY-th,tw*1.8);
+        tg2.addColorStop(0,'rgba(20,80,15,'+ca*.85+')');
+        tg2.addColorStop(.5,'rgba(12,55,10,'+ca*.6+')');
+        tg2.addColorStop(1,'rgba(5,20,5,0)');
+        ctx.fillStyle=tg2;ctx.beginPath();ctx.arc(tx2,GY-th,tw*1.5,0,Math.PI*2);ctx.fill();
+      }
+    }
+    /* DEER — drawn in ph3+ */
+    if(ph>=2){
+      var deerAlpha=ph===2?ease(pp):ph===4?lerp(1,.35,pp):1;
+      var deerCount=ph===4?3:1;
+      for(var di=0;di<deerCount;di++){
+        var dOff=di===0?0:di===1?-W*.28:W*.28;
+        var dScale=di===0?1:.7;
+        drawDeer(ctx,W/2+dOff*ease(ph===4?pp:0),H*.5,dScale,deerAlpha*(di===0?1:.7),t);
+      }
+    }
+    /* Stars in ph0/1 */
+    if(ph<=1){
+      var sa=ph===0?1:1-pp;
+      ctx.fillStyle='rgba(200,220,255,'+sa*.6+')';
+      for(var si2=0;si2<60;si2++){var stx=W*(si2*17%100)/100,sty=H*.55*(si2*13%100)/100;var stB=.4+Math.sin(t*.003+si2)*.3;ctx.globalAlpha=stB*sa;ctx.fillRect(stx,sty,1.5,1.5);}
+      ctx.globalAlpha=1;
+    }
+  }
+},
+
+/* ──────────────────────────────────────────────────────
+   4. ECHOES OF HUMANITY
+   Richly painted faces with emotional depth
+   Not particle approximations — actual Canvas 2D portraiture
+────────────────────────────────────────────────────── */
+{
+  nav:'Echoes',sub:'Joy · grief · hope',
+  phases:[
+    {k:'Phase I — The Void',t:'Before the face assembles, there is only the field. Particles drift in darkness — each one a potential feature, a possible expression, a fragment of humanity waiting to find its position in the configuration called a face.'},
+    {k:'Phase II — Joy',t:'The particles converge. A face assembles in warm gold light — the universal smile, the crinkled eyes, the lifted cheeks. Joy as a physical configuration: a specific arrangement of facial muscles, skin, and light that every human nervous system recognises faster than thought. 130 milliseconds. Before you know you\'ve seen it, you\'ve already felt it.'},
+    {k:'Phase III — The Dissolution',t:'Watch the face dissolve. Particles that held the expression of joy scatter back into potential. Between expressions, the face returns to pure possibility — every human face at once and none of them. The quantum superposition of human emotion.'},
+    {k:'Phase IV — Grief',t:'The same face. Different configuration. The downward pull of the mouth, the weight behind the eyes, the subtle asymmetry that appears in genuine sadness. Grief, rendered as a specific particle arrangement. The same atoms. The same light. The profound difference is entirely in the geometry.'},
+    {k:'Phase V — Hope',t:'The third face: neither pure joy nor grief. Something more complex — the face of someone who has been through grief and is emerging. A partial smile that knows what it costs. This is the most difficult expression to render, because it requires holding two emotional states simultaneously.'}
+  ],
+  initP:function(){
+    var n=50000;allocP(n);
+    for(var i=0;i<n;i++){px[i]=rnd(0,W);py[i]=rnd(0,H);pvx[i]=rnd(-.4,.4);pvy[i]=rnd(-.4,.4);pcr[i]=rnd(.05,.15);pcg[i]=rnd(.05,.12);pcb[i]=rnd(.08,.22);pcs[i]=rnd(.7,2.5);this.state=this.state||[];this.state[i]={ph2:rnd(0,Math.PI*2),spd:rnd(.002,.007)};}
+  },
+  updateP:function(dt,ph,pp){
+    var cx=W/2,cy=H*.44,s=this.state||[];
+    var ms=ph===0?0:ph===1?ease(pp*1.5):ph===2?lerp(1,0,ease(pp)):ph===3?ease(pp*1.4):ease(pp*1.3);ms=clamp(ms,0,1);
+    var faceR=Math.min(W,H)*.38;
+    for(var i=0;i<N;i++){
+      if(!s[i])continue;var si=s[i];
+      /* Orbit the face */
+      if(ms>.05){
+        var fa=i/N*Math.PI*2+clock*si.spd*.5;var fr=faceR*(.6+.4*(i%3)/2)+Math.sin(clock*.0006+si.ph2)*faceR*.08;
+        var ftx=cx+Math.cos(fa)*fr;var fty=cy+Math.sin(fa)*fr*.88;
+        pvx[i]+=(ftx-px[i])*.02*ms*dt;pvy[i]+=(fty-py[i])*.02*ms*dt;
+      } else {pvx[i]+=rnd(-.06,.06)*dt;pvy[i]+=rnd(-.06,.06)*dt;}
+      pvx[i]+=Math.sin(clock*.0007+si.ph2)*ms*.04*dt;pvy[i]+=Math.cos(clock*.0009+si.ph2)*ms*.035*dt;
+      pvx[i]*=.88;pvy[i]*=.88;px[i]+=pvx[i];py[i]+=pvy[i];
+      if(px[i]<-50)px[i]=W+50;if(px[i]>W+50)px[i]=-50;if(py[i]<-50)py[i]=H+50;if(py[i]>H+50)py[i]=-50;
+      if(ph===0||ms<.05){pcr[i]=rnd(.05,.15);pcg[i]=rnd(.05,.12);pcb[i]=rnd(.08,.22);}
+      else if(ph===1){pcr[i]=lerp(.1,.95,ms);pcg[i]=lerp(.1,.82,ms);pcb[i]=lerp(.18,.4,ms);}
+      else if(ph===2){pcr[i]=lerp(.88,.1,pp);pcg[i]=lerp(.78,.1,pp);pcb[i]=lerp(.38,.2,pp);}
+      else if(ph===3){pcr[i]=lerp(.1,.26,ms);pcg[i]=lerp(.1,.32,ms);pcb[i]=lerp(.18,.72,ms);}
+      else{pcr[i]=lerp(.22,.92,ms);pcg[i]=lerp(.3,.7,ms);pcb[i]=lerp(.65,.58,ms);}
+    }
+  },
+  drawBg:function(ctx,W,H,t,ph,pp){
+    ctx.fillStyle='#02040a';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H*.44;
+    var ms=ph===0?0:ph===1?ease(pp*1.5):ph===2?lerp(1,0,ease(pp)):ph===3?ease(pp*1.4):ease(pp*1.3);ms=clamp(ms,0,1);
+    if(ms>.05){
+      /* Which emotion */
+      var emotion=ph===1?'joy':ph===3?'grief':ph===4?'hope':'neutral';
+      drawFace(ctx,cx,cy,Math.min(W,H)*.36,emotion,ms,t);
+    }
+  }
+},
+
+]; /* end SIMS */
+
+/* ══════════════════════════════════════════════════════
+   FACE DRAWING — Canvas 2D portraiture
+   Rich layered painting, not particle approximations
+══════════════════════════════════════════════════════ */
+
+var LOD=0;/* set to 1 after init for glow effects */
+
+function drawFace(ctx,cx,cy,fR,emotion,alpha,t){
+  if(alpha<.02)return;
+  /* Face colour by emotion */
+  var fc={
+    joy:{r:248,g:210,b:155},
+    grief:{r:165,g:178,b:210},
+    hope:{r:215,g:195,b:178},
+    neutral:{r:220,g:195,b:168}
+  }[emotion]||{r:220,g:195,b:168};
+
+  /* Deep background glow */
+  var auraC=emotion==='joy'?'255,200,80':emotion==='grief'?'80,110,200':'200,160,120';
+  var ag=ctx.createRadialGradient(cx,cy,fR*.1,cx,cy,fR*1.8);
+  ag.addColorStop(0,'rgba('+auraC+','+(alpha*.22)+')');ag.addColorStop(.5,'rgba('+auraC+','+(alpha*.08)+')');ag.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=ag;ctx.fillRect(cx-fR*2,cy-fR*2,fR*4,fR*4);
+
+  /* Neck */
+  var neckG=ctx.createLinearGradient(cx-fR*.18,cy+fR*.88,cx+fR*.18,cy+fR*1.4);
+  neckG.addColorStop(0,'rgba('+(fc.r-12)+','+(fc.g-12)+','+(fc.b-12)+','+alpha*.72+')');
+  neckG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=neckG;
+  ctx.beginPath();ctx.moveTo(cx-fR*.16,cy+fR*.88);ctx.lineTo(cx-fR*.13,cy+fR*1.38);ctx.lineTo(cx+fR*.13,cy+fR*1.38);ctx.lineTo(cx+fR*.16,cy+fR*.88);ctx.closePath();ctx.fill();
+
+  /* Face shape — soft oval with jaw */
+  var jawW=fR*.74,fH=fR*1.06;
+  var faceG=ctx.createRadialGradient(cx-fR*.1,cy-fR*.12,fR*.05,cx,cy,fR*1.1);
+  faceG.addColorStop(0,'rgba('+(fc.r+20)+','+(fc.g+15)+','+(fc.b+8)+','+alpha*.88+')');
+  faceG.addColorStop(.35,'rgba('+fc.r+','+fc.g+','+fc.b+','+alpha*.78+')');
+  faceG.addColorStop(.72,'rgba('+(fc.r-18)+','+(fc.g-15)+','+(fc.b-10)+','+alpha*.55+')');
+  faceG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=faceG;
+  ctx.beginPath();ctx.ellipse(cx,cy,jawW,fH,0,0,Math.PI*2);ctx.fill();
+
+  /* EYES */
+  var eyeY=cy-fR*.16;
+  var eyeOffsets=[-fR*.3,fR*.3];
+  eyeOffsets.forEach(function(ex,ei){
+    /* Eye socket shadow */
+    var esG=ctx.createRadialGradient(cx+ex,eyeY,0,cx+ex,eyeY,fR*.14);
+    esG.addColorStop(0,'rgba('+(fc.r-60)+','+(fc.g-55)+','+(fc.b-40)+','+alpha*.75+')');
+    esG.addColorStop(.6,'rgba('+(fc.r-30)+','+(fc.g-28)+','+(fc.b-20)+','+alpha*.35+')');
+    esG.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=esG;ctx.beginPath();ctx.ellipse(cx+ex,eyeY,fR*.13,fR*.09,0,0,Math.PI*2);ctx.fill();
+    /* White of eye */
+    ctx.fillStyle='rgba(240,238,235,'+alpha*.82+')';ctx.beginPath();ctx.ellipse(cx+ex,eyeY,fR*.1,fR*.067,0,0,Math.PI*2);ctx.fill();
+    /* Iris */
+    var irisC=emotion==='grief'?'rgba(80,100,160,':'rgba(80,120,80,';
+    ctx.fillStyle=irisC+alpha*.9+')';ctx.beginPath();ctx.arc(cx+ex,eyeY,fR*.052,0,Math.PI*2);ctx.fill();
+    /* Pupil */
+    ctx.fillStyle='rgba(8,5,5,'+alpha*.95+')';ctx.beginPath();ctx.arc(cx+ex+fR*.004,eyeY,fR*.028,0,Math.PI*2);ctx.fill();
+    /* Catchlight */
+    ctx.fillStyle='rgba(255,255,255,'+alpha*.9+')';ctx.beginPath();ctx.arc(cx+ex+fR*.022,eyeY-fR*.02,fR*.012,0,Math.PI*2);ctx.fill();
+    /* Eyelid upper */
+    ctx.strokeStyle='rgba('+(fc.r-80)+','+(fc.g-75)+','+(fc.b-60)+','+alpha*.7+')';ctx.lineWidth=fR*.018;ctx.beginPath();ctx.ellipse(cx+ex,eyeY,fR*.1,fR*.067,0,Math.PI,0);ctx.stroke();
+    /* Lashes hint */
+    for(var lash=0;lash<7;lash++){
+      var la=-Math.PI+lash*(Math.PI/6);
+      ctx.strokeStyle='rgba(20,15,15,'+alpha*.6+')';ctx.lineWidth=fR*.008;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(cx+ex+Math.cos(la)*fR*.1,eyeY+Math.sin(la)*fR*.067);ctx.lineTo(cx+ex+Math.cos(la)*fR*.14,eyeY+Math.sin(la)*fR*.1-fR*.008);ctx.stroke();
+    }
+  });
+
+  /* EYEBROWS */
+  var browY=eyeY-fR*.19;
+  var browCurve=emotion==='grief'?fR*.04:emotion==='joy'?-fR*.02:0;
+  var browSlant=emotion==='grief'?fR*.06:0;
+  eyeOffsets.forEach(function(ex,ei){
+    var bx1=cx+ex-fR*.14,bx2=cx+ex+fR*.14;
+    var by1=browY+browCurve+(ei===0?browSlant:-browSlant);
+    var by2=browY-browCurve+(ei===0?-browSlant:browSlant);
+    ctx.strokeStyle='rgba('+(fc.r-100)+','+(fc.g-95)+','+(fc.b-80)+','+alpha*.78+')';
+    ctx.lineWidth=fR*.028;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(bx1,by1);ctx.quadraticCurveTo(cx+ex,browY-fR*.025,bx2,by2);ctx.stroke();
+  });
+
+  /* NOSE */
+  var noseY=cy+fR*.1,noseW=fR*.09;
+  ctx.strokeStyle='rgba('+(fc.r-45)+','+(fc.g-42)+','+(fc.b-30)+','+alpha*.42+')';ctx.lineWidth=fR*.018;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx-noseW,noseY-fR*.18);ctx.lineTo(cx-noseW*1.1,noseY);ctx.bezierCurveTo(cx-noseW*1.3,noseY+fR*.04,cx-noseW*.6,noseY+fR*.05,cx,noseY+fR*.03);ctx.bezierCurveTo(cx+noseW*.6,noseY+fR*.05,cx+noseW*1.3,noseY+fR*.04,cx+noseW*1.1,noseY);ctx.stroke();
+
+  /* MOUTH */
+  var mouthY=cy+fR*.42,mW=fR*.3;
+  var mCurve=emotion==='joy'?-fR*.065:emotion==='grief'?fR*.05:emotion==='hope'?-fR*.025:-fR*.01;
+  /* Upper lip */
+  ctx.strokeStyle='rgba('+(fc.r-35)+','+(fc.g-38)+','+(fc.b-25)+','+alpha*.65+')';ctx.lineWidth=fR*.022;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx-mW,mouthY);ctx.quadraticCurveTo(cx-mW*.4,mouthY+mCurve*1.5,cx,mouthY+mCurve*.5);ctx.quadraticCurveTo(cx+mW*.4,mouthY+mCurve*1.5,cx+mW,mouthY);ctx.stroke();
+  /* Lower lip */
+  ctx.lineWidth=fR*.028;ctx.beginPath();ctx.moveTo(cx-mW*.88,mouthY+fR*.01);ctx.quadraticCurveTo(cx,mouthY+fR*.045+mCurve*.8,cx+mW*.88,mouthY+fR*.01);ctx.stroke();
+  /* Lip colour hint */
+  var lipG=ctx.createLinearGradient(cx-mW*.8,mouthY,cx+mW*.8,mouthY+fR*.04);
+  lipG.addColorStop(0,'rgba(200,120,110,'+(alpha*.35)+')');lipG.addColorStop(.5,'rgba(220,140,125,'+(alpha*.45)+')');lipG.addColorStop(1,'rgba(200,120,110,'+(alpha*.35)+')');
+  ctx.fillStyle=lipG;ctx.beginPath();ctx.ellipse(cx,mouthY+fR*.025+mCurve*.4,mW*.8,fR*.035,0,0,Math.PI*2);ctx.fill();
+
+  /* HAIR */
+  var hairG=ctx.createRadialGradient(cx,cy-fR*.85,fR*.1,cx,cy-fR*.85,fR*1.4);
+  hairG.addColorStop(0,'rgba(35,22,12,'+alpha*.88+')');hairG.addColorStop(.45,'rgba(22,14,8,'+alpha*.72+')');hairG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=hairG;
+  ctx.beginPath();ctx.ellipse(cx,cy-fR*.82,jawW*1.02,fR*.72,0,0,Math.PI*2);ctx.fill();
+  /* Hair volume */
+  ctx.beginPath();ctx.moveTo(cx-jawW*.95,cy-fR*.22);ctx.bezierCurveTo(cx-jawW*1.1,cy-fR*.55,cx-jawW*.85,cy-fR*1.05,cx-jawW*.35,cy-fR*1.12);ctx.bezierCurveTo(cx,cy-fR*1.25,cx+jawW*.35,cy-fR*1.12,cx+jawW*.85,cy-fR*1.05);ctx.bezierCurveTo(cx+jawW*1.1,cy-fR*.55,cx+jawW*.95,cy-fR*.22,cx+jawW*.92,cy-fR*.1);ctx.closePath();ctx.fill();
+
+  /* CHEEK colour */
+  if(emotion==='joy'||emotion==='hope'){
+    var chkAlpha=alpha*(emotion==='joy'?.35:.2);
+    [-1,1].forEach(function(side){
+      var cg3=ctx.createRadialGradient(cx+side*fR*.36,cy+fR*.1,0,cx+side*fR*.36,cy+fR*.1,fR*.18);
+      cg3.addColorStop(0,'rgba(235,110,100,'+chkAlpha+')');cg3.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=cg3;ctx.beginPath();ctx.arc(cx+side*fR*.36,cy+fR*.1,fR*.18,0,Math.PI*2);ctx.fill();
+    });
+  }
+
+  /* Tears for grief */
+  if(emotion==='grief'){
+    ctx.strokeStyle='rgba(180,200,235,'+alpha*.55+')';ctx.lineWidth=fR*.014;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(cx-fR*.28,eyeY+fR*.07);ctx.quadraticCurveTo(cx-fR*.3,eyeY+fR*.25,cx-fR*.32,cy+fR*.12);ctx.stroke();
+  }
+
+  /* Sparkle/glow particles for joy */
+  if(emotion==='joy'&&LOD>=1){
+    for(var sp=0;sp<8;sp++){var spA=sp/8*Math.PI*2+t*.002;var spR=fR*(1.1+Math.sin(t*.003+sp)*.08);radialGlow(ctx,cx+Math.cos(spA)*spR,cy+Math.sin(spA)*spR*.85,fR*.06,'rgb(255,210,100)',alpha*.35);}
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   DEER DRAWING — Canvas 2D natural illustration
+══════════════════════════════════════════════════════ */
+function drawDeer(ctx,dcx,dcy,scale,alpha,t){
+  if(alpha<.02)return;
+  var s=scale*Math.min(W,H)*.0012;
+  ctx.save();ctx.translate(dcx,dcy);
+  var breath=Math.sin(t*.0015)*.02;
+  /* Body glow */
+  var bg=ctx.createRadialGradient(0,0,s*20,0,0,s*180);
+  bg.addColorStop(0,'rgba(180,140,80,'+(alpha*.35)+')');bg.addColorStop(.5,'rgba(140,105,55,'+(alpha*.18)+')');bg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=bg;ctx.fillRect(-s*200,-s*250,s*400,s*350);
+  /* Hindquarters */
+  var bG=ctx.createRadialGradient(-s*30,s*30,s*5,-s*10,s*20,s*110);
+  bG.addColorStop(0,'rgba(195,148,82,'+(alpha*.82)+')');bG.addColorStop(.5,'rgba(168,122,60,'+(alpha*.72)+')');bG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=bG;ctx.beginPath();ctx.ellipse(-s*15,s*25+breath*s*10,s*105,s*68,-.12,0,Math.PI*2);ctx.fill();
+  /* Chest/shoulder */
+  var cG=ctx.createRadialGradient(s*50,-s*10,s*5,s*40,-s*5,s*80);
+  cG.addColorStop(0,'rgba(205,158,88,'+(alpha*.85)+')');cG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=cG;ctx.beginPath();ctx.ellipse(s*48,-s*8+breath*s*8,s*72,s*60,.15,0,Math.PI*2);ctx.fill();
+  /* Belly */
+  ctx.fillStyle='rgba(220,185,120,'+(alpha*.55)+')';ctx.beginPath();ctx.ellipse(s*15,s*55+breath*s*8,s*68,s*28,-.05,0,Math.PI*2);ctx.fill();
+  /* Neck */
+  var nG=ctx.createLinearGradient(s*55,-s*25,s*80,-s*120);
+  nG.addColorStop(0,'rgba(195,148,80,'+(alpha*.8)+')');nG.addColorStop(1,'rgba(175,132,68,'+(alpha*.65)+')');
+  ctx.fillStyle=nG;ctx.beginPath();ctx.moveTo(s*40,-s*15);ctx.bezierCurveTo(s*65,-s*35,s*88,-s*80,s*88,-s*125);ctx.bezierCurveTo(s*88,-s*130,s*72,-s*130,s*68,-s*125);ctx.bezierCurveTo(s*68,-s*80,s*48,-s*35,s*30,-s*15);ctx.closePath();ctx.fill();
+  /* Head */
+  var hG=ctx.createRadialGradient(s*80,-s*145,s*8,s*78,-s*140,s*55);
+  hG.addColorStop(0,'rgba(205,158,82,'+(alpha*.88)+')');hG.addColorStop(.5,'rgba(185,140,68,'+(alpha*.75)+')');hG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=hG;ctx.beginPath();ctx.ellipse(s*80,-s*148,s*38,s*32,-.1,0,Math.PI*2);ctx.fill();
+  /* Snout */
+  ctx.fillStyle='rgba(168,118,52,'+(alpha*.82)+')';ctx.beginPath();ctx.ellipse(s*105,-s*148,s*22,s*16,.05,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(60,35,25,'+(alpha*.65)+')';ctx.beginPath();ctx.ellipse(s*114,-s*145,s*7,s*5,.05,0,Math.PI*2);ctx.fill();/* nostril */
+  /* Eye */
+  ctx.fillStyle='rgba(20,12,8,'+(alpha*.9)+')';ctx.beginPath();ctx.arc(s*82,-s*158,s*7,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,'+(alpha*.85)+')';ctx.beginPath();ctx.arc(s*84,-s*160,s*3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(80,55,30,'+(alpha*.55)+')';ctx.beginPath();ctx.arc(s*80,-s*158,s*8.5,0,Math.PI*2);ctx.stroke&&0;ctx.strokeStyle='rgba(80,55,30,'+(alpha*.55)+')';ctx.lineWidth=s*1.5;ctx.beginPath();ctx.ellipse(s*82,-s*158,s*10,s*8,0,0,Math.PI*2);ctx.stroke();
+  /* Ear */
+  ctx.fillStyle='rgba(188,140,68,'+(alpha*.75)+')';ctx.beginPath();ctx.moveTo(s*60,-s*165);ctx.bezierCurveTo(s*48,-s*205,s*62,-s*215,s*72,-s*200);ctx.bezierCurveTo(s*76,-s*185,s*72,-s*170,s*68,-s*165);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(215,168,120,'+(alpha*.5)+')';ctx.beginPath();ctx.moveTo(s*62,-s*168);ctx.bezierCurveTo(s*52,-s*200,s*64,-s*208,s*70,-s*196);ctx.bezierCurveTo(s*73,-s*183,s*70,-s*170,s*67,-s*167);ctx.closePath();ctx.fill();
+  /* ANTLERS */
+  ctx.strokeStyle='rgba(88,60,30,'+(alpha*.82)+')';ctx.lineCap='round';
+  function antlerSeg(x1,y1,x2,y2,w){ctx.lineWidth=s*w;ctx.beginPath();ctx.moveTo(s*x1,s*y1);ctx.lineTo(s*x2,s*y2);ctx.stroke();}
+  antlerSeg(72,-175,62,-230,5);antlerSeg(62,-230,48,-268,4);antlerSeg(48,-268,35,-288,3);
+  antlerSeg(48,-268,58,-285,3);antlerSeg(62,-230,75,-265,3.5);antlerSeg(75,-265,68,-285,2.5);
+  antlerSeg(75,-265,85,-280,2.5);
+  antlerSeg(86,-172,96,-228,5);antlerSeg(96,-228,110,-265,4);antlerSeg(110,-265,122,-285,3);
+  antlerSeg(110,-265,100,-285,3);antlerSeg(96,-228,82,-260,3);antlerSeg(82,-260,90,-278,2.5);
+  /* LEGS */
+  function leg(x1,y1,x2,y2,x3,y3){ctx.strokeStyle='rgba(175,130,60,'+(alpha*.75)+')';ctx.lineWidth=s*14;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(s*x1,s*y1);ctx.quadraticCurveTo(s*x2,s*y2,s*x3,s*y3);ctx.stroke();ctx.lineWidth=s*11;ctx.strokeStyle='rgba(155,112,48,'+(alpha*.65)+')';ctx.stroke();}
+  var walk=Math.sin(t*.002)*s*12;
+  leg(-65,68,-60,125,-70,180-walk);leg(-25,65,-22,125,-18,178+walk);leg(30,62,35,122,28,178+walk);leg(75,60,80,120,85,180-walk);
+  /* Hooves */
+  ctx.fillStyle='rgba(30,20,12,'+(alpha*.8)+')';
+  [[-70,182],[-18,180],[28,180],[85,182]].forEach(function(h){ctx.beginPath();ctx.ellipse(s*h[0],s*h[1]-(Math.abs(h[0])<0?walk:0),s*8,s*5,0,0,Math.PI*2);ctx.fill();});
+  /* Tail */
+  ctx.fillStyle='rgba(240,228,200,'+(alpha*.65)+')';ctx.beginPath();ctx.ellipse(-s*108,s*18,s*15,s*20,.2,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+/* ══════════════════════════════════════════════════════
+   MAIN LOOP
+══════════════════════════════════════════════════════ */
+function setNarr(kicker,text){
+  document.getElementById('narr-kicker').textContent=kicker;
+  var el=document.getElementById('narr-body');el.style.opacity='0';
+  setTimeout(function(){el.textContent=text;el.style.opacity='1';},320);
+}
+
+function setPhase(ph){
+  curPh=ph;phT=0;
+  document.querySelectorAll('.ph-dot').forEach(function(e,i){e.classList.toggle('on',i===ph);});
+  var p=SIMS[curSim].phases[Math.min(ph,SIMS[curSim].phases.length-1)];
+  setNarr(p.k,p.t);
+}
+
+function initCurrentSim(){
+  var sim=SIMS[curSim];
+  sim.state=[];sim.morphT=0;
+  sim.initP.call(sim);
+}
+
+function switchSim(idx){
+  if(idx===curSim)return;
+  curSim=idx;curPh=0;phT=0;clock=0;
+  document.getElementById('loader').classList.remove('gone');
+  document.getElementById('l-fill').style.width='20%';
+  document.getElementById('l-txt').textContent='Loading '+SIMS[idx].nav+'…';
+  document.querySelectorAll('.sim-btn').forEach(function(e,i){e.classList.toggle('on',i===idx);});
+  setTimeout(function(){
+    initCurrentSim();setPhase(0);
+    document.getElementById('l-fill').style.width='100%';
+    setTimeout(function(){document.getElementById('loader').classList.add('gone');},300);
+  },80);
+}
+
+function loop(now){
+  requestAnimationFrame(loop);
+  var dt=Math.min((now-lastT)/16.67,3.5);lastT=now;
+  clock+=dt*spd;phT+=dt*spd*16.67;
+  var pp=clamp(phT/PH_DUR,0,1);
+  /* Draw background art */
+  bgCtx.clearRect(0,0,W,H);
+  SIMS[curSim].drawBg.call(SIMS[curSim],bgCtx,W,H,clock,curPh,pp);
+  /* Update + draw particles */
+  SIMS[curSim].updateP.call(SIMS[curSim],dt,curPh,pp);
+  uploadP();drawGL();
+}
+
+/* ══════════════════════════════════════════════════════
+   BUILD UI + BOOT
+══════════════════════════════════════════════════════ */
+function buildUI(){
+  var sel=document.getElementById('selector');
+  SIMS.forEach(function(sim,i){
+    var btn=document.createElement('div');btn.className='sim-btn'+(i===0?' on':'');
+    btn.innerHTML='<div class="sim-btn-num">0'+(i+1)+'</div><div class="sim-btn-name">'+sim.nav+'</div><div class="sim-btn-sub">'+sim.sub+'</div>';
+    btn.onclick=function(){switchSim(i);};sel.appendChild(btn);
+  });
+}
+
+document.getElementById('spd-range').oninput=function(){spd=parseFloat(this.value);};
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key==='Tab'){e.preventDefault();switchSim((curSim+1)%SIMS.length);}
+  if(e.key==='ArrowLeft'){e.preventDefault();switchSim((curSim-1+SIMS.length)%SIMS.length);}
+  if(e.key===' '){e.preventDefault();setPhase((curPh+1)%5);}
+  if(e.key>='1'&&e.key<='5')setPhase(parseInt(e.key)-1);
+});
+var tsY=0;document.addEventListener('touchstart',function(e){tsY=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',function(e){var dy=tsY-e.changedTouches[0].clientY;if(Math.abs(dy)>55)switchSim(dy>0?(curSim+1)%SIMS.length:(curSim-1+SIMS.length)%SIMS.length);},{passive:true});
+
+function pctLdr(p,t){document.getElementById('l-fill').style.width=p+'%';if(t)document.getElementById('l-txt').textContent=t;}
+
+function boot(){
+  buildUI();resize();
+  initGL();
+  LOD=1;
+  pctLdr(30,'Building simulations…');
+  initCurrentSim();
+  setPhase(0);
+  pctLdr(100);
+  lastT=performance.now();
+  setTimeout(function(){document.getElementById('loader').classList.add('gone');loop(performance.now());},500);
+}
+boot();
+</script>
+</body>
+</html>

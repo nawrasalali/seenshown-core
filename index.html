@@ -2,12 +2,1207 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SeenShown — Make anything seeable</title>
-<meta name="description" content="Type any question. Watch it become a living simulation.">
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#02040e;color:#8BA8C8;font-family:-apple-system,sans-serif;min-height:100vh}</style>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>SeenShown — Watch Any Question Come Alive</title>
+<meta name="description" content="Type any question. Watch it become a real-time particle simulation.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--border:rgba(38,232,176,0.15);--red:#e05c5c;--gold:#f0c040}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:50px;background:rgba(2,4,14,0.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06)}
+.nav-logo{font-size:1.1rem;font-weight:800;letter-spacing:-.03em;color:var(--g);cursor:pointer;text-decoration:none}
+.nav-tabs{display:flex;gap:2px}
+.ntab{padding:5px 12px;border-radius:6px;font-size:.75rem;font-weight:500;color:var(--dim);cursor:pointer;transition:all .18s;border:none;background:transparent;text-decoration:none;display:inline-block}
+.ntab:hover{color:var(--w);background:rgba(255,255,255,0.06)}
+.ntab.active{color:var(--g);background:rgba(38,232,176,0.1)}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nbadge{font-size:.58rem;background:rgba(124,79,212,0.18);border:1px solid rgba(124,79,212,0.4);color:#c4a0ff;padding:2px 7px;border-radius:20px}
+.inv-btn{font-size:.68rem;background:var(--g);color:#02040e;padding:4px 10px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block}
+
+/* CANVAS */
+#simCanvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+
+/* OVERLAY — pointer-events:none by default, children enable selectively */
+#overlay{position:fixed;inset:0;padding-top:50px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none;z-index:10}
+
+/* PILLS — top */
+#pills{pointer-events:all;display:flex;gap:4px;padding:8px 16px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
+#pills::-webkit-scrollbar{display:none}
+.dpill{flex-shrink:0;font-size:.6rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:4px 10px;border-radius:16px;border:1px solid rgba(255,255,255,0.1);color:var(--dim);cursor:pointer;transition:all .2s;background:rgba(2,4,14,0.7)}
+.dpill.active{color:#02040e;font-weight:700}
+.dpill:hover:not(.active){opacity:.8;border-color:rgba(255,255,255,0.22)}
+
+/* STAGE */
+#stage{flex:1;position:relative;min-height:0}
+
+/* CAUSE-EFFECT panel — left side */
+#cePanel{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:148px;display:flex;flex-direction:column;gap:6px;pointer-events:all}
+.ce-lbl{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--g);opacity:.6;text-align:center;margin-bottom:2px}
+.cebtn{background:rgba(8,13,26,0.82);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:8px 10px;cursor:pointer;transition:all .2s}
+.cebtn:hover{border-color:rgba(38,232,176,0.45);background:rgba(38,232,176,0.07)}
+.cebtn.active{border-color:var(--g);background:rgba(38,232,176,0.12)}
+.ce-ico{font-size:.82rem;margin-bottom:2px}
+.ce-ttl{font-size:.68rem;font-weight:600;color:var(--w);line-height:1.2}
+.ce-dsc{font-size:.58rem;color:var(--dim);margin-top:1px;line-height:1.3}
+
+/* NARRATION — bottom third of stage, centered, no overlap */
+#narrWrap{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,rgba(2,4,14,0.96) 0%,rgba(2,4,14,0.8) 60%,transparent 100%);padding:16px 20px 14px;pointer-events:all}
+#narrPhase{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--g);opacity:.75;margin-bottom:5px}
+#narrText{font-size:.9rem;line-height:1.62;color:rgba(255,255,255,0.88);max-width:680px;transition:opacity .35s}
+
+/* NEXT NARR button */
+#narrNext{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:5px 14px;border:1px solid rgba(38,232,176,0.3);border-radius:20px;font-size:.68rem;font-weight:600;color:var(--g);cursor:pointer;background:rgba(38,232,176,0.06);transition:all .18s}
+#narrNext:hover{background:rgba(38,232,176,0.14);border-color:var(--g)}
+#narrDots{display:flex;gap:5px;align-items:center;margin-top:8px}
+.ndot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all .2s;cursor:pointer}
+.ndot.on{background:var(--g);width:16px;border-radius:3px}
+
+/* SWIPE HINT */
+#swipeHint{position:absolute;right:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;opacity:.4;transition:opacity .5s}
+#swipeHint.hide{opacity:0}
+.sa{font-size:1.1rem;color:var(--g);animation:bup 1.6s ease-in-out infinite}
+@keyframes bup{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* BOTTOM CONTROLS */
+#ctrl{pointer-events:all;padding:10px 16px 16px;background:linear-gradient(0deg,rgba(2,4,14,1) 0%,rgba(2,4,14,0.92) 100%)}
+#qrow{display:flex;gap:7px;margin-bottom:9px}
+#mainQ{flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--w);font-size:.9rem;outline:none;transition:border-color .2s;caret-color:var(--g)}
+#mainQ:focus{border-color:var(--g);background:rgba(255,255,255,0.09)}
+#mainQ::placeholder{color:var(--dim)}
+#askBtn{background:var(--g);color:#02040e;border:none;border-radius:10px;padding:11px 16px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;min-width:96px;transition:opacity .2s}
+#askBtn:hover{opacity:.88}
+#askBtn.busy{opacity:.5;pointer-events:none}
+
+/* ICON CONTROLS ROW */
+#iconRow{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.ictl{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:5px 10px;font-size:.72rem;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .18s;white-space:nowrap}
+.ictl:hover{border-color:rgba(38,232,176,0.4);color:var(--g)}
+.ictl.on{border-color:var(--g);color:var(--g);background:rgba(38,232,176,0.08)}
+.ictl-ico{font-size:.85rem}
+.sdiv{width:1px;height:18px;background:rgba(255,255,255,0.07);flex-shrink:0}
+#speedR{width:80px;accent-color:var(--g);cursor:pointer}
+.chips{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.qchip{flex-shrink:0;font-size:.62rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:4px 8px;color:var(--dim);cursor:pointer;transition:all .17s;white-space:nowrap}
+.qchip:hover{border-color:var(--g);color:var(--g);background:rgba(38,232,176,0.06)}
+
+/* OVERLAYS */
+#thinkOv{position:fixed;inset:0;padding-top:50px;display:flex;align-items:center;justify-content:center;background:rgba(2,4,14,0.75);opacity:0;pointer-events:none;transition:opacity .28s;z-index:50}
+#thinkOv.show{opacity:1;pointer-events:all}
+.tspn{width:36px;height:36px;border:3px solid rgba(38,232,176,0.15);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tttl{font-size:.92rem;font-weight:600;color:var(--g);margin-bottom:3px;text-align:center}
+.tsub{font-size:.74rem;color:var(--dim);text-align:center}
+#lodOv{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .5s;z-index:30}
+#lodOv.gone{opacity:0;pointer-events:none}
+.lring{width:38px;height:38px;border:2px solid rgba(38,232,176,0.12);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px}
+.ltxt{font-size:.7rem;color:var(--dim)}
+.rpl{position:fixed;border-radius:50%;border:2px solid var(--g);animation:rplAnim .6s ease-out forwards;pointer-events:none;z-index:100}
+@keyframes rplAnim{0%{width:8px;height:8px;opacity:.85;margin:-4px}100%{width:72px;height:72px;opacity:0;margin:-36px}}
+#aiBadge{position:fixed;top:58px;right:16px;background:rgba(38,232,176,0.1);border:1px solid var(--border);border-radius:8px;padding:5px 11px;font-size:.68rem;color:var(--g);opacity:0;transition:opacity .3s;z-index:60;pointer-events:none}
+#aiBadge.show{opacity:1}
+/* Voice badge */
+#voiceBadge{position:fixed;top:58px;left:16px;background:rgba(124,79,212,0.12);border:1px solid rgba(124,79,212,0.3);border-radius:8px;padding:5px 11px;font-size:.68rem;color:#c4a0ff;opacity:0;transition:opacity .3s;z-index:60;display:flex;align-items:center;gap:5px}
+#voiceBadge.show{opacity:1}
+.vwave{display:flex;gap:2px;align-items:center;height:14px}
+.vwave span{display:block;width:2px;background:#c4a0ff;border-radius:2px;animation:vw .6s ease-in-out infinite}
+.vwave span:nth-child(1){animation-delay:0s;height:4px}
+.vwave span:nth-child(2){animation-delay:.15s;height:10px}
+.vwave span:nth-child(3){animation-delay:.3s;height:7px}
+.vwave span:nth-child(4){animation-delay:.15s;height:12px}
+.vwave span:nth-child(5){animation-delay:0s;height:4px}
+@keyframes vw{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+
+@media(max-width:640px){#cePanel{display:none}#swipeHint{right:8px}}
+@media(max-height:580px){#narrText{font-size:.78rem}}
+
+/* SOCIAL POSTS PANEL */
+#socialPanel{position:fixed;right:0;top:50px;bottom:0;width:300px;background:rgba(2,4,14,0.97);border-left:1px solid rgba(255,255,255,0.07);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)}
+#socialPanel.open{transform:translateX(0)}
+#socialToggle{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:151;background:rgba(38,232,176,0.12);border:1px solid rgba(38,232,176,0.3);border-right:none;border-radius:10px 0 0 10px;padding:14px 7px;cursor:pointer;writing-mode:vertical-rl;font-size:.62rem;font-weight:700;color:var(--g);letter-spacing:.1em;transition:all .2s}
+#socialToggle:hover{background:rgba(38,232,176,0.2)}
+#socialPanel.open~#socialToggle{right:300px}
+.sp-header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sp-title{font-size:.85rem;font-weight:800;color:var(--w);display:flex;align-items:center;gap:7px}
+.sp-live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:spblink 1s infinite}
+@keyframes spblink{0%,100%{opacity:1}50%{opacity:.3}}
+.sp-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;padding:2px 6px}
+.sp-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.sp-tab{flex:1;padding:9px;text-align:center;font-size:.68rem;font-weight:600;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s}
+.sp-tab.on{color:var(--g);border-color:var(--g)}
+.sp-feed{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.sp-post{border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 16px;transition:background .15s}
+.sp-post:hover{background:rgba(255,255,255,0.025)}
+.sp-post-header{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.sp-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0}
+.sp-author{font-size:.76rem;font-weight:700;color:var(--w)}
+.sp-handle{font-size:.65rem;color:var(--dim)}
+.sp-time{font-size:.62rem;color:var(--dim);margin-left:auto}
+.sp-domain-tag{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.sp-text{font-size:.78rem;line-height:1.58;color:rgba(255,255,255,.82);margin-bottom:10px}
+.sp-text strong{color:var(--g)}
+.sp-sim-preview{background:#000;border-radius:8px;overflow:hidden;margin-bottom:10px;position:relative;cursor:pointer}
+.sp-sim-canvas{width:100%;height:88px;display:block}
+.sp-sim-label{position:absolute;bottom:0;left:0;right:0;padding:6px 10px;background:linear-gradient(0deg,rgba(2,4,14,0.9) 0%,transparent 100%);font-size:.65rem;font-weight:600;color:var(--g)}
+.sp-actions{display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.06);margin:-14px -16px;margin-top:10px}
+.sp-action{flex:1;padding:8px 6px;text-align:center;font-size:.68rem;color:var(--dim);cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:4px}
+.sp-action:hover{color:var(--w);background:rgba(255,255,255,0.04)}
+.sp-action.liked{color:var(--red)}
+.sp-action.funded{color:var(--gold)}
+.sp-compose{padding:12px 14px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.sp-compose-row{display:flex;gap:7px}
+.sp-compose-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:8px 11px;color:var(--w);font-size:.76rem;outline:none}
+.sp-compose-input:focus{border-color:var(--g)}
+.sp-compose-btn{background:var(--g);color:#02040e;border:none;border-radius:8px;padding:8px 12px;font-weight:700;font-size:.75rem;cursor:pointer}
+@media(max-width:640px){#socialPanel{width:100%}#socialToggle{top:auto;bottom:80px;transform:none;writing-mode:horizontal-tb;border-radius:10px 0 0 10px}}
+</style>
 </head>
 <body>
-<script>window.location.replace('/home.html');</script>
+
+<nav id="nav">
+  <a class="nav-logo" href="/">SeenShown</a>
+  <div class="nav-tabs">
+    <span class="ntab active">Home</span>
+    <a class="ntab" href="/social.html">Social</a>
+    <a class="ntab" href="/community.html">Community</a>
+    <a class="ntab" href="/investors.html">Investors</a>
+  </div>
+  <div class="nav-right">
+    <span class="nbadge">AU 2026903218</span>
+    <a class="inv-btn" href="/investors.html">$2M Seed →</a>
+  </div>
+</nav>
+
+<canvas id="simCanvas"></canvas>
+
+<div id="overlay">
+  <div id="pills"></div>
+
+  <div id="stage">
+    <div id="cePanel">
+      <div class="ce-lbl">Cause → Effect</div>
+      <div id="ceBtns"></div>
+    </div>
+
+    <div id="narrWrap">
+      <div id="narrPhase">Phase 1 · Initial State</div>
+      <div id="narrText"> </div>
+      <div id="narrDots"></div>
+      <div id="narrNext" onclick="nextPhase()">Next <span>→</span></div>
+    </div>
+
+    <div id="swipeHint">
+      <span style="font-size:.55rem;color:var(--dim);writing-mode:vertical-rl">swipe</span>
+      <span class="sa">↕</span>
+    </div>
+  </div>
+
+  <div id="thinkOv">
+    <div style="text-align:center">
+      <div class="tspn"></div>
+      <div class="tttl" id="thinkTtl">Generating simulation…</div>
+      <div class="tsub" id="thinkSub">Finding the best particle model</div>
+    </div>
+  </div>
+
+  <div id="ctrl">
+    <div id="qrow">
+      <input id="mainQ" type="text" placeholder="Ask anything — How does heartbreak feel? How does the Big Bang work? What causes grief?" maxlength="300" autocomplete="off">
+      <button id="askBtn" onclick="askQuestion()">Simulate ⚡</button>
+    </div>
+    <div id="iconRow">
+      <div class="ictl" id="pauseBtn" onclick="togglePause()"><span class="ictl-ico">⏸</span><span id="pauseLabel">Pause</span></div>
+      <div class="sdiv"></div>
+      <div class="ictl" id="voiceBtn" onclick="toggleVoice()"><span class="ictl-ico">🔊</span><span>Voice</span></div>
+      <div class="sdiv"></div>
+      <span style="font-size:.6rem;color:var(--dim)">Speed</span>
+      <input type="range" id="speedR" min="0.1" max="3.5" step="0.1" value="1">
+      <div class="sdiv"></div>
+      <div class="chips" id="qchips"></div>
+    </div>
+  </div>
+</div>
+
+<div id="lodOv"><div style="text-align:center"><div class="lring"></div><div class="ltxt">Initialising particle engine…</div></div></div>
+<div id="aiBadge">✦ AI-generated simulation</div>
+<div id="voiceBadge"><div class="vwave"><span></span><span></span><span></span><span></span><span></span></div> Speaking…</div>
+
+<!-- SOCIAL TOGGLE -->
+<button id="socialToggle" onclick="toggleSocial()" title="Community Feed">SOCIAL</button>
+
+<!-- SOCIAL PANEL -->
+<div id="socialPanel">
+  <div class="sp-header">
+    <div class="sp-title"><div class="sp-live-dot"></div> Community Feed</div>
+    <button class="sp-close" onclick="toggleSocial()">✕</button>
+  </div>
+  <div class="sp-tabs">
+    <div class="sp-tab on" onclick="setSPTab('trending',this)">🔥 Trending</div>
+    <div class="sp-tab" onclick="setSPTab('new',this)">✨ New</div>
+    <div class="sp-tab" onclick="setSPTab('following',this)">👥 Following</div>
+  </div>
+  <div class="sp-feed" id="sp-feed"></div>
+  <div class="sp-compose">
+    <div class="sp-compose-row">
+      <input class="sp-compose-input" id="sp-compose-input" placeholder="Share a simulation or thought…" onkeydown="if(event.key==='Enter')spPost()">
+      <button class="sp-compose-btn" onclick="spPost()">Post</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════
+   SEENSHOWN HOME — v4
+   Key changes:
+   - Narration sits in bottom gradient, never overlaps sim
+   - Manual Next button for narration (not auto)
+   - Pause / Play simulation
+   - ElevenLabs voice narration
+   - Domains reordered: emotions first
+   - Removed: cardiology, respiratory, finance, climate, genetics
+   - Added: Big Bang, Universe Shrink (cosmic zoom)
+   - Tighter question→sim matching
+═══════════════════════════════════════════════════════ */
+
+var API_SIM = 'https://seenshown-api-production.up.railway.app';
+var ELEVEN_API_KEY = 'sk_a0c7de82c7a1a0e85ca0e62d5f69e7c5fcf3d0e1ac84fba8'; // Replace with actual key if different
+var ELEVEN_VOICE_ID = 'JBFqnCBsd6RMkjVDRZzb'; /* "George" - deep, clear */
+
+var P_SCALE = Math.max((function(){var t0=performance.now(),n=0;while(performance.now()-t0<8)n++;return n>18000?1:n>9000?.85:.65;})(), window.innerWidth>800?.85:.65);
+var DENSITY=1, LOD=0;
+var simT=0, simPhase=0, simSpeed=1, simDraw='heartbreak';
+var paused=false, voiceOn=false, voiceAudio=null;
+var customDrawFn=null;
+var RAF=null;
+
+/* ─── UTILS ─── */
+function rnd(a,b){return a+(b-a)*Math.random()}
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+
+/* ─── RENDERER HELPERS ─── */
+var canvas=document.getElementById('simCanvas');
+var ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+
+function glow(x,y,r,rr,gg,bb,a){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba('+rr+','+gg+','+bb+','+a+')');g.addColorStop(.45,'rgba('+rr+','+gg+','+bb+','+(a*.38)+')');g.addColorStop(1,'rgba('+rr+','+gg+','+bb+',0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+function fz(x,y,r,rr,gg,bb,i){if(LOD<1)return;glow(x,y,r,rr,gg,bb,i*.2);}
+function dp(x,y,r,rr,gg,bb,alpha,gm){if(LOD>=1)glow(x,y,r*(gm||3.5),rr,gg,bb,alpha*.55);ctx.fillStyle='rgba('+rr+','+gg+','+bb+','+alpha+')';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();if(LOD>=1&&r>2.2){ctx.fillStyle='rgba(255,255,255,.38)';ctx.beginPath();ctx.arc(x-r*.27,y-r*.27,r*.29,0,Math.PI*2);ctx.fill();}}
+
+/* ═══════════════════════════════════════════════════════
+   SIMULATION DOMAINS — ordered emotions first
+   Removed: cardiology, respiratory, climate, genetics, finance
+   Added: bigbang, universe (cosmic shrink/zoom)
+═══════════════════════════════════════════════════════ */
+
+var DOMAIN_ORDER = [
+  'heartbreak','love','grief','anger','joy',     // EMOTIONS first
+  'neuron','immune','amr','bh','bigbang','universe','rumour','urban','chem'
+];
+
+var DC = {
+  heartbreak:'#e8a0c0', love:'#ff88aa', grief:'#8899bb', anger:'#ff3300', joy:'#ffdd44',
+  neuron:'#60c0f0', immune:'#ff8c42', amr:'#26e8b0', bh:'#7C4FD4',
+  bigbang:'#ffeecc', universe:'#4466ff', rumour:'#f0c040', urban:'#6090ff', chem:'#40d0f0'
+};
+
+var DOMAIN_LABELS = {
+  heartbreak:'Heartbreak', love:'Love', grief:'Grief', anger:'Anger', joy:'Joy',
+  neuron:'Neuroscience', immune:'Immunology', amr:'Antibiotic', bh:'Black Hole',
+  bigbang:'Big Bang', universe:'Universe', rumour:'Social', urban:'Urban', chem:'Chemistry'
+};
+
+/* ─── CAUSE-EFFECT ─── */
+var CE = {
+  heartbreak:[{i:'💛',t:'Together',d:'Shared warmth'},{i:'💔',t:'The Break',d:'Bond severs'},{i:'❄️',t:'Silence',d:'Two cold fields'}],
+  love:[{i:'💫',t:'Attraction',d:'Fields approach'},{i:'💞',t:'Connection',d:'Particles merge'},{i:'🌟',t:'Union',d:'New warmth emerges'}],
+  grief:[{i:'💔',t:'The Void',d:'Loss hits'},{i:'🌊',t:'The Waves',d:'Memory triggers'},{i:'🌱',t:'Integration',d:'New pattern forms'}],
+  anger:[{i:'😤',t:'Frustration',d:'Pressure builds'},{i:'😡',t:'Rage Peak',d:'System overloads'},{i:'😮‍💨',t:'Release',d:'Energy dissipates'}],
+  joy:[{i:'✨',t:'Spark',d:'Positive signal'},{i:'🌟',t:'Cascade',d:'Reward flooding'},{i:'🎆',t:'Expansion',d:'Full radiance'}],
+  neuron:[{i:'⚡',t:'Na⁺ Influx',d:'Depolarisation'},{i:'🏃',t:'Propagation',d:'Signal travels'},{i:'🔗',t:'Synapse',d:'Neurotransmitter fire'}],
+  immune:[{i:'🎯',t:'TCR Scan',d:'Antigen found'},{i:'💣',t:'Perforin',d:'Pores open'},{i:'☠️',t:'Apoptosis',d:'Clean cell death'}],
+  amr:[{i:'🌿',t:'Colony',d:'Bacteria thrive'},{i:'💊',t:'Antibiotic',d:'PBP blocked'},{i:'💀',t:'Resistance',d:'Survivors breed'}],
+  bh:[{i:'🌀',t:'Accretion',d:'Disk forming'},{i:'💫',t:'Photon Sphere',d:'Light orbiting'},{i:'🌌',t:'Einstein Ring',d:'Gravitational lens'}],
+  bigbang:[{i:'⚡',t:'Singularity',d:'All energy, one point'},{i:'💥',t:'Inflation',d:'Space stretches 10²⁶'},{i:'🌌',t:'First Light',d:'Matter forms at 380k yrs'}],
+  universe:[{i:'🌍',t:'Our Planet',d:'3rd rock from sun'},{i:'🌌',t:'Milky Way',d:'200 billion stars'},{i:'✨',t:'All Universes',d:'The cosmic web'}],
+  rumour:[{i:'😶',t:'One Knows',d:'Seed event'},{i:'📢',t:'Cascade',d:'Network floods'},{i:'🔴',t:'Stifler',d:'Attention ends'}],
+  urban:[{i:'🚗',t:'Free Flow',d:'Normal density'},{i:'🚦',t:'Junction Block',d:'Feedback loop'},{i:'🚨',t:'Gridlock',d:'Network fails'}],
+  chem:[{i:'⚗️',t:'Diffusion',d:'Reactants drift'},{i:'💥',t:'Collision',d:'Bonds break'},{i:'✨',t:'Equilibrium',d:'Products stabilise'}]
+};
+
+/* ─── NARRATION ─── */
+var NARR = {
+  heartbreak:[
+    ['Phase 1 · Two Complete Worlds','Two luminous particle fields orbit independently — warm amber and cool rose, each whole alone. The mathematics of their separate orbits are stable, predictable, complete. They have not yet entered the same gravitational field.'],
+    ['Phase 2 · The Break','A fracture propagates through the shared field. What were interlocked orbits suddenly repel. The shared colour — that specific warmth that existed only in their overlap — collapses to cold. Watch the hands: the last particles to separate are always at the fingertips.'],
+    ['Phase 3 · Silence','Two separate cold fields. The particles are intact — each person still whole. But the emergent property of their connection, the specific warmth they produced together, is thermodynamically impossible to reconstruct. It is simply gone.']
+  ],
+  love:[
+    ['Phase 1 · Attraction','Two independent particle systems develop awareness of each other. A gravitational perturbation — the first sign of attraction is always a slight deviation from the original orbit. Something has changed the phase space.'],
+    ['Phase 2 · Overlap','The fields merge. Particles from each system share orbital paths. What were two distinct colour temperatures begin to blend — warmer than cold, brighter than alone. This is emergence: two systems producing more than the sum of their parts.'],
+    ['Phase 3 · Union','A single coherent field. The colour is not A plus B — it is something neither could generate alone. The physics of love, modelled: two fields in mutual orbit, each amplifying the other\'s signal.']
+  ],
+  grief:[
+    ['Phase 1 · The Void Appears','The brain has built a predictive model that includes the lost person — their voice, their patterns, their presence. Grief is the collision between this model and reality. Every moment where the prediction fails reactivates the loss.'],
+    ['Phase 2 · The Waves','Grief arrives as waves — triggered by music, by light, by ordinary objects suddenly freighted with meaning. The amygdala fires at stimuli associated with the loved one. The brain cannot simply delete these connections.'],
+    ['Phase 3 · Integration','With time, the brain integrates. The neural model of the lost person becomes a memory rather than a prediction. The pain does not end — it changes character. A living relationship with someone who is gone.']
+  ],
+  anger:[
+    ['Phase 1 · Frustration Builds','The amygdala fires before the prefrontal cortex can respond — 250 milliseconds before conscious awareness. Cortisol and adrenaline flood the bloodstream. The body prepares for a threat that may exist only in the mind.'],
+    ['Phase 2 · Rage Peak','At peak anger the prefrontal cortex is functionally offline. Decisions made in this state are made with 40% less grey matter available. This is the neurochemistry of why we say things we cannot later explain.'],
+    ['Phase 3 · Dissipation','The parasympathetic system gradually wins. Cortisol clears in 20 minutes. But the neural pathways that fired have been reinforced. The person who was calm before is slightly more likely to be angry next time.']
+  ],
+  joy:[
+    ['Phase 1 · The Spark','A dopaminergic signal originates in the ventral tegmental area. Anticipation activates before reward arrives — the brain is addicted to the prediction of good things, not only to good things themselves.'],
+    ['Phase 2 · The Flood','Dopamine, serotonin, endorphins, and oxytocin cascade simultaneously. The nucleus accumbens saturates. Literally: you cannot think straight. Joy at peak intensity is chemically indistinguishable from certain states of temporary madness.'],
+    ['Phase 3 · Expansion','The residual warmth after joy\'s peak is serotonin — the background happiness signal. It expands through the field like heat through a warm room. This is why good things leave afterglows. The chemistry lingers.']
+  ],
+  neuron:[
+    ['Phase 1 · Depolarisation','Voltage-gated Na⁺ channels open at the axon hillock. The membrane flips from −70mV to +40mV in under 1 millisecond. 86 billion neurons, each capable of firing 1,000 times per second.'],
+    ['Phase 2 · Propagation','The action potential travels the axon via successive channel openings. Myelin sheath speeds conduction to 120 m/s — jumping between nodes of Ranvier. A signal traverses your entire nervous system in 100 milliseconds.'],
+    ['Phase 3 · Synaptic Release','Vesicles dock at the terminus and release neurotransmitters across the 20-nanometre synaptic cleft. The signal has crossed from electrical to chemical to electrical again. Your every thought is this.']
+  ],
+  immune:[
+    ['Phase 1 · TCR Scanning','Cytotoxic T-cells patrol continuously — 2 million new cells produced daily. They scan every cell they encounter, checking MHC-I complexes for mutant peptide antigens displayed by cancer cells.'],
+    ['Phase 2 · Perforin Delivery','Recognition triggers perforin polymerisation into membrane pores. Granzyme B enters and activates caspase-3. The cancer cell has 10 minutes. The T-cell has already moved on to scan its next target.'],
+    ['Phase 3 · Clean Apoptosis','The cancer cell dismantles itself from the inside — organelles fragment, DNA is cut at specific sites, membrane blebs form. Macrophages arrive to clean debris. No inflammation. No bystander damage. Evolution\'s surgical precision.']
+  ],
+  amr:[
+    ['Phase 1 · Healthy Colony','A single bacterium dividing every 20 minutes produces one billion descendants in 10 hours. Within this diversity, antibiotic resistance genes may already exist at low frequency — present but invisible.'],
+    ['Phase 2 · Antibiotic Attack','The antibiotic kills susceptible bacteria — 99.99% of the colony. This is not a cure. It is a filter. The 0.01% carrying resistance genes survive by luck, not planning. Natural selection compressed into days.'],
+    ['Phase 3 · Resistance Dominates','The survivors reproduce. Within 48 hours the colony is re-established — composed entirely of resistant bacteria. The antibiotic has selected for exactly what it was meant to kill. We are running out faster than we develop new ones.']
+  ],
+  bh:[
+    ['Phase 1 · Accretion Disk','Extreme mass curves the spacetime metric. Matter spirals inward, heating to millions of Kelvin. The accretion disk emits X-rays visible across the galaxy. Everything that falls past the event horizon is lost forever.'],
+    ['Phase 2 · Photon Sphere','At 1.5 Schwarzschild radii, light itself orbits the singularity. Below this, no photon escapes. Above it, photons from behind the black hole bend around it — you can see the back of the object you are looking at.'],
+    ['Phase 3 · Einstein Ring','When a massive object precisely aligns between observer and background star, light bends completely around it — creating a perfect ring of magnified starlight. This ring, predicted in 1915, was not photographed until 2019.']
+  ],
+  bigbang:[
+    ['Phase 1 · The Singularity','13.8 billion years ago, all matter, energy, space, and time existed in a volume smaller than a proton at 10³² Kelvin. The laws of physics as we know them did not yet apply. Then — for no known reason — it expanded.'],
+    ['Phase 2 · Inflation','In 10⁻³² seconds the universe expanded by a factor of 10²⁶. Not matter moving through space — space itself stretching. Quantum fluctuations stretched to cosmic scales, seeding the large-structure of everything that would follow.'],
+    ['Phase 3 · First Light','380,000 years after the Big Bang the universe cooled enough for electrons to bind to protons. The universe became transparent for the first time. That light is still travelling — we see it as the Cosmic Microwave Background. The oldest light in existence.']
+  ],
+  universe:[
+    ['Phase 1 · Our Planet','Begin here: Earth, 12,742 km across. Pale blue dot orbiting a medium-sized star, third of eight planets, in the outer spiral arm of a barred spiral galaxy. Home to all known life in the universe.'],
+    ['Phase 2 · The Milky Way','Zoom out: 200 billion suns arranged in a disk 100,000 light-years across. Our solar system is 26,000 light-years from the galactic centre — a journey at light speed that would take 26,000 years. We have never left our own star system.'],
+    ['Phase 3 · The Observable Universe','Zoom further: the Milky Way is one of at least 2 trillion galaxies in the observable universe — a sphere 93 billion light-years across. Beyond that, space continues but we cannot see it. The universe is not the same as what we can observe of it.']
+  ],
+  rumour:[
+    ['Phase 1 · Initial Seeding','One person knows. In a connected network of 8 billion nodes, this person has on average 1,000 direct connections and 3 billion within three hops. The conditions for pandemic spread of information are always present.'],
+    ['Phase 2 · Network Cascade','Each spreader reaches susceptible neighbours. When R₀ exceeds 1.0 the cascade is exponential. Hub nodes create super-spreading events. One message, one billion minds — faster than any physical pathogen could travel.'],
+    ['Phase 3 · Stifler Collapse','Saturation flips spreaders to stiflers — people who\'ve heard it and lost interest. The cascade collapses not because truth wins, but because attention is finite. Information entropy always increases.']
+  ],
+  urban:[
+    ['Phase 1 · Free Flow','Vehicles traverse the urban grid at optimal density. Network throughput is maximised. All junctions clear. This state is unstable — small perturbations can tip it into a very different regime.'],
+    ['Phase 2 · Critical Threshold','Density exceeds the junction\'s service rate. A bottleneck forms. Upstream queues grow faster than they clear. The system undergoes a phase transition: from free-flow to congested, with no stable intermediate state.'],
+    ['Phase 3 · Gridlock Cascade','Congestion percolates across connected streets. A bottleneck at one junction prevents vehicles from leaving adjacent junctions — which then back up into further junctions. The entire network fails in a cascade.']
+  ],
+  chem:[
+    ['Phase 1 · Reactant Diffusion','Reactant molecules A (cyan) and B (red) diffuse randomly through solution, governed by Brownian motion. No reaction can occur without a collision of sufficient energy — the activation energy barrier.'],
+    ['Phase 2 · Collision Events','Molecules collide with kinetic energy exceeding the activation threshold. Bonds break and reform. Product P (gold) appears at the reaction zone. The rate depends on concentration, temperature, and catalyst presence.'],
+    ['Phase 3 · Dynamic Equilibrium','Products accumulate as reactants deplete. The forward and reverse reaction rates equalise — Le Chatelier\'s principle governs the final concentrations. The system finds its lowest-energy configuration.']
+  ]
+};
+
+/* ═══════════════════════════════════════════════════════
+   DRAW FUNCTIONS
+═══════════════════════════════════════════════════════ */
+var DRAW = {};
+var W=function(){return canvas.width;}, H=function(){return canvas.height;};
+
+/* ── HEARTBREAK ── */
+DRAW.heartbreak = function(t,ph){
+  ctx.fillStyle='#06020e';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()*.44;
+  var sep=ph===0?0:ph===1?clamp((t%3000)/1200,0,1):1;
+  sep*=W()*.2;
+  var LX=cx-sep,RX=cx+sep;
+  fz(LX,cy,H()*.55,220,100,130,.5-sep/W());
+  fz(RX,cy,H()*.55,200,140,80,.5-sep/W());
+  if(ph===2){fz(LX,cy,H()*.45,40,60,200,.5);fz(RX,cy,H()*.45,120,80,40,.4);}
+  if(!window._hbP){window._hbP=[];for(var i=0;i<Math.round(180*P_SCALE*DENSITY);i++){var s=i<90?-1:1;window._hbP.push({side:s,ang:rnd(0,Math.PI*2),rad:rnd(18,Math.min(W(),H())*.24),spd:rnd(.003,.007)*s,r:rnd(1.8,3.8),ph2:rnd(0,Math.PI*2)});}}
+  for(var i=0;i<window._hbP.length;i++){
+    var p=window._hbP[i];p.ang+=p.spd*simSpeed;
+    var pcx=p.side===-1?LX:RX;
+    var x=pcx+Math.cos(p.ang)*p.rad,y=cy+Math.sin(p.ang)*p.rad*.75+Math.sin(t*.001+p.ph2)*6;
+    var cold=ph===2?.7:0;
+    var rr=p.side===-1?Math.round(lerp(220,40,cold)):Math.round(lerp(200,60,cold));
+    var gg=p.side===-1?Math.round(lerp(100,60,cold)):Math.round(lerp(140,50,cold));
+    var bb=p.side===-1?Math.round(lerp(130,180,cold)):Math.round(lerp(80,150,cold));
+    ctx.fillStyle='rgba('+rr+','+gg+','+bb+',.78)';ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();
+  }
+  if(ph===1&&sep>W()*.05){
+    ctx.save();ctx.strokeStyle='rgba(255,255,255,'+(clamp((sep-W()*.05)/(W()*.15),0,1)*.6)+')';
+    ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,cy-H()*.42);
+    for(var si=0;si<18;si++)ctx.lineTo(cx+(Math.random()-.5)*16,cy-H()*.42+si/18*H()*.88);
+    ctx.stroke();ctx.restore();
+  }
+};
+
+/* ── LOVE ── */
+DRAW.love = function(t,ph){
+  ctx.fillStyle='#050208';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()*.46;
+  var mt=ph===0?0:ph===1?clamp((t%3000)/1500,0,1):1;
+  var sep=(1-ease(mt))*W()*.2;
+  var LX=cx-sep,RX=cx+sep;
+  fz(LX,cy,H()*.52,220,100,130,.5);fz(RX,cy,H()*.52,255,160,80,.5);
+  if(mt>.5)fz(cx,cy,H()*.55*(mt-.5)*2,255,200,140,.4);
+  if(!window._lvP){window._lvP=[];for(var i=0;i<Math.round(160*P_SCALE*DENSITY);i++){var s=i<80?-1:1;window._lvP.push({side:s,ang:rnd(0,Math.PI*2),rad:rnd(18,Math.min(W(),H())*.22),spd:rnd(.003,.008)*s,r:rnd(1.6,3.8),ph2:rnd(0,Math.PI*2)});}}
+  for(var i=0;i<window._lvP.length;i++){
+    var p=window._lvP[i];p.ang+=p.spd*simSpeed*(1+mt*.4);
+    var pcx=p.side===-1?LX:RX;if(ph>=1)pcx=lerp(pcx,cx,ease(mt));
+    var x=pcx+Math.cos(p.ang)*p.rad*(1-mt*.25),y=cy+Math.sin(p.ang)*p.rad*(1-mt*.25)*.72;
+    var isL=(p.side===-1);
+    var rr=Math.round(lerp(isL?220:255,238,mt*.6));
+    var gg=Math.round(lerp(isL?100:160,155,mt*.6));
+    var bb=Math.round(lerp(isL?130:80,110,mt*.6));
+    ctx.fillStyle='rgba('+rr+','+gg+','+bb+',.82)';ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();
+  }
+};
+
+/* ── GRIEF ── */
+DRAW.grief = function(t,ph){
+  ctx.fillStyle='#01050d';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()*.45;
+  fz(cx,cy,H()*.58,30,50,120,.35);
+  if(ph===0){fz(cx,cy,H()*.14,0,0,0,1);}
+  if(ph===2){fz(cx,cy,H()*.22,100,120,180,.22);}
+  if(!window._grP){window._grP=[];for(var i=0;i<Math.round(200*P_SCALE*DENSITY);i++){window._grP.push({ang:rnd(0,Math.PI*2),rad:rnd(28,Math.min(W(),H())*.44),spd:rnd(.0005,.0022),r:rnd(1.2,3.5),pulse:rnd(0,Math.PI*2),wOff:rnd(0,Math.PI*2)});}}
+  for(var i=0;i<window._grP.length;i++){
+    var p=window._grP[i];p.ang+=p.spd*simSpeed*(ph===1?.4:1);
+    var wR=ph===1?p.rad*(.8+Math.sin(t*.002+p.wOff)*.4):p.rad;
+    var vE=ph===0?Math.max(0,1-p.rad/(H()*.14)):0;
+    var x=cx+Math.cos(p.ang)*wR*(1-vE*.9),y=cy+Math.sin(p.ang)*wR*.72*(1-vE*.9);
+    var rr=ph===2?Math.round(lerp(80,120,p.rad/Math.min(W(),H())*2)):80;
+    var gg=ph===2?Math.round(lerp(90,130,p.rad/Math.min(W(),H())*2)):92;
+    var bb=ph===2?Math.round(lerp(160,200,p.rad/Math.min(W(),H())*2)):165;
+    var al=.55+Math.sin(t*.002+p.pulse)*.12;if(ph===0&&p.rad<H()*.18)al*=.3;
+    ctx.fillStyle='rgba('+rr+','+gg+','+bb+','+al+')';ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();
+  }
+};
+
+/* ── ANGER ── */
+DRAW.anger = function(t,ph){
+  ctx.fillStyle=ph===1?'#0c0100':'#050100';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()/2;
+  if(ph===0)fz(cx,cy,H()*.52,200,60,20,.5);
+  else if(ph===1){fz(cx,cy,H()*.68,255,30,0,.7);fz(cx,cy,H()*.4,255,80,0,.5);}
+  else fz(cx,cy,H()*.52,180,80,20,.35);
+  if(!window._angP||window._angP.ph!==ph){
+    window._angP={ph:ph,pts:[]};
+    for(var i=0;i<Math.round(200*P_SCALE*DENSITY);i++){
+      var ang=rnd(0,Math.PI*2),spd=rnd(.8,3)*(ph===1?2:1);
+      window._angP.pts.push({x:cx+Math.cos(ang)*rnd(5,18),y:cy+Math.sin(ang)*rnd(5,18),vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:rnd(2,5),life:rnd(.2,1),decay:rnd(.002,.006),col:Math.floor(Math.random()*3)});
+    }
+  }
+  for(var i=0;i<window._angP.pts.length;i++){
+    var p=window._angP.pts[i];
+    p.x+=p.vx*simSpeed;p.y+=p.vy*simSpeed;p.vx*=ph===2?.97:.995;p.vy*=ph===2?.97:.995;
+    p.life-=p.decay*simSpeed*(ph===1?1.5:1);
+    if(p.life<=0){var na=rnd(0,Math.PI*2),ns=rnd(.5,2.5)*(ph===1?2:1);p.x=cx;p.y=cy;p.vx=Math.cos(na)*ns;p.vy=Math.sin(na)*ns;p.life=1;}
+    var rr=255,gg=p.col===0?20:p.col===1?100:220;
+    if(ph===2){rr=Math.round(lerp(255,140,1-p.life));gg=Math.round(lerp(gg,80,1-p.life));}
+    ctx.fillStyle='rgba('+rr+','+gg+',0,'+p.life*.88+')';ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);ctx.fill();
+  }
+};
+
+/* ── JOY ── */
+DRAW.joy = function(t,ph){
+  ctx.fillStyle='#03040a';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()*.46;
+  var int=ph===0?.5:ph===1?.85:1;
+  fz(cx,cy,H()*.65,240,200,60,int*.7);fz(cx,cy,H()*.4,255,230,100,int*.5);
+  var nP=Math.round((ph===0?80:ph===1?160:240)*P_SCALE*DENSITY);
+  if(!window._jyP||window._jyP.n!==nP){window._jyP={n:nP,pts:[]};for(var i=0;i<nP;i++){var ang=rnd(0,Math.PI*2),r=rnd(20,Math.min(W(),H())*.42);window._jyP.pts.push({ang,rad:r,spd:rnd(.002,.009)*(Math.random()>.5?1:-1),r2:rnd(1.5,4.2),ph2:rnd(0,Math.PI*2)});}}
+  for(var i=0;i<window._jyP.pts.length;i++){
+    var p=window._jyP.pts[i];p.ang+=p.spd*simSpeed*(1+ph*.4);
+    var pR=p.rad*(ph===0?.6:ph===1?.85:1.1+Math.sin(t*.002+p.ph2)*.1);
+    var x=cx+Math.cos(p.ang)*pR,y=cy+Math.sin(p.ang)*pR*.72;
+    var rr=240+Math.round(Math.sin(t*.002+p.ph2)*12);
+    var gg=200+Math.round(Math.sin(t*.003+p.ph2)*.5*40);
+    dp(x,y,p.r2*(ph===0?.6:1),clamp(rr,220,255),clamp(gg,180,255),60,.7+Math.sin(t*.003+p.ph2)*.2,2.5);
+  }
+};
+
+/* ── NEURON ── */
+DRAW.neuron = function(t,ph){
+  ctx.fillStyle='#02040e';ctx.fillRect(0,0,W(),H());
+  var cy=H()/2;fz(W()/2,cy,H()*.65,60,140,255,.38);
+  ctx.strokeStyle='rgba(60,120,255,.3)';ctx.lineWidth=14;
+  ctx.beginPath();ctx.moveTo(W()*.03,cy);ctx.lineTo(W()*.92,cy);ctx.stroke();
+  for(var m=0;m<8;m++){ctx.fillStyle='rgba(180,210,255,.12)';ctx.fillRect(W()*(.07+m*.11),cy-11,W()*.075,22);}
+  var wP=(t*.00042*Math.max(P_SCALE,.5))%1,wX=W()*.03+wP*W()*.89;
+  fz(wX,cy,55,255,200,60,1.1);
+  var wg=ctx.createRadialGradient(wX,cy,0,wX,cy,46);wg.addColorStop(0,'rgba(255,215,70,.72)');wg.addColorStop(.5,'rgba(255,185,40,.28)');wg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=wg;ctx.beginPath();ctx.arc(wX,cy,46,0,Math.PI*2);ctx.fill();
+  var nI=Math.round(18*P_SCALE*DENSITY);for(var i=0;i<nI;i++)dp(wX+(i-nI/2)*4.5,cy+Math.sin(i+t*.012)*13,3,255,195,55,.92,2.5);
+  for(var d=0;d<6;d++){ctx.strokeStyle='rgba(80,160,255,.3)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W()*.03,cy);ctx.lineTo(W()*.03+Math.cos(Math.PI*(.63+d*.1))*58,cy+Math.sin(Math.PI*(.63+d*.1))*46);ctx.stroke();}
+  if(ph>=1){var nV=Math.round(16*P_SCALE*DENSITY);for(var v=0;v<nV;v++){var va=v/nV*Math.PI*2,vr=20+Math.sin(t*.005+v)*6;dp(W()*.93+Math.cos(va)*vr,cy+Math.sin(va)*vr,5,124,79,212,.82,2.5);}
+  if(ph===2)for(var n=0;n<10;n++)dp(W()*.95+Math.sin(t*.008+n)*22,cy+(n-5)*9+Math.cos(t*.007+n)*10,2.8,38,232,176,.65,2.5);}
+};
+
+/* ── IMMUNE ── */
+DRAW.immune = function(t,ph){
+  ctx.fillStyle='#02040e';ctx.fillRect(0,0,W(),H());
+  var nC=ph===2?2:ph===1?4:8;
+  for(var c=0;c<nC;c++){
+    var ca=c/8*Math.PI*2+t*.0002,cr=Math.min(W(),H())*.28;
+    var ccx=W()/2+Math.cos(ca)*cr,ccy=H()/2+Math.sin(ca)*cr;
+    fz(ccx,ccy,cr*.88,255,100,160,.72);
+    var cg=ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,26);cg.addColorStop(0,'rgba(255,120,175,.55)');cg.addColorStop(1,'rgba(200,60,125,.25)');
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(ccx,ccy,26,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(255,100,165,.65)';ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(ccx,ccy,26,0,Math.PI*2);ctx.stroke();
+    dp(ccx,ccy-26,5,255,50,105,.9,2.5);
+  }
+  var nT=Math.round(6*P_SCALE*DENSITY);
+  for(var i=0;i<nT;i++){
+    var ta=i/nT*Math.PI*2+t*.0006*(1+i*.1),tr=Math.min(W(),H())*.14;
+    var tx=W()/2+Math.cos(ta)*tr,ty=H()/2+Math.sin(ta)*tr;
+    fz(tx,ty,tr*.9,38,232,176,.95);
+    var tg=ctx.createRadialGradient(tx,ty,0,tx,ty,11);tg.addColorStop(0,'rgba(38,232,176,.97)');tg.addColorStop(1,'rgba(10,185,125,.72)');
+    ctx.fillStyle=tg;ctx.beginPath();ctx.arc(tx,ty,11,0,Math.PI*2);ctx.fill();
+    if(ph>=1)for(var p=0;p<3;p++){var pa=ta+p*Math.PI*2/3+t*.003,pr=11+((t*.046+p*115)%48);dp(tx+Math.cos(pa)*pr,ty+Math.sin(pa)*pr,2.8,38,232,176,.52,2.5);}
+  }
+  if(ph===2)for(var a=0;a<22;a++)dp(W()*(.18+.64*((a*7+Math.floor(t/46))%22)/22),H()*(.18+.64*((a*13)%22)/22),5.5+Math.sin(a)*3,255,100,165,.22,2);
+};
+
+/* ── AMR (Antibiotic Resistance) ── */
+DRAW.amr = function(t,ph){
+  ctx.fillStyle='#020810';ctx.fillRect(0,0,W(),H());
+  var nB=Math.round(22*P_SCALE*DENSITY);
+  for(var i=0;i<nB;i++){
+    var bx=W()*(.07+.86*(i%5)/4),by=H()*(.14+.72*Math.floor(i/5)/3);
+    var alive=ph===0||(ph===1&&i%3!==0)||(ph===2&&i%7===0&&i%4===0);
+    if(!alive){for(var d=0;d<6;d++){var da=d/6*Math.PI*2+t*.003+i*.5,dr=14+Math.sin(t*.004+d)*9;dp(bx+Math.cos(da)*dr,by+Math.sin(da)*dr,2,100,200,100,.38,2);}continue;}
+    ctx.save();ctx.translate(bx+Math.sin(t*.002+i)*3,by);ctx.rotate(Math.sin(t*.001+i)*.3);
+    if(LOD>=1){var bg2=ctx.createRadialGradient(0,0,0,0,0,24);bg2.addColorStop(0,ph===2?'rgba(200,80,80,.18)':'rgba(80,200,100,.18)');bg2.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=bg2;ctx.beginPath();ctx.ellipse(0,0,30,15,0,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle=ph===2?'rgba(220,80,80,.88)':'rgba(55,205,115,.88)';ctx.beginPath();ctx.ellipse(0,0,20,10,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  if(ph>=1){var nAb=Math.round(36*P_SCALE*DENSITY);for(var a=0;a<nAb;a++)dp(W()*(Math.sin(a*2.3+t*.001)*.42+.5),H()*(Math.cos(a*1.7+t*.0008)*.4+.5),3.2,240,192,64,.68,2.5);}
+};
+
+/* ── BLACK HOLE ── */
+DRAW.bh = function(t,ph){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()/2,bhR=Math.min(W(),H())*.1;
+  for(var r=10;r>=1;r--){
+    ctx.save();ctx.translate(cx,cy);ctx.scale(1,.32);
+    var dg=ctx.createLinearGradient(-bhR*(2.1+r*.72),0,bhR*(2.1+r*.72),0);
+    dg.addColorStop(0,'rgba(255,100,20,0)');dg.addColorStop(.3,'hsla('+(26+r*7)+',92%,58%,'+(0.58-r*.055)+')');dg.addColorStop(.5,'hsla('+(26+r*7)+',94%,70%,'+(0.72-r*.055)+')');dg.addColorStop(.7,'hsla('+(26+r*7)+',92%,58%,'+(0.58-r*.055)+')');dg.addColorStop(1,'rgba(255,100,20,0)');
+    ctx.fillStyle=dg;ctx.beginPath();ctx.ellipse(0,0,bhR*(2.1+r*.72),bhR*(2.1+r*.72)*.16,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  var ehG=ctx.createRadialGradient(cx,cy,0,cx,cy,bhR*1.1);ehG.addColorStop(0,'#000');ehG.addColorStop(.86,'#000');ehG.addColorStop(1,'rgba(0,0,0,.5)');ctx.fillStyle=ehG;ctx.beginPath();ctx.arc(cx,cy,bhR*1.1,0,Math.PI*2);ctx.fill();
+  if(LOD>=1)fz(cx,cy,bhR*1.5,60,40,255,.55);
+  if(ph>=1&&LOD>=1){var nPh=Math.round(90*P_SCALE*DENSITY);for(var p=0;p<nPh;p++){var pa=p/nPh*Math.PI*2+t*.001*(1+p%3*.09),pr=bhR*1.52;dp(cx+Math.cos(pa)*pr,cy+Math.sin(pa)*pr*.38,1.6,255,255,215,.58,2);}}
+  if(ph===2){if(LOD>=1)glow(cx,cy,bhR*3.2,255,255,180,.28);ctx.strokeStyle='rgba(255,255,180,.45)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,bhR*2.85,0,Math.PI*2);ctx.stroke();}
+};
+
+/* ── BIG BANG ── */
+DRAW.bigbang = function(t,ph){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()/2;
+  var expR=ph===0?8:ph===1?Math.min(Math.min(W(),H())*.68,clamp(t*.0018,0,Math.min(W(),H())*.68)):Math.min(W(),H())*.72;
+  /* Background stars */
+  if(!window._bbStars){window._bbStars=[];for(var i=0;i<350;i++)window._bbStars.push({x:rnd(0,W()),y:rnd(0,H()),r:rnd(.3,1.6),tw:rnd(0,Math.PI*2)});}
+  if(ph>=1){for(var i=0;i<window._bbStars.length;i++){var s=window._bbStars[i];ctx.fillStyle='rgba(255,255,255,'+((.25+Math.sin(t*.003+s.tw)*.15)*(1-(ph===1?0:0)))+')';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}}
+  /* Expanding ring */
+  if(ph>=1){
+    ctx.strokeStyle='rgba(255,200,100,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,expR,0,Math.PI*2);ctx.stroke();
+    glow(cx,cy,expR*.15,255,220,100,.2);
+  }
+  /* Particles */
+  var nBB=Math.round(280*P_SCALE*DENSITY);
+  if(!window._bbP||window._bbP.ph!==ph||window._bbP.n!==nBB){
+    window._bbP={ph:ph,n:nBB,pts:[]};
+    for(var i=0;i<nBB;i++){var ang=rnd(0,Math.PI*2);window._bbP.pts.push({ang,dist:ph===0?rnd(0,5):rnd(0,expR*.88),spd:rnd(.0018,.006),r:rnd(.8,3.5),type:Math.floor(Math.random()*4),tw:rnd(0,Math.PI*2)});}
+  }
+  for(var i=0;i<window._bbP.pts.length;i++){
+    var p=window._bbP.pts[i];
+    p.dist+=p.spd*simSpeed*(ph===0?.0:ph===1?3:1);
+    if(p.dist>expR*1.08)p.dist=0;
+    var px=cx+Math.cos(p.ang)*p.dist,py=cy+Math.sin(p.ang)*p.dist;
+    var nd=p.dist/Math.max(expR,1);
+    var rr,gg,bb;
+    if(p.type===0){rr=255;gg=200+Math.round(nd*55);bb=150;}
+    else if(p.type===1){rr=200;gg=220;bb=255;}
+    else if(p.type===2){rr=255;gg=255;bb=200;}
+    else{rr=160;gg=100;bb=255;}
+    if(ph===0){rr=255;gg=255;bb=255;}
+    dp(px,py,p.r,rr,gg,bb,(.5+Math.sin(t*.005+p.tw)*.3)*(1-nd*.45));
+  }
+  /* Singularity core */
+  if(ph===0){fz(cx,cy,40,255,255,255,.9);ctx.fillStyle='rgba(255,255,255,.95)';ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fill();}
+  /* CMB rings at ph2 */
+  if(ph===2){for(var r=0;r<5;r++){ctx.strokeStyle='rgba(255,180,100,'+(0.06+r*.02)+')';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,expR*(.42+r*.12)+Math.sin(t*.001+r)*5,0,Math.PI*2);ctx.stroke();}}
+};
+
+/* ── UNIVERSE (Cosmic Zoom Out) ── */
+DRAW.universe = function(t,ph){
+  ctx.fillStyle='#000002';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()/2;
+  var zoom=ph===0?1:ph===1?Math.max(.0001,1-clamp(t*.00008,0,.999)):0.00001;
+
+  /* Phase 0: Earth + solar system */
+  if(ph===0){
+    /* Space background */
+    if(!window._uvStars0){window._uvStars0=[];for(var i=0;i<200;i++)window._uvStars0.push({x:rnd(0,W()),y:rnd(0,H()),r:rnd(.3,1.4),a:rnd(.2,.8)});}
+    for(var i=0;i<window._uvStars0.length;i++){var s=window._uvStars0[i];ctx.fillStyle='rgba(255,255,255,'+s.a+')';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}
+    /* Sun */
+    var sunR=Math.min(W(),H())*.08;
+    var sg=ctx.createRadialGradient(cx*.3,cy*.4,0,cx*.3,cy*.4,sunR*3);sg.addColorStop(0,'rgba(255,240,100,.9)');sg.addColorStop(.4,'rgba(255,200,50,.35)');sg.addColorStop(1,'rgba(255,180,0,0)');ctx.fillStyle=sg;ctx.fillRect(0,0,W(),H());
+    /* Earth */
+    var eR=Math.min(W(),H())*.16;
+    var eg=ctx.createRadialGradient(cx-eR*.25,cy-eR*.2,eR*.05,cx,cy,eR);
+    eg.addColorStop(0,'rgba(100,160,255,.95)');eg.addColorStop(.35,'rgba(40,100,200,.9)');eg.addColorStop(.7,'rgba(20,80,160,.85)');eg.addColorStop(1,'rgba(10,50,120,.7)');
+    ctx.fillStyle=eg;ctx.beginPath();ctx.arc(cx,cy,eR,0,Math.PI*2);ctx.fill();
+    /* Clouds */
+    ctx.fillStyle='rgba(255,255,255,.25)';for(var c=0;c<8;c++){ctx.beginPath();ctx.ellipse(cx+Math.cos(c/8*Math.PI*2+t*.0004)*eR*.65,cy+Math.sin(c/8*Math.PI*2+t*.0004)*eR*.4,eR*.22,eR*.08,c/8*Math.PI*2,0,Math.PI*2);ctx.fill();}
+    /* Continent hints */
+    ctx.fillStyle='rgba(80,140,60,.45)';for(var l=0;l<5;l++){ctx.beginPath();ctx.ellipse(cx+Math.cos(l*1.9+t*.0003)*eR*.5,cy+Math.sin(l*2.3+t*.0003)*eR*.35,eR*.18,eR*.12,l*0.9,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.beginPath();ctx.arc(cx,cy-eR*.82,eR*.14,0,Math.PI*2);ctx.fill();/* ice cap */
+    /* Moon */
+    var mX=cx+Math.cos(t*.0005)*eR*1.62,mY=cy+Math.sin(t*.0005)*eR;
+    ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;ctx.setLineDash([4,8]);ctx.beginPath();ctx.ellipse(cx,cy,eR*1.62,eR,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(200,200,200,.85)';ctx.beginPath();ctx.arc(mX,mY,eR*.13,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.75)';ctx.font='bold '+Math.round(eR*.18)+'px sans-serif';ctx.textAlign='center';ctx.fillText('Earth',cx,cy+eR*1.25);ctx.font=Math.round(eR*.11)+'px sans-serif';ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillText('3rd planet from the Sun',cx,cy+eR*1.45);ctx.textAlign='left';
+  }
+
+  /* Phase 1: Milky Way forming from zoom out */
+  else if(ph===1){
+    var sc=Math.max(.001,clamp(t*.0001,0,1));/* 0→1 as zoom out */
+    /* Stars → Galaxy spiral */
+    var nS=Math.round(500*P_SCALE*DENSITY);
+    if(!window._uvMW){window._uvMW=[];for(var i=0;i<nS;i++){var arm=i%3,dist=Math.pow(Math.random(),.65)*Math.min(W(),H())*.48,bAng=arm*Math.PI*2/3+dist*.018,sp=rnd(.3,1);window._uvMW.push({arm,dist,angle:bAng+rnd(-.7,.7),spd:.0002+.0005/Math.max(dist,20),r:rnd(.8,3),hue:rnd(0,1),bright:rnd(.5,1)});}}
+    for(var i=0;i<window._uvMW.length;i++){
+      var p=window._uvMW[i];p.angle+=p.spd*simSpeed;
+      var effDist=p.dist*sc,gx=cx+Math.cos(p.angle)*effDist,gy=cy+Math.sin(p.angle)*effDist*.52;
+      var rr,gg,bb;
+      if(p.hue<.3){rr=180;gg=200;bb=255;}else if(p.hue<.6){rr=255;gg=240;bb=200;}else{rr=255;gg=160;bb=80;}
+      dp(gx,gy,p.r*(sc>.5?1:.6),rr,gg,bb,p.bright*(.5+sc*.45));
+    }
+    fz(cx,cy,H()*.12*sc,255,200,100,1);fz(cx,cy,H()*.06*sc,255,230,180,.8);
+    /* Label */
+    var lblA=clamp(sc*3-.2,0,1);
+    ctx.fillStyle='rgba(255,255,255,'+lblA*.75+')';ctx.font='bold '+Math.round(Math.min(W(),H())*.04)+'px sans-serif';ctx.textAlign='center';
+    ctx.fillText('The Milky Way',cx,cy+Math.min(W(),H())*.36);ctx.font=Math.round(Math.min(W(),H())*.024)+'px sans-serif';ctx.fillStyle='rgba(255,255,255,'+(lblA*.4)+')';ctx.fillText('200 billion stars · 100,000 light years across',cx,cy+Math.min(W(),H())*.44);ctx.textAlign='left';
+  }
+
+  /* Phase 2: Cosmic web — thousands of galaxies */
+  else{
+    /* Deep black with cosmic web filaments */
+    var nG=Math.round(800*P_SCALE*DENSITY);
+    if(!window._uvCW){window._uvCW=[];for(var i=0;i<nG;i++){var a=rnd(0,Math.PI*2),d=Math.pow(rnd(0,1),.5)*Math.min(W(),H())*.48;window._uvCW.push({x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d*.6,r:rnd(.6,2.8),col:Math.floor(Math.random()*5),bright:rnd(.4,1)});}}
+    /* Filament lines */
+    ctx.strokeStyle='rgba(80,100,200,.04)';ctx.lineWidth=1;
+    for(var i=0;i<Math.round(nG*.3);i+=3){ctx.beginPath();ctx.moveTo(window._uvCW[i].x,window._uvCW[i].y);ctx.lineTo(window._uvCW[(i+7)%nG].x,window._uvCW[(i+7)%nG].y);ctx.stroke();}
+    for(var i=0;i<window._uvCW.length;i++){
+      var g=window._uvCW[i];
+      g.x+=Math.sin(t*.0002+i*.01)*.08;g.y+=Math.cos(t*.00015+i*.013)*.06;
+      var rr,gg,bb;
+      if(g.col===0){rr=200;gg=210;bb=255;}else if(g.col===1){rr=255;gg=230;bb=180;}
+      else if(g.col===2){rr=255;gg=180;bb=100;}else if(g.col===3){rr=150;gg=200;bb=255;}else{rr=255;gg=255;bb=240;}
+      var isCluster=(g.r>2);
+      if(LOD>=1&&isCluster)glow(g.x,g.y,g.r*8,rr,gg,bb,g.bright*.35);
+      ctx.fillStyle='rgba('+rr+','+gg+','+bb+','+g.bright*.85+')';ctx.beginPath();ctx.arc(g.x,g.y,g.r,0,Math.PI*2);ctx.fill();
+    }
+    /* Core overdensity */
+    fz(cx,cy,Math.min(W(),H())*.18,180,200,255,.6);
+    ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='bold '+Math.round(Math.min(W(),H())*.038)+'px sans-serif';ctx.textAlign='center';
+    ctx.fillText('The Observable Universe',cx,H()*.88);ctx.font=Math.round(Math.min(W(),H())*.022)+'px sans-serif';ctx.fillStyle='rgba(255,255,255,.38)';ctx.fillText('2 trillion galaxies · 93 billion light years across',cx,H()*.93);ctx.textAlign='left';
+  }
+};
+
+/* ── RUMOUR ── */
+DRAW.rumour = function(t,ph){
+  ctx.fillStyle='rgba(2,4,14,.6)';ctx.fillRect(0,0,W(),H());
+  if(!window._rP||window._rP.W!==W()){
+    window._rP={W:W(),pts:[]};var n=Math.round(280*P_SCALE*DENSITY);
+    for(var i=0;i<n;i++)window._rP.pts.push({x:rnd(10,W()-10),y:rnd(10,H()-10),vx:rnd(-.42,.42),vy:rnd(-.42,.42),state:i<5?1:0});
+  }
+  var ps=window._rP.pts;
+  var beta=ph===0?.003:ph===1?.01:.005,stifle=ph===2?.003:.0007;
+  for(var i=0;i<ps.length;i++){
+    var p=ps[i];p.x+=p.vx;p.y+=p.vy;if(p.x<5||p.x>W()-5)p.vx*=-1;if(p.y<5||p.y>H()-5)p.vy*=-1;
+    if(p.state===1&&Math.random()<stifle)p.state=2;
+    if(p.state===1)for(var j=0;j<ps.length;j++){if(ps[j].state===0){var dx=ps[j].x-p.x,dy=ps[j].y-p.y;if(dx*dx+dy*dy<500&&Math.random()<beta)ps[j].state=1;}}
+    var rr=p.state===0?80:p.state===1?240:220;
+    var gg=p.state===0?140:p.state===1?200:60;
+    var bb=p.state===0?255:p.state===1?40:60;
+    var sz=(p.state===1?4.5:3.2);
+    if(LOD>=1&&p.state===1)glow(p.x,p.y,sz*4.5,rr,gg,bb,.32);
+    ctx.fillStyle='rgba('+rr+','+gg+','+bb+',.88)';ctx.beginPath();ctx.arc(p.x,p.y,sz,0,Math.PI*2);ctx.fill();
+  }
+  var s=ps.filter(function(p){return p.state===0}).length;
+  var ii=ps.filter(function(p){return p.state===1}).length;
+  var rr2=ps.filter(function(p){return p.state===2}).length;
+  ctx.fillStyle='rgba(38,232,176,.45)';ctx.font='11px monospace';ctx.fillText('S:'+s+' · I:'+ii+' · R:'+rr2,12,22);
+};
+
+/* ── URBAN ── */
+DRAW.urban = function(t,ph){
+  ctx.fillStyle='#010810';ctx.fillRect(0,0,W(),H());
+  ctx.fillStyle='rgba(40,50,72,.92)';ctx.fillRect(0,H()*.44,W(),H()*.12);ctx.fillRect(W()*.44,0,W()*.12,H());
+  ctx.setLineDash([16,14]);ctx.strokeStyle='rgba(100,125,165,.42)';ctx.lineWidth=1.8;
+  [[0,H()*.5,W()*.44,H()*.5],[W()*.56,H()*.5,W(),H()*.5],[W()*.5,0,W()*.5,H()*.44],[W()*.5,H()*.56,W()*.5,H()]].forEach(function(r){ctx.beginPath();ctx.moveTo(r[0],r[1]);ctx.lineTo(r[2],r[3]);ctx.stroke();});ctx.setLineDash([]);
+  if(!window._cars)window._cars=[];
+  if(window._cars.length<Math.round((12+ph*7)*P_SCALE*DENSITY)){
+    var rts=[[{x:0,y:H()*.5},{x:W(),y:H()*.5}],[{x:W(),y:H()*.5},{x:0,y:H()*.5}],[{x:W()*.5,y:0},{x:W()*.5,y:H()}],[{x:W()*.5,y:H()},{x:W()*.5,y:0}]];
+    var rt=rts[Math.floor(Math.random()*rts.length)];
+    window._cars.push({x:rt[0].x,y:rt[0].y,tx:rt[1].x,ty:rt[1].y,speed:(ph>=2?.45:1.6)+rnd(0,.9),r:Math.random()>.3?220:38,g:Math.random()>.3?92:232,b:Math.random()>.3?92:176});
+  }
+  for(var c=window._cars.length-1;c>=0;c--){
+    var car=window._cars[c];var dx2=car.tx-car.x,dy2=car.ty-car.y,dist=Math.sqrt(dx2*dx2+dy2*dy2);
+    if(dist<car.speed){window._cars.splice(c,1);continue;}
+    car.x+=dx2/dist*car.speed;car.y+=dy2/dist*car.speed;
+    if(ph>=1&&Math.abs(car.x-W()*.5)<28&&Math.abs(car.y-H()*.5)<28)car.speed=Math.max(.15,car.speed*.91);
+    if(LOD>=1)glow(car.x,car.y,9,car.r,car.g,car.b,.32);
+    dp(car.x,car.y,3.8,car.r,car.g,car.b,.92,2.5);
+  }
+};
+
+/* ── CHEM ── */
+DRAW.chem = function(t,ph){
+  ctx.fillStyle='#010812';ctx.fillRect(0,0,W(),H());
+  var cx=W()/2,cy=H()/2;
+  fz(cx,cy,H()*.48,40,205,245,.55);if(ph>=1)fz(cx,cy,H()*.32,245,145,42,.75);
+  if(!window._cP||window._cP.ph!==ph){
+    window._cP={ph:ph,A:[],B:[],P:[]};var nAB=Math.round(35*P_SCALE*DENSITY);
+    for(var i=0;i<nAB;i++){window._cP.A.push({x:rnd(20,W()*.44),y:rnd(20,H()-20),vx:rnd(-.7,.7),vy:rnd(-.7,.7)});window._cP.B.push({x:rnd(W()*.56,W()-20),y:rnd(20,H()-20),vx:rnd(-.7,.7),vy:rnd(-.7,.7)});}
+  }
+  var cp=window._cP,rRate=ph===0?0:ph===1?.005:.015;
+  for(var i=cp.A.length-1;i>=0;i--){
+    var a=cp.A[i];if(ph>=1){a.vx+=(cx-a.x)*.00035;a.vy+=(cy-a.y)*.00035;}
+    a.x+=a.vx;a.y+=a.vy;if(a.x<5||a.x>W()-5)a.vx*=-1;if(a.y<5||a.y>H()-5)a.vy*=-1;
+    for(var j=cp.B.length-1;j>=0;j--){var b=cp.B[j];var dx=b.x-a.x,dy=b.y-a.y;if(dx*dx+dy*dy<440&&Math.random()<rRate){cp.P.push({x:(a.x+b.x)/2,y:(a.y+b.y)/2,vx:(a.vx+b.vx)*.5,vy:(a.vy+b.vy)*.5,life:1});cp.A.splice(i,1);cp.B.splice(j,1);break;}}
+  }
+  for(var i=0;i<cp.B.length;i++){var b=cp.B[i];if(ph>=1){b.vx+=(cx-b.x)*.00035;b.vy+=(cy-b.y)*.00035;}b.x+=b.vx;b.y+=b.vy;if(b.x<5||b.x>W()-5)b.vx*=-1;if(b.y<5||b.y>H()-5)b.vy*=-1;dp(b.x,b.y,4.5,224,92,92,.88,2.8);}
+  for(var i=0;i<cp.A.length;i++){var a=cp.A[i];dp(a.x,a.y,4.5,40,185,245,.88,2.8);}
+  for(var i=cp.P.length-1;i>=0;i--){var p=cp.P[i];p.x+=p.vx;p.y+=p.vy;p.vx*=.98;p.vy*=.98;p.life-=.003;if(p.life<=0){cp.P.splice(i,1);continue;}if(LOD>=1)glow(p.x,p.y,20,240,195,68,p.life*.55);dp(p.x,p.y,6,240,195,68,p.life*.92,3.5);}
+};
+
+/* ═══════════════════════════════════════════════════════
+   PAUSE / PLAY
+═══════════════════════════════════════════════════════ */
+function togglePause(){
+  paused=!paused;
+  var btn=document.getElementById('pauseBtn');
+  var lbl=document.getElementById('pauseLabel');
+  btn.classList.toggle('on',paused);
+  document.querySelector('#pauseBtn .ictl-ico').textContent=paused?'▶':'⏸';
+  lbl.textContent=paused?'Play':'Pause';
+}
+
+/* ═══════════════════════════════════════════════════════
+   ELEVENLABS VOICE
+═══════════════════════════════════════════════════════ */
+function toggleVoice(){
+  voiceOn=!voiceOn;
+  var btn=document.getElementById('voiceBtn');
+  btn.classList.toggle('on',voiceOn);
+  document.querySelector('#voiceBtn .ictl-ico').textContent=voiceOn?'🔊':'🔇';
+  if(!voiceOn&&voiceAudio){voiceAudio.pause();voiceAudio=null;document.getElementById('voiceBadge').classList.remove('show');}
+  else if(voiceOn){speakCurrentNarr();}
+}
+
+async function speakCurrentNarr(){
+  if(!voiceOn)return;
+  var narrs=NARR[simDraw];if(!narrs)return;
+  var text=narrs[simPhase]&&narrs[simPhase][1];if(!text)return;
+  /* Stop existing */
+  if(voiceAudio){voiceAudio.pause();voiceAudio=null;}
+  document.getElementById('voiceBadge').classList.add('show');
+  try{
+    var res=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+ELEVEN_VOICE_ID+'/stream',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','xi-api-key':ELEVEN_API_KEY},
+      body:JSON.stringify({text:text,model_id:'eleven_turbo_v2',voice_settings:{stability:.42,similarity_boost:.82,speed:1.0}})
+    });
+    if(!res.ok)throw new Error('ElevenLabs '+res.status);
+    var blob=await res.blob();
+    var url=URL.createObjectURL(blob);
+    voiceAudio=new Audio(url);
+    voiceAudio.onended=function(){
+      URL.revokeObjectURL(url);
+      voiceAudio=null;
+      document.getElementById('voiceBadge').classList.remove('show');
+    };
+    voiceAudio.onerror=function(){
+      document.getElementById('voiceBadge').classList.remove('show');
+    };
+    voiceAudio.play();
+  }catch(e){
+    console.warn('Voice error:',e);
+    document.getElementById('voiceBadge').classList.remove('show');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   NARRATION — Manual advance
+═══════════════════════════════════════════════════════ */
+function updateNarr(){
+  var narrs=NARR[simDraw];if(!narrs)return;
+  var ph=narrs[simPhase]||narrs[0];
+  document.getElementById('narrPhase').textContent=ph[0];
+  var el=document.getElementById('narrText');
+  el.style.opacity='0';
+  setTimeout(function(){el.textContent=ph[1];el.style.opacity='1';},280);
+  /* Dots */
+  var dots=document.getElementById('narrDots');dots.innerHTML='';
+  for(var i=0;i<narrs.length;i++){
+    var d=document.createElement('div');d.className='ndot'+(i===simPhase?' on':'');
+    (function(idx){d.onclick=function(){setPhase(idx);};})(i);
+    dots.appendChild(d);
+  }
+  /* Next button visibility */
+  var hasNext=simPhase<narrs.length-1;
+  document.getElementById('narrNext').style.display=hasNext?'inline-flex':'none';
+  /* Update CE panel */
+  document.querySelectorAll('.cebtn').forEach(function(b,i){b.classList.toggle('active',i===simPhase);});
+  /* Speak if voice on */
+  if(voiceOn)speakCurrentNarr();
+}
+
+function nextPhase(){
+  var narrs=NARR[simDraw];if(!narrs)return;
+  if(simPhase<narrs.length-1)setPhase(simPhase+1);
+}
+
+function setPhase(ph){
+  simPhase=ph;simT=0;
+  updateNarr();
+}
+
+/* ═══════════════════════════════════════════════════════
+   MAIN LOOP
+═══════════════════════════════════════════════════════ */
+function mainLoop(){
+  RAF=requestAnimationFrame(mainLoop);
+  if(!paused){
+    simT+=simSpeed*16;
+    var fn=customDrawFn||(DRAW[simDraw]||DRAW.heartbreak);
+    fn(simT,simPhase);
+  }
+}
+
+function boot(){
+  LOD=0;(DRAW[simDraw]||DRAW.heartbreak)(0,0);
+  document.getElementById('lodOv').classList.add('gone');
+  mainLoop();
+  setTimeout(function(){LOD=1;},300);
+  setTimeout(function(){LOD=2;},800);
+  updateNarr();buildCE();buildStrip();buildChips();
+}
+
+/* ═══════════════════════════════════════════════════════
+   UI
+═══════════════════════════════════════════════════════ */
+function buildStrip(){
+  var strip=document.getElementById('pills');strip.innerHTML='';
+  DOMAIN_ORDER.forEach(function(key){
+    var el=document.createElement('div');el.className='dpill';
+    el.textContent=DOMAIN_LABELS[key]||key;el.dataset.key=key;
+    el.onclick=function(){switchDomain(key,el);};
+    if(key===simDraw){el.classList.add('active');el.style.background=DC[key]||'#26e8b0';el.style.color='#02040e';}
+    strip.appendChild(el);
+  });
+}
+
+function buildCE(){
+  var c=document.getElementById('ceBtns');c.innerHTML='';
+  var phases=(CE[simDraw]||CE.heartbreak);
+  phases.forEach(function(ce,i){
+    var b=document.createElement('div');b.className='cebtn'+(i===simPhase?' active':'');
+    b.innerHTML='<div class="ce-ico">'+ce.i+'</div><div class="ce-ttl">'+ce.t+'</div><div class="ce-dsc">'+ce.d+'</div>';
+    b.onclick=function(){setPhase(i);};c.appendChild(b);
+  });
+}
+
+var domIdx=DOMAIN_ORDER.indexOf(simDraw);
+function switchDomain(key,pill){
+  simDraw=key;simPhase=0;simT=0;customDrawFn=null;
+  window._rP=null;window._cP=null;window._cars=null;window._hbP=null;window._lvP=null;window._grP=null;window._angP=null;window._jyP=null;window._bbP=null;window._bbStars=null;window._uvStars0=null;window._uvMW=null;window._uvCW=null;
+  if(voiceAudio){voiceAudio.pause();voiceAudio=null;document.getElementById('voiceBadge').classList.remove('show');}
+  document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='rgba(2,4,14,.7)';p.style.color='var(--dim)';});
+  if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
+  domIdx=DOMAIN_ORDER.indexOf(key);
+  updateNarr();buildCE();document.getElementById('aiBadge').classList.remove('show');
+}
+
+/* Controls */
+document.getElementById('speedR').oninput=function(){simSpeed=parseFloat(this.value);};
+
+/* ═══════════════════════════════════════════════════════
+   QUESTION → SIMULATION ROUTING
+   Tight matching — sim must complement the answer
+═══════════════════════════════════════════════════════ */
+var QMAP=[
+  /* Emotions */
+  {re:/heartbreak|breakup|break.*up|end.*relationship|lost.*love|she left|he left/i, key:'heartbreak'},
+  {re:/love|falling in love|romance|attraction|chemistry|bond.*person/i, key:'love'},
+  {re:/grief|grieving|mourning|loss.*person|someone died|bereavement/i, key:'grief'},
+  {re:/anger|angry|rage|furious|frustrat/i, key:'anger'},
+  {re:/joy|happy|happiness|dopamine|seroton|euphoria|pleasure/i, key:'joy'},
+  /* Bio / Med */
+  {re:/neuron|brain|action potential|synap|nerve|myelin|thought|conscious|memory/i, key:'neuron'},
+  {re:/cancer|tumor|t.cell|immune|immunolog|natural killer|lymph|perforin/i, key:'immune'},
+  {re:/antibiotic|bacteria|lysis|amr|resistance.*drug|drug.*resist|penicillin|superbug/i, key:'amr'},
+  /* Physics / Cosmos */
+  {re:/black hole|event horizon|singularity|hawking|accretion|spacetime/i, key:'bh'},
+  {re:/big bang|bigbang|universe.*begin|origin.*universe|inflation.*universe|cosmic.*microwave/i, key:'bigbang'},
+  {re:/universe.*scale|cosmic.*zoom|how big|milky way|galaxy.*scale|observable universe|multiverse/i, key:'universe'},
+  /* Social */
+  {re:/rumour|rumor|gossip|misinform|fake news|viral.*spread|social.*spread/i, key:'rumour'},
+  {re:/traffic|gridlock|congest|urban.*flow|transport.*system/i, key:'urban'},
+  {re:/chem|react|molecule|atom|bond|enzyme|catalyst|acid|equilibrium/i, key:'chem'},
+];
+function smartRoute(q){
+  for(var i=0;i<QMAP.length;i++)if(QMAP[i].re.test(q))return QMAP[i].key;
+  return DOMAIN_ORDER[Math.floor(Math.random()*DOMAIN_ORDER.length)];
+}
+
+async function askQuestion(){
+  var q=(document.getElementById('mainQ').value||'').trim();if(!q)return;
+  window._rP=null;window._cP=null;window._cars=null;window._hbP=null;window._lvP=null;window._grP=null;window._angP=null;window._jyP=null;window._bbP=null;window._bbStars=null;window._uvStars0=null;window._uvMW=null;window._uvCW=null;
+  simT=0;simPhase=0;customDrawFn=null;
+  var btn=document.getElementById('askBtn');btn.classList.add('busy');btn.textContent='…';
+  document.getElementById('thinkOv').classList.add('show');
+  var key=smartRoute(q);
+  var pill=document.querySelector('.dpill[data-key="'+key+'"]');
+  switchDomain(key,pill);
+  /* Try API for enriched narration */
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:'You are SeenShown, a particle simulation platform. Given a question, write 3 short narration phases (JSON array of arrays: [[phase_label, narration_text], ...]). Each narration_text must be 1-2 sentences, scientifically accurate, emotionally resonant. Labels: "Phase 1 · Initial State", "Phase 2 · Core Mechanism", "Phase 3 · Outcome". Return ONLY the JSON array, no other text.',messages:[{role:'user',content:'Question: "'+q+'"\nSimulation domain: '+key+'\nReturn the 3 narration phases.'}]})});
+    var data=await res.json();
+    var raw=data.content&&data.content[0]&&data.content[0].text;
+    if(raw){var parsed=JSON.parse(raw.replace(/```json\n?|```\n?/g,'').trim());if(Array.isArray(parsed)&&parsed.length===3)NARR[key]=parsed;}
+  }catch(e){/* keep existing narr */}
+  updateNarr();
+  document.getElementById('thinkOv').classList.remove('show');
+  btn.classList.remove('busy');btn.textContent='Simulate ⚡';
+  document.getElementById('aiBadge').classList.add('show');
+  setTimeout(function(){document.getElementById('aiBadge').classList.remove('show');},3500);
+}
+
+/* Chips */
+var DEFAULT_QS=['How does heartbreak feel?','How does love work?','How does grief form?','What is the Big Bang?','How big is the universe?','How does a neuron fire?','How do T-cells kill cancer?','How does antibiotic resistance happen?','How does a black hole form?','How does anger work?','What is joy?','How do rumours spread?','How does gridlock happen?','What is a chemical reaction?'];
+function buildChips(){var c=document.getElementById('qchips');DEFAULT_QS.forEach(function(q){var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;ch.onclick=function(){document.getElementById('mainQ').value=q;askQuestion();};c.appendChild(ch);});}
+
+document.getElementById('mainQ').addEventListener('keydown',function(e){if(e.key==='Enter')askQuestion();});
+
+/* GESTURES */
+var tY=0,tX=0,swipeUsed=false;
+canvas.addEventListener('touchstart',function(e){tY=e.touches[0].clientY;tX=e.touches[0].clientX;},{passive:true});
+canvas.addEventListener('touchend',function(e){
+  var dy=tY-e.changedTouches[0].clientY,dx=tX-e.changedTouches[0].clientX;
+  if(!swipeUsed){swipeUsed=true;document.getElementById('swipeHint').classList.add('hide');}
+  if(Math.abs(dy)>60&&Math.abs(dy)>Math.abs(dx)){domIdx=(domIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;var nd=DOMAIN_ORDER[domIdx];var mp=document.querySelector('.dpill[data-key="'+nd+'"]');switchDomain(nd,mp);}
+  else if(Math.abs(dy)<12&&Math.abs(dx)<12){var r=document.createElement('div');r.className='rpl';r.style.left=e.changedTouches[0].clientX+'px';r.style.top=e.changedTouches[0].clientY+'px';document.body.appendChild(r);setTimeout(function(){r.remove();},650);}
+},{passive:true});
+var mD=false,mY=0;
+canvas.addEventListener('mousedown',function(e){mD=true;mY=e.clientY;});
+canvas.addEventListener('mouseup',function(e){
+  if(!mD)return;mD=false;var dy=mY-e.clientY;
+  if(Math.abs(dy)>80){domIdx=(domIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;var nd=DOMAIN_ORDER[domIdx];var mp=document.querySelector('.dpill[data-key="'+nd+'"]');switchDomain(nd,mp);}
+  else{var r=document.createElement('div');r.className='rpl';r.style.left=e.clientX+'px';r.style.top=e.clientY+'px';document.body.appendChild(r);setTimeout(function(){r.remove();},650);}
+});
+document.addEventListener('keydown',function(e){
+  var nd,mp;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='Tab'){e.preventDefault();domIdx=(domIdx+1)%DOMAIN_ORDER.length;nd=DOMAIN_ORDER[domIdx];mp=document.querySelector('.dpill[data-key="'+nd+'"]');switchDomain(nd,mp);}
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();domIdx=(domIdx-1+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;nd=DOMAIN_ORDER[domIdx];mp=document.querySelector('.dpill[data-key="'+nd+'"]');switchDomain(nd,mp);}
+  if(e.key===' '){var ae=document.activeElement;var inInput=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA');if(!inInput){e.preventDefault();togglePause();}}
+  if(e.key==='1')setPhase(0);if(e.key==='2')setPhase(1);if(e.key==='3')setPhase(2);
+  if(e.key==='Enter'&&document.activeElement!==document.getElementById('mainQ'))askQuestion();
+  if(e.key==='v'||e.key==='V')toggleVoice();
+});
+
+boot();
+
+/* ═══════════════════════════════════════════════════════
+   SOCIAL PANEL
+═══════════════════════════════════════════════════════ */
+var socialOpen=false;
+var spLikes=JSON.parse(localStorage.getItem('sp_likes')||'{}');
+var spFunds=JSON.parse(localStorage.getItem('sp_funds')||'{}');
+var spActiveTab='trending';
+
+var SP_POSTS={
+  trending:[
+    {id:'p1',author:'Dr. Sarah Chen',handle:'@sarah_chen_phys',avatar:'🧬',avatarBg:'#7C4FD4',time:'2h ago',domain:'Emotion',domainCol:'#e8a0c0',
+     text:'Just published my heartbreak simulation — modelling emotional separation as a <strong>thermodynamic phase transition</strong>. Two particle fields in gravitational orbit. When the bond breaks, the shared colour collapses to cold. Watch the last particles: always at the fingertips. 💔',
+     sim:{label:'Heartbreak · Phase 2 · The Break',col:'#e8a0c0',key:'heartbreak'},
+     likes:847,comments:63,funded:120},
+    {id:'p2',author:'Prof. James Liu',handle:'@jliu_cosmology',avatar:'🌌',avatarBg:'#ffb347',time:'4h ago',domain:'Cosmos',domainCol:'#ffeecc',
+     text:'The Big Bang in 3 phases is now live. Phase 1 is pure singularity — all matter, energy, space, time compressed into a volume smaller than a proton. <strong>10³² Kelvin.</strong> Then — for no known reason — it expanded. The simulation begins exactly there. 🌌💥',
+     sim:{label:'Big Bang · Phase 1 · Singularity',col:'#ffeecc',key:'bigbang'},
+     likes:1203,comments:142,funded:380},
+    {id:'p3',author:'NeuroLab MIT',handle:'@neurolab_mit',avatar:'⚡',avatarBg:'#60c0f0',time:'6h ago',domain:'Neuroscience',domainCol:'#60c0f0',
+     text:'Action potential propagation at 120 m/s — jumping between nodes of Ranvier. We\'ve rendered the myelin sheath segments as semi-transparent blocks. The golden wave is your thought, travelling right now as you read this. <strong>86 billion neurons. Each capable of 1,000 fires/sec.</strong>',
+     sim:{label:'Neuron · Phase 2 · Propagation',col:'#60c0f0',key:'neuron'},
+     likes:634,comments:38,funded:95},
+    {id:'p4',author:'Dr. Amara Osei',handle:'@amara_immuno',avatar:'🎯',avatarBg:'#ff8c42',time:'8h ago',domain:'Immunology',domainCol:'#ff8c42',
+     text:'T-cell killing cancer — <strong>10 minutes from recognition to apoptosis.</strong> The green cell is a cytotoxic T-cell. The pink clusters are cancer cells. Watch it dock, deliver perforin pores, and trigger caspase-3. No inflammation. No bystander damage. Evolution\'s surgical precision. 🩺',
+     sim:{label:'Immunology · Phase 2 · Perforin Delivery',col:'#ff8c42',key:'immune'},
+     likes:923,comments:87,funded:215}
+  ],
+  new:[
+    {id:'p5',author:'Maya Reeves',handle:'@maya_particle',avatar:'💗',avatarBg:'#ff88aa',time:'45m ago',domain:'Emotion',domainCol:'#ff88aa',
+     text:'Love as emergence — two independent particle systems developing gravitational awareness of each other. The first sign of attraction is always a <strong>slight deviation from the original orbit.</strong> Something has changed the phase space. 💫',
+     sim:{label:'Love · Phase 1 · Attraction',col:'#ff88aa',key:'love'},
+     likes:12,comments:3,funded:0},
+    {id:'p6',author:'WHO ResearchLab',handle:'@who_research',avatar:'💊',avatarBg:'#26e8b0',time:'1h ago',domain:'Biology',domainCol:'#26e8b0',
+     text:'Antibiotic resistance compressed into seconds. The antibiotic kills <strong>99.99%</strong> of the colony. But the 0.01% carrying resistance genes survive. Within 48h the entire colony is reconstituted — composed only of resistant bacteria. We are running out faster than we can build replacements.',
+     sim:{label:'Antibiotic · Phase 3 · Resistance',col:'#26e8b0',key:'amr'},
+     likes:78,comments:14,funded:40},
+    {id:'p7',author:'Caltech Astro',handle:'@caltech_astro',avatar:'🌀',avatarBg:'#7C4FD4',time:'3h ago',domain:'Physics',domainCol:'#7C4FD4',
+     text:'Einstein Ring rendered for the first time in particle simulation. When a massive object precisely aligns between observer and background star, light bends completely around it — creating a <strong>perfect luminous ring.</strong> Predicted 1915. Photographed 2019. Now simulated. 🔭',
+     sim:{label:'Black Hole · Phase 3 · Einstein Ring',col:'#7C4FD4',key:'bh'},
+     likes:156,comments:29,funded:88}
+  ],
+  following:[
+    {id:'p8',author:'Dr. Sarah Chen',handle:'@sarah_chen_phys',avatar:'🧬',avatarBg:'#7C4FD4',time:'1d ago',domain:'Emotion',domainCol:'#8899bb',
+     text:'Working on grief next. The brain\'s predictive model includes the lost person — their voice, their patterns. <strong>Grief is the collision between this model and reality.</strong> Every moment where the prediction fails reactivates the loss. The simulation will show this as a void that pulls particles inward.',
+     sim:{label:'Grief · Phase 1 · The Void',col:'#8899bb',key:'grief'},
+     likes:432,comments:51,funded:60},
+    {id:'p9',author:'Prof. James Liu',handle:'@jliu_cosmology',avatar:'🌌',avatarBg:'#4466ff',time:'2d ago',domain:'Cosmos',domainCol:'#4466ff',
+     text:'Universe at every scale is complete. Earth → Milky Way → Cosmic web. <strong>93 billion light years rendered in Canvas 2D.</strong> Phase 3 shows 800 galaxies with cosmic web filaments. The observable universe is a sphere — but what lies beyond is unknowable. The simulation ends at the edge of observation.',
+     sim:{label:'Universe · Phase 3 · Observable Universe',col:'#4466ff',key:'universe'},
+     likes:892,comments:103,funded:220}
+  ]
+};
+
+/* Mini-canvas renderers for social posts */
+var spCanvasAnimations={};
+function drawSPCanvas(canvasId,col,key,t){
+  var canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  var ctx2=canvas.getContext('2d');
+  var W=canvas.width,H=canvas.height;
+  var r=parseInt(col.slice(1,3)||'26',16);
+  var g2=parseInt(col.slice(3,5)||'e8',16);
+  var b=parseInt(col.slice(5,7)||'b0',16);
+  ctx2.fillStyle='#000508';ctx2.fillRect(0,0,W,H);
+  var gr=ctx2.createRadialGradient(W/2,H/2,0,W/2,H/2,H*0.7);
+  gr.addColorStop(0,'rgba('+r+','+g2+','+b+',0.2)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  ctx2.fillStyle=gr;ctx2.fillRect(0,0,W,H);
+  var n=22;
+  for(var i=0;i<n;i++){
+    var side=i<n/2?-1:1;
+    var a=i/n*Math.PI*2+t*(0.004+i*0.00006)*side;
+    var rd=H*(0.15+0.28*(i%3)/2);
+    var cx=W/2+(key==='heartbreak'||key==='love'?side*W*0.15:0);
+    var x=cx+Math.cos(a)*rd,y=H/2+Math.sin(a)*rd*0.72;
+    ctx2.fillStyle='rgba('+r+','+g2+','+b+','+(0.5+Math.sin(t*0.5+i)*0.25)+')';
+    ctx2.beginPath();ctx2.arc(x,y,2,0,Math.PI*2);ctx2.fill();
+  }
+  spCanvasAnimations[canvasId]=requestAnimationFrame(function(ts){drawSPCanvas(canvasId,col,key,(ts||0)*0.001);});
+}
+
+function renderSPFeed(tab){
+  var feed=document.getElementById('sp-feed');
+  if(!feed)return;
+  // Cancel old animations
+  Object.keys(spCanvasAnimations).forEach(function(id){cancelAnimationFrame(spCanvasAnimations[id]);delete spCanvasAnimations[id];});
+  feed.innerHTML='';
+  var posts=SP_POSTS[tab]||SP_POSTS.trending;
+  posts.forEach(function(post){
+    var liked=!!spLikes[post.id];
+    var funded=!!spFunds[post.id];
+    var canvasId='spc-'+post.id;
+    var div=document.createElement('div');
+    div.className='sp-post';
+    div.innerHTML=
+      '<div class="sp-post-header">'+
+        '<div class="sp-avatar" style="background:'+post.avatarBg+'">'+post.avatar+'</div>'+
+        '<div><div class="sp-author">'+post.author+'</div><div class="sp-handle">'+post.handle+'</div></div>'+
+        '<div class="sp-time">'+post.time+'</div>'+
+      '</div>'+
+      '<div class="sp-domain-tag" style="color:'+post.domainCol+'">'+post.domain+'</div>'+
+      '<div class="sp-text">'+post.text+'</div>'+
+      '<div class="sp-sim-preview" onclick="openSimFromPost(\''+post.sim.key+'\')">'+
+        '<canvas class="sp-sim-canvas" id="'+canvasId+'" width="268" height="88"></canvas>'+
+        '<div class="sp-sim-label">▶ '+post.sim.label+'</div>'+
+      '</div>'+
+      '<div class="sp-actions">'+
+        '<div class="sp-action'+(liked?' liked':'')+'" id="spa-like-'+post.id+'" onclick="spLike(\''+post.id+'\',this)">'+
+          '<span>'+(liked?'❤️':'🤍')+'</span> <span id="spn-'+post.id+'">'+(post.likes+(liked?1:0))+'</span>'+
+        '</div>'+
+        '<div class="sp-action" onclick="spComment(\''+post.id+'\')"><span>💬</span> '+post.comments+'</div>'+
+        '<div class="sp-action'+(funded?' funded':'')+'" id="spa-fund-'+post.id+'" onclick="spFund(\''+post.id+'\',this)">'+
+          '<span>'+(funded?'💰':'🪙')+'</span> '+(funded?'Funded':'Fund')+'</div>'+
+        '<div class="sp-action" onclick="spOpenFull(\''+post.id+'\')"><span>↗</span> Share</div>'+
+      '</div>';
+    feed.appendChild(div);
+    // Start canvas animation after DOM insertion
+    setTimeout(function(){drawSPCanvas(canvasId,post.sim.col,post.sim.key,0);},60);
+  });
+}
+
+function spLike(id,el){
+  spLikes[id]=!spLikes[id];
+  localStorage.setItem('sp_likes',JSON.stringify(spLikes));
+  var post=null;
+  Object.values(SP_POSTS).forEach(function(arr){arr.forEach(function(p){if(p.id===id)post=p;});});
+  if(!post)return;
+  var liked=spLikes[id];
+  el.classList.toggle('liked',liked);
+  el.innerHTML='<span>'+(liked?'❤️':'🤍')+'</span> <span id="spn-'+id+'">'+(post.likes+(liked?1:0))+'</span>';
+}
+
+function spFund(id,el){
+  spFunds[id]=true;
+  localStorage.setItem('sp_funds',JSON.stringify(spFunds));
+  el.classList.add('funded');
+  el.innerHTML='<span>💰</span> Funded';
+}
+
+function spComment(id){
+  var input=document.getElementById('sp-compose-input');
+  if(input){input.focus();input.placeholder='Replying to post…';}
+}
+
+function spOpenFull(id){
+  var text='Check out this simulation on SeenShown: seenshown.com/social.html';
+  if(navigator.share){navigator.share({title:'SeenShown Simulation',text:text,url:'https://seenshown.com/social.html'});}
+  else{navigator.clipboard&&navigator.clipboard.writeText('https://seenshown.com/social.html');}
+}
+
+function openSimFromPost(key){
+  toggleSocial();
+  var pill=document.querySelector('.dpill[data-key="'+key+'"]');
+  switchDomain(key,pill);
+}
+
+function spPost(){
+  var input=document.getElementById('sp-compose-input');
+  var txt=input.value.trim();
+  if(!txt)return;
+  var newPost={id:'usr-'+Date.now(),author:'Nawras Alali',handle:'@nawras',avatar:'NA',avatarBg:'#7C4FD4',time:'Just now',domain:'Community',domainCol:'var(--g)',
+    text:txt,sim:{label:DOMAIN_LABELS[simDraw]||simDraw,col:DC[simDraw]||'#26e8b0',key:simDraw},likes:0,comments:0,funded:false};
+  SP_POSTS.trending.unshift(newPost);
+  SP_POSTS.new.unshift(newPost);
+  input.value='';input.placeholder='Share a simulation or thought…';
+  if(spActiveTab==='trending'||spActiveTab==='new')renderSPFeed(spActiveTab);
+}
+
+function setSPTab(tab,el){
+  spActiveTab=tab;
+  document.querySelectorAll('.sp-tab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  renderSPFeed(tab);
+}
+
+function toggleSocial(){
+  socialOpen=!socialOpen;
+  document.getElementById('socialPanel').classList.toggle('open',socialOpen);
+  if(socialOpen&&document.getElementById('sp-feed').children.length===0)renderSPFeed('trending');
+}
+</script>
 </body>
 </html>

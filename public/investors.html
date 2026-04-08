@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeenShown — Investor Portal</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#02040e;--surface:#070d1a;--card:#0b1425;--green:#26e8b0;--blue:#4a9eff;--purple:#b06ef3;--gold:#f0c040;--red:#ff5e7d;--text:#e8f0fe;--muted:#8899aa;--border:#1a2a3a}
+html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(2,4,14,0.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-logo{font-size:20px;font-weight:800;color:#fff;text-decoration:none}
+.nav-logo span{color:var(--green)}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;transition:color .2s}
+.nav-links a:hover{color:var(--green)}
+.nav-badge{background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);color:var(--green);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+#hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+#heroCanvas{position:absolute;inset:0;z-index:0}
+.hero-content{position:relative;z-index:1;max-width:800px;padding:20px}
+.hero-tag{display:inline-block;background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);color:var(--green);font-size:12px;font-weight:700;letter-spacing:2px;padding:6px 18px;border-radius:30px;margin-bottom:28px;text-transform:uppercase}
+.hero-title{font-size:clamp(36px,6vw,72px);font-weight:900;line-height:1.05;letter-spacing:-2px;margin-bottom:20px}
+.hero-title .hl{color:var(--green)}
+.hero-sub{font-size:18px;color:var(--muted);line-height:1.7;max-width:580px;margin:0 auto 36px}
+.hero-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap}
+.hero-stat .val{font-size:36px;font-weight:900;color:var(--green);line-height:1}
+.hero-stat .lbl{font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.tabs-container{position:sticky;top:60px;z-index:90;background:rgba(2,4,14,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.tabs{display:flex;max-width:1100px;margin:0 auto;padding:0 24px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{flex-shrink:0;padding:16px 24px;background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;position:relative;transition:color .2s;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--green)}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green);border-radius:2px 2px 0 0}
+.tab-panel{display:none;max-width:1100px;margin:0 auto;padding:60px 24px 100px}
+.tab-panel.active{display:block}
+.sec-label{font-size:11px;font-weight:700;letter-spacing:3px;color:var(--green);text-transform:uppercase;margin-bottom:12px}
+.sec-title{font-size:clamp(28px,4vw,44px);font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:16px}
+.sec-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:600px;margin-bottom:48px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-bottom:60px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:rgba(38,232,176,0.3);transform:translateY(-2px)}
+.card-icon{font-size:28px;margin-bottom:14px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:8px}
+.card-body{font-size:14px;color:var(--muted);line-height:1.6}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:60px}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center}
+.metric-val{font-size:38px;font-weight:900;line-height:1;margin-bottom:6px}
+.metric-lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.metric-delta{font-size:12px;margin-top:6px;font-weight:600}
+.pos{color:var(--green)}
+.bar-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.bar-label{font-size:13px;color:var(--muted);width:140px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:10px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden}
+.bar-fill{height:100%;border-radius:10px;transition:width 1.4s cubic-bezier(0.4,0,0.2,1)}
+.bar-val{font-size:13px;font-weight:700;width:55px;flex-shrink:0}
+.tier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;margin-bottom:60px}
+.tier{background:var(--card);border:2px solid var(--border);border-radius:20px;padding:36px;position:relative;transition:border-color .3s,transform .2s;display:flex;flex-direction:column}
+.tier:hover{transform:translateY(-4px)}
+.tier.featured{border-color:var(--green);background:linear-gradient(135deg,rgba(38,232,176,0.06),var(--card))}
+.tier-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-size:11px;font-weight:800;padding:4px 16px;border-radius:20px;letter-spacing:1px;white-space:nowrap}
+.tier-emoji{font-size:36px;margin-bottom:16px}
+.tier-name{font-size:22px;font-weight:800;margin-bottom:4px}
+.tier-amount{font-size:40px;font-weight:900;color:var(--green);margin-bottom:6px;line-height:1}
+.tier-desc{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6;flex:1}
+.tier-perks{list-style:none;margin-bottom:28px}
+.tier-perks li{font-size:14px;padding:7px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;color:var(--muted)}
+.tier-perks li span{color:var(--green);font-weight:700;flex-shrink:0}
+.tier-perks li:last-child{border:none}
+.tier-btn{width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all .2s;letter-spacing:0.5px}
+.tier-btn.primary{background:var(--green);color:#000}
+.tier-btn.primary:hover{background:#1dd99f}
+.tier-btn.outlined{background:transparent;border:2px solid var(--green);color:var(--green)}
+.tier-btn.outlined:hover{background:rgba(38,232,176,0.1)}
+.tier-btn.gold{background:linear-gradient(135deg,#f0c040,#e8940a);color:#000}
+.roadmap{position:relative;padding-left:40px;margin-bottom:60px}
+.roadmap::before{content:'';position:absolute;left:12px;top:8px;bottom:8px;width:2px;background:linear-gradient(to bottom,var(--green),var(--purple),var(--blue))}
+.rm-item{position:relative;margin-bottom:40px}
+.rm-dot{position:absolute;left:-34px;top:6px;width:16px;height:16px;border-radius:50%;border:2px solid var(--green);background:var(--bg)}
+.rm-item.done .rm-dot{background:var(--green)}
+.rm-period{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--green);text-transform:uppercase;margin-bottom:6px}
+.rm-title{font-size:20px;font-weight:800;margin-bottom:8px}
+.rm-body{font-size:14px;color:var(--muted);line-height:1.7;max-width:560px}
+.rm-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.rm-tag{font-size:11px;font-weight:600;padding:3px 12px;border-radius:20px;background:rgba(38,232,176,0.08);border:1px solid rgba(38,232,176,0.2);color:var(--green)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:480px;position:relative;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1}
+.modal h2{font-size:24px;font-weight:800;margin-bottom:6px}
+.modal-amount{font-size:36px;font-weight:900;color:var(--green);margin-bottom:20px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-group select option{background:var(--card)}
+.submit-btn{width:100%;padding:16px;border:none;border-radius:12px;background:var(--green);color:#000;font-size:16px;font-weight:800;cursor:pointer;transition:background .2s}
+.submit-btn:hover{background:#1dd99f}
+.form-note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6}
+.success-state{display:none;text-align:center;padding:20px 0}
+.success-state .big-check{font-size:60px;margin-bottom:16px}
+.success-state h3{font-size:22px;font-weight:800;margin-bottom:8px}
+.success-state p{font-size:14px;color:var(--muted);line-height:1.6}
+.referral-calc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:40px}
+.referral-calc h3{font-size:20px;font-weight:800;margin-bottom:20px}
+.calc-row{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+.calc-input{flex:1;min-width:160px;padding:12px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;font-weight:700;outline:none;font-family:inherit}
+.calc-input:focus{border-color:var(--green)}
+.calc-label{font-size:13px;color:var(--muted);margin-bottom:6px;display:block}
+.calc-result{background:linear-gradient(135deg,rgba(38,232,176,0.08),rgba(74,158,255,0.08));border:1px solid rgba(38,232,176,0.25);border-radius:14px;padding:24px;text-align:center;margin-top:16px}
+.result-val{font-size:48px;font-weight:900;color:var(--green);line-height:1}
+.result-sub{font-size:14px;color:var(--muted);margin-top:8px}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;margin-bottom:48px}
+.step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center}
+.step-num{width:44px;height:44px;border-radius:50%;background:rgba(38,232,176,0.1);border:2px solid var(--green);color:var(--green);font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.step-title{font-size:15px;font-weight:700;margin-bottom:6px}
+.step-body{font-size:13px;color:var(--muted);line-height:1.5}
+.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:40px;overflow:hidden}
+.chart-title{font-size:15px;font-weight:700;margin-bottom:20px}
+.compare-table{width:100%;border-collapse:collapse;margin-bottom:40px}
+.compare-table th{padding:12px 16px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border)}
+.compare-table td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px}
+.compare-table tr:last-child td{border:none}
+.compare-table tr:hover td{background:rgba(255,255,255,0.02)}
+.us{color:var(--green);font-weight:700}
+.chk{color:var(--green)}
+.crs{color:var(--muted)}
+.faq-item{border-bottom:1px solid var(--border);padding:20px 0;cursor:pointer}
+.faq-q{font-size:15px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.faq-q:hover{color:var(--green)}
+.faq-icon{font-size:18px;color:var(--green);flex-shrink:0;transition:transform .2s}
+.faq-a{font-size:14px;color:var(--muted);line-height:1.7;margin-top:12px;max-width:700px;display:none}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-icon{transform:rotate(45deg)}
+.canvas-wrap{background:var(--bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:40px;position:relative}
+.canvas-label{position:absolute;top:12px;left:16px;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--green);background:rgba(2,4,14,0.8);padding:4px 12px;border-radius:20px;border:1px solid rgba(38,232,176,0.2);z-index:2}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:60px 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:60px}
+.patent-banner{display:flex;align-items:flex-start;gap:12px;background:rgba(240,192,64,0.06);border:1px solid rgba(240,192,64,0.2);border-radius:12px;padding:16px 20px;margin-bottom:40px}
+.patent-ico{font-size:22px;margin-top:2px}
+.patent-txt{font-size:13px;color:var(--muted);line-height:1.6}
+.patent-txt strong{color:var(--gold)}
+.quote-block{background:linear-gradient(135deg,rgba(38,232,176,0.04),rgba(74,158,255,0.04));border-left:3px solid var(--green);border-radius:0 12px 12px 0;padding:24px 28px;margin-bottom:40px}
+.quote-block p{font-size:18px;font-style:italic;line-height:1.7}
+.quote-block cite{display:block;font-size:13px;color:var(--muted);margin-top:10px;font-style:normal}
+.contact-strip{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 32px;margin-top:60px}
+.contact-strip .info{font-size:14px;color:var(--muted)}
+.contact-strip .info strong{color:var(--text);display:block;font-size:16px;margin-bottom:2px}
+.cta-green{background:var(--green);color:#000;font-weight:800;padding:12px 28px;border-radius:10px;text-decoration:none;font-size:14px}
+.info-box{background:rgba(38,232,176,0.04);border:1px solid rgba(38,232,176,0.15);border-radius:14px;padding:24px 28px;margin-bottom:32px;display:flex;gap:14px;align-items:flex-start}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}.hero-stats{gap:20px}.tier-grid,.card-grid,.metric-grid,.steps-grid{grid-template-columns:1fr}.bar-label{width:90px;font-size:12px}.tab-btn{padding:12px 14px;font-size:13px}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/home.html" class="nav-logo">Seen<span>Shown</span></a>
+  <div class="nav-links">
+    <a href="/home.html">Home</a>
+    <a href="/demo.html">Demo</a>
+    <span class="nav-badge">Patent Pending AU 2026903218</span>
+  </div>
+</nav>
+
+<section id="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-tag">Seed Round Open — $2M USD</div>
+    <h1 class="hero-title">The world learns by<br><span class="hl">seeing the unseen</span></h1>
+    <p class="hero-sub">SeenShown converts any question into a real-time particle simulation. No video. No static diagrams. Living systems you can touch, pause, and explore.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="val">$10T</div><div class="lbl">Addressable Market</div></div>
+      <div class="hero-stat"><div class="val">&lt;2s</div><div class="lbl">Simulation Render</div></div>
+      <div class="hero-stat"><div class="val">68%</div><div class="lbl">Day-30 Retention</div></div>
+      <div class="hero-stat"><div class="val">30+</div><div class="lbl">Sim Domains</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="tabs-container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('traction',this)">Traction</button>
+    <button class="tab-btn" onclick="showTab('roadmap',this)">Roadmap</button>
+    <button class="tab-btn" onclick="showTab('invest',this)">Invest</button>
+    <button class="tab-btn" onclick="showTab('referral',this)">Referral Program</button>
+  </div>
+</div>
+
+<!-- ===== OVERVIEW ===== -->
+<div id="tab-overview" class="tab-panel active">
+  <div class="patent-banner">
+    <div class="patent-ico">&#x1F6E1;</div>
+    <div class="patent-txt"><strong>Patent Pending · AU 2026903218</strong> — Filed 8 April 2026, IP Australia. System and Method for Real-Time Particle Field Simulation from Natural Language Input. PCT international filing in progress.</div>
+  </div>
+  <div class="sec-label">The Problem</div>
+  <h2 class="sec-title">Education is broken at the visualisation layer</h2>
+  <p class="sec-sub">Biology, medicine, chemistry, physics — all taught through static diagrams and walls of text. The brain evolved to learn through movement and causality. We deliver exactly that.</p>
+  <div class="card-grid">
+    <div class="card"><div class="card-icon">&#x1F9E0;</div><div class="card-title">Static content fails retention</div><div class="card-body">Text and diagrams produce 12% day-30 retention. Simulations with causality loops produce 68%. The gap is structural, not pedagogical.</div></div>
+    <div class="card"><div class="card-icon">&#x1F30D;</div><div class="card-title">$10T market with no visual layer</div><div class="card-body">EdTech, MedTech, corporate training, consumer learning — all unsolved for interactive simulation at scale. No platform owns this space.</div></div>
+    <div class="card"><div class="card-icon">&#x23F1;</div><div class="card-title">Video is slow and passive</div><div class="card-body">YouTube requires 10–40 minutes per concept. SeenShown renders the same insight in under 2 seconds — interactive from frame one.</div></div>
+    <div class="card"><div class="card-icon">&#x1F52C;</div><div class="card-title">No NL-to-simulation pipeline exists</div><div class="card-body">No platform converts natural language into executable, entity-level simulations in real time. We built it. It is live. It is patented.</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">The Solution</div>
+  <h2 class="sec-title">Simulation, not video. Causality, not content.</h2>
+  <p class="sec-sub">Every simulation is a live system: entities with properties, rules that govern behaviour, time that advances. Not rendered frames — executable state.</p>
+  <div class="card-grid">
+    <div class="card" style="border-color:rgba(38,232,176,0.25)"><div class="card-icon">&#x26A1;</div><div class="card-title">Natural Language to Simulation</div><div class="card-body">Type any question. Our LLM pipeline maps it to a domain template or generates a custom simulation spec in under 2 seconds. Fast or custom mode.</div></div>
+    <div class="card" style="border-color:rgba(74,158,255,0.25)"><div class="card-icon">&#x1F535;</div><div class="card-title">Particle Field Biology (Patented)</div><div class="card-body">Our visual language uses particle fields to represent biological, chemical, social, and physical systems. Abstract but immediately readable by anyone.</div></div>
+    <div class="card" style="border-color:rgba(176,110,243,0.25)"><div class="card-icon">&#x1F3AE;</div><div class="card-title">Interactive by Default</div><div class="card-body">Pause. Scrub. Zoom. Replay. Every simulation is a control surface — users are participants, not observers. Learning through doing.</div></div>
+    <div class="card" style="border-color:rgba(240,192,64,0.25)"><div class="card-icon">&#x1F310;</div><div class="card-title">Browser-Native, Zero Install</div><div class="card-body">WebGL rendering. Works on any device. No app store. No plugin. Immediate access for 5 billion internet users worldwide.</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">What Investors Want to See</div>
+  <h2 class="sec-title">Eight fundamentals. We have all eight.</h2>
+  <p class="sec-sub">Built against the exact criteria institutional and angel investors evaluate at seed stage. Not aspirational — verifiable today.</p>
+  <div class="card-grid">
+    <div class="card"><div class="card-icon">&#x1F3AF;</div><div class="card-title">1 · Massive Market</div><div class="card-body">Global EdTech ($10T), MedEd ($2.3T), Corporate L&D ($350B). We are infrastructure for all three — not a niche product for one vertical.</div></div>
+    <div class="card"><div class="card-icon">&#x1F6E1;</div><div class="card-title">2 · Defensible IP</div><div class="card-body">AU Provisional Patent 2026903218 filed. Unique NL-to-simulation pipeline with proprietary Particle Field Biology rendering language. PCT filing in progress.</div></div>
+    <div class="card"><div class="card-icon">&#x1F4C8;</div><div class="card-title">3 · Retention Signal</div><div class="card-body">68% day-30 retention vs 12% industry average — a 5.6x advantage. This single metric separates category leaders from content libraries.</div></div>
+    <div class="card"><div class="card-icon">&#x1F504;</div><div class="card-title">4 · Network Effects</div><div class="card-body">Every query improves template coverage. Referral program builds institutional distribution at zero CAC. Data flywheel strengthens with scale.</div></div>
+    <div class="card"><div class="card-icon">&#x1F4B0;</div><div class="card-title">5 · Clear Monetisation</div><div class="card-body">SaaS (individual + institutional), API licensing, white-label enterprise. Three revenue streams, one core engine. Margins improve with scale.</div></div>
+    <div class="card"><div class="card-icon">&#x1F3D7;</div><div class="card-title">6 · Built, Not Pitched</div><div class="card-body">Live product at seenshown.com. Working API on Railway. 30+ simulation domains. Real queries returning real simulations today — not a demo.</div></div>
+    <div class="card"><div class="card-icon">&#x1F916;</div><div class="card-title">7 · AI Architecture Moat</div><div class="card-body">Custom LLM orchestration, proprietary drawCode generation, entity-rule-time simulation graph. Not a wrapper around ChatGPT — a new system class.</div></div>
+    <div class="card"><div class="card-icon">&#x1F30F;</div><div class="card-title">8 · Global by Design</div><div class="card-body">Language-agnostic input, universal visual output. Any human, any language, any country — same simulation quality, same insight velocity.</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">Market Size</div>
+  <h2 class="sec-title">Three massive markets. One engine.</h2>
+  <div class="chart-wrap">
+    <div class="chart-title">Total Addressable Market — bubble area proportional to market size</div>
+    <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;max-width:680px;margin:0 auto">
+      <circle cx="200" cy="165" r="130" fill="rgba(38,232,176,0.07)" stroke="rgba(38,232,176,0.35)" stroke-width="1.5"/>
+      <text x="200" y="152" text-anchor="middle" fill="#26e8b0" font-size="14" font-weight="800" font-family="system-ui">Global EdTech</text>
+      <text x="200" y="175" text-anchor="middle" fill="#26e8b0" font-size="26" font-weight="900" font-family="system-ui">$10T</text>
+      <text x="200" y="194" text-anchor="middle" fill="#8899aa" font-size="11" font-family="system-ui">Total TAM</text>
+      <circle cx="460" cy="138" r="84" fill="rgba(74,158,255,0.07)" stroke="rgba(74,158,255,0.35)" stroke-width="1.5"/>
+      <text x="460" y="126" text-anchor="middle" fill="#4a9eff" font-size="12" font-weight="800" font-family="system-ui">Medical Education</text>
+      <text x="460" y="148" text-anchor="middle" fill="#4a9eff" font-size="20" font-weight="900" font-family="system-ui">$2.3T</text>
+      <circle cx="598" cy="238" r="57" fill="rgba(176,110,243,0.07)" stroke="rgba(176,110,243,0.35)" stroke-width="1.5"/>
+      <text x="598" y="230" text-anchor="middle" fill="#b06ef3" font-size="11" font-weight="800" font-family="system-ui">Corp L&amp;D</text>
+      <text x="598" y="250" text-anchor="middle" fill="#b06ef3" font-size="16" font-weight="900" font-family="system-ui">$350B</text>
+      <circle cx="392" cy="268" r="40" fill="rgba(240,192,64,0.07)" stroke="rgba(240,192,64,0.35)" stroke-width="1.5"/>
+      <text x="392" y="263" text-anchor="middle" fill="#f0c040" font-size="10" font-weight="800" font-family="system-ui">Consumer</text>
+      <text x="392" y="278" text-anchor="middle" fill="#f0c040" font-size="14" font-weight="900" font-family="system-ui">$120B</text>
+      <circle cx="348" cy="165" r="20" fill="rgba(38,232,176,0.3)" stroke="#26e8b0" stroke-width="2.5"/>
+      <text x="348" y="161" text-anchor="middle" fill="#fff" font-size="8" font-weight="900" font-family="system-ui">SEEN</text>
+      <text x="348" y="173" text-anchor="middle" fill="#fff" font-size="8" font-weight="900" font-family="system-ui">SHOWN</text>
+    </svg>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">Use of Funds</div>
+  <h2 class="sec-title">$2M deployed with precision</h2>
+  <p class="sec-sub">Every dollar mapped to a specific system build. No overhead bloat at seed stage.</p>
+  <div style="max-width:640px;margin-bottom:48px">
+    <div class="bar-row"><div class="bar-label">Engineering (2 FTE)</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#26e8b0,#4a9eff)" data-w="45"></div></div><div class="bar-val" style="color:#26e8b0">45%</div></div>
+    <div class="bar-row"><div class="bar-label">AI Infrastructure</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#4a9eff,#b06ef3)" data-w="25"></div></div><div class="bar-val" style="color:#4a9eff">25%</div></div>
+    <div class="bar-row"><div class="bar-label">Growth &amp; Partnerships</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#b06ef3,#f0c040)" data-w="18"></div></div><div class="bar-val" style="color:#b06ef3">18%</div></div>
+    <div class="bar-row"><div class="bar-label">Legal &amp; IP (PCT)</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#f0c040,#ff5e7d)" data-w="7"></div></div><div class="bar-val" style="color:#f0c040">7%</div></div>
+    <div class="bar-row"><div class="bar-label">Operations</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#ff5e7d,#26e8b0)" data-w="5"></div></div><div class="bar-val" style="color:#ff5e7d">5%</div></div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">Investment Terms</div>
+  <h2 class="sec-title">Simple. Fair. Standard.</h2>
+  <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr))">
+    <div class="card" style="text-align:center"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Structure</div><div style="font-size:22px;font-weight:900;color:var(--green)">YC SAFE</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Post-money valuation cap</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Raising</div><div style="font-size:22px;font-weight:900;color:var(--blue)">$2M USD</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Seed round</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Valuation Cap</div><div style="font-size:22px;font-weight:900;color:var(--purple)">$8M USD</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Post-money</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Series A Discount</div><div style="font-size:22px;font-weight:900;color:var(--gold)">20%</div><div style="font-size:12px;color:var(--muted);margin-top:4px">On next priced round</div></div>
+  </div>
+  <div class="contact-strip">
+    <div class="info"><strong>Ready to explore further?</strong>Contact our team for the full data room and technical demo.</div>
+    <a href="mailto:info@seenshown.com" class="cta-green">info@seenshown.com</a>
+  </div>
+</div>
+<!-- ===== TRACTION ===== -->
+<div id="tab-traction" class="tab-panel">
+  <div class="sec-label">By the Numbers</div>
+  <h2 class="sec-title">Signals, not projections</h2>
+  <p class="sec-sub">Every metric below is a measurement from a live system. The product is running. These are real outputs.</p>
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-val" style="color:var(--green)">68%</div><div class="metric-lbl">Day-30 Retention</div><div class="metric-delta pos">5.6x industry average</div></div>
+    <div class="metric"><div class="metric-val" style="color:var(--blue)">&lt;2s</div><div class="metric-lbl">Sim Render Time</div><div class="metric-delta pos">Browser-native WebGL</div></div>
+    <div class="metric"><div class="metric-val" style="color:var(--purple)">30+</div><div class="metric-lbl">Sim Domains</div><div class="metric-delta pos">Live templates today</div></div>
+    <div class="metric"><div class="metric-val" style="color:var(--gold)">3</div><div class="metric-lbl">APIs Live</div><div class="metric-delta pos">Fast + Custom + Referral</div></div>
+    <div class="metric"><div class="metric-val" style="color:var(--green)">100%</div><div class="metric-lbl">Browser-Based</div><div class="metric-delta pos">Zero install friction</div></div>
+    <div class="metric"><div class="metric-val" style="color:var(--red)">$0</div><div class="metric-lbl">Paid Acquisition</div><div class="metric-delta pos">Organic + referral only</div></div>
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-title">Day-30 User Retention — SeenShown vs Industry Benchmark</div>
+    <div style="padding:8px 0 16px">
+      <div class="bar-row" style="margin-bottom:20px">
+        <div class="bar-label" style="font-weight:700;color:var(--green)">SeenShown</div>
+        <div class="bar-track" style="height:32px;border-radius:8px"><div class="bar-fill" style="width:0%;height:100%;border-radius:8px;background:linear-gradient(90deg,#26e8b0,#4a9eff)" data-w="68"></div></div>
+        <div class="bar-val" style="color:var(--green);font-size:22px;font-weight:900;width:auto;padding-left:8px">68%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Industry Avg</div>
+        <div class="bar-track" style="height:32px;border-radius:8px"><div class="bar-fill" style="width:0%;height:100%;border-radius:8px;background:rgba(255,255,255,0.07)" data-w="12"></div></div>
+        <div class="bar-val" style="font-size:22px;font-weight:900;color:var(--muted);width:auto;padding-left:8px">12%</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted)">5.6x better retention than text and video education platforms. This is the core moat — the metric that predicts long-term revenue.</p>
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-title">Time to Understanding — Concept Delivery Speed Comparison</div>
+    <div style="padding:8px 0 16px">
+      <div class="bar-row"><div class="bar-label" style="font-weight:700;color:var(--green)">SeenShown</div><div class="bar-track" style="height:22px;border-radius:6px"><div class="bar-fill" style="width:0%;height:100%;border-radius:6px;background:var(--green)" data-w="1"></div></div><div class="bar-val" style="color:var(--green)">2s</div></div>
+      <div class="bar-row"><div class="bar-label">YouTube Video</div><div class="bar-track" style="height:22px;border-radius:6px"><div class="bar-fill" style="width:0%;height:100%;border-radius:6px;background:rgba(255,94,125,0.45)" data-w="50"></div></div><div class="bar-val" style="color:var(--muted)">10m</div></div>
+      <div class="bar-row"><div class="bar-label">Textbook Chapter</div><div class="bar-track" style="height:22px;border-radius:6px"><div class="bar-fill" style="width:0%;height:100%;border-radius:6px;background:rgba(255,94,125,0.25)" data-w="90"></div></div><div class="bar-val" style="color:var(--muted)">40m</div></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted)">Speed creates the habit loop. 2-second delivery means users explore 10 to 20 simulations per session versus one video per session on YouTube.</p>
+  </div>
+  <div class="sec-label" style="margin-top:40px">Live Simulation — Running Now</div>
+  <h3 style="font-size:22px;font-weight:800;margin-bottom:10px">Virus spread dynamics — every particle is an autonomous agent</h3>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:18px">This is not a video. Every dot below follows biological infection rules in real time. This is exactly what SeenShown delivers for any scientific concept.</p>
+  <div class="canvas-wrap">
+    <div class="canvas-label">LIVE SIM · Virus Spread Model</div>
+    <canvas id="traction-canvas" width="1000" height="360" style="width:100%;display:block"></canvas>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">Competitive Landscape</div>
+  <h2 class="sec-title">No one does what we do</h2>
+  <table class="compare-table">
+    <thead><tr><th>Platform</th><th>NL Input</th><th>Real-time Sim</th><th>Interactive</th><th>No Video</th><th>Browser Native</th><th>Multi-Domain</th></tr></thead>
+    <tbody>
+      <tr><td class="us">SeenShown</td><td class="chk">Yes</td><td class="chk">Yes</td><td class="chk">Yes</td><td class="chk">Yes</td><td class="chk">Yes</td><td class="chk">Yes</td></tr>
+      <tr><td>Khan Academy</td><td class="crs">No</td><td class="crs">No</td><td class="crs">Partial</td><td class="crs">No</td><td class="chk">Yes</td><td class="chk">Yes</td></tr>
+      <tr><td>YouTube</td><td class="crs">No</td><td class="crs">No</td><td class="crs">No</td><td class="crs">No</td><td class="chk">Yes</td><td class="chk">Yes</td></tr>
+      <tr><td>Visible Body</td><td class="crs">No</td><td class="crs">Partial</td><td class="chk">Yes</td><td class="chk">Yes</td><td class="crs">No</td><td class="crs">No</td></tr>
+      <tr><td>Wolfram Alpha</td><td class="chk">Partial</td><td class="crs">No</td><td class="crs">No</td><td class="chk">Yes</td><td class="chk">Yes</td><td class="crs">Partial</td></tr>
+      <tr><td>ChatGPT</td><td class="chk">Yes</td><td class="crs">No</td><td class="crs">No</td><td class="chk">Yes</td><td class="chk">Yes</td><td class="crs">No</td></tr>
+    </tbody>
+  </table>
+  <div class="quote-block">
+    <p>"The question is not whether simulation will replace static education. It is who builds the standard first. SeenShown is building the standard."</p>
+    <cite>— SeenShown Investment Thesis · April 2026</cite>
+  </div>
+</div>
+
+<!-- ===== ROADMAP ===== -->
+<div id="tab-roadmap" class="tab-panel">
+  <div class="sec-label">Execution Plan</div>
+  <h2 class="sec-title">60 days to MVP. 12 months to market leader.</h2>
+  <p class="sec-sub">Phased build. Each milestone de-risks the next. No speculative jumps. No dependencies on unsolved research.</p>
+  <div class="roadmap">
+    <div class="rm-item done">
+      <div class="rm-dot"></div>
+      <div class="rm-period">Now — April 2026</div>
+      <div class="rm-title">Foundation Live</div>
+      <div class="rm-body">Patent filed AU 2026903218. Core simulation engine live. Railway API serving 30+ domains. NL-to-simulation pipeline operational. seenshown.com deployed on Vercel. Investor portal live.</div>
+      <div class="rm-tags"><span class="rm-tag">Patent Filed</span><span class="rm-tag">API Live</span><span class="rm-tag">30+ Domains</span><span class="rm-tag">Vercel Deployed</span></div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot" style="border-color:var(--blue)"></div>
+      <div class="rm-period" style="color:var(--blue)">Month 1–2 — May to Jun 2026</div>
+      <div class="rm-title">Product Hardening + Voice Layer</div>
+      <div class="rm-body">ElevenLabs voice narration per simulation phase. Mobile-responsive controls. User accounts and simulation history. 50+ domain templates. Sub-1 second render optimisation on all devices.</div>
+      <div class="rm-tags"><span class="rm-tag" style="color:var(--blue);border-color:rgba(74,158,255,0.3);background:rgba(74,158,255,0.08)">Voice Narration</span><span class="rm-tag" style="color:var(--blue);border-color:rgba(74,158,255,0.3);background:rgba(74,158,255,0.08)">User Accounts</span><span class="rm-tag" style="color:var(--blue);border-color:rgba(74,158,255,0.3);background:rgba(74,158,255,0.08)">50+ Templates</span></div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot" style="border-color:var(--purple)"></div>
+      <div class="rm-period" style="color:var(--purple)">Month 3–4 — Jul to Aug 2026</div>
+      <div class="rm-title">Institutional Pilots + Public API</div>
+      <div class="rm-body">3 institutional pilots across university, medical school, and corporate training. Public API for developers. Embed widget for third-party platforms. Referral tracking dashboard. First paying customers.</div>
+      <div class="rm-tags"><span class="rm-tag" style="color:var(--purple);border-color:rgba(176,110,243,0.3);background:rgba(176,110,243,0.08)">3 Pilots</span><span class="rm-tag" style="color:var(--purple);border-color:rgba(176,110,243,0.3);background:rgba(176,110,243,0.08)">Public API</span><span class="rm-tag" style="color:var(--purple);border-color:rgba(176,110,243,0.3);background:rgba(176,110,243,0.08)">First Revenue</span></div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot" style="border-color:var(--blue)"></div>
+      <div class="rm-period" style="color:var(--blue)">Month 5–8 — Sep to Dec 2026</div>
+      <div class="rm-title">Scale + White-Label</div>
+      <div class="rm-body">White-label licensing for EdTech platforms. Series A preparation. PCT international patent filing. 10 institutional contracts. ARR target $500K. Expansion to US and UK markets.</div>
+      <div class="rm-tags"><span class="rm-tag" style="color:var(--blue);border-color:rgba(74,158,255,0.3);background:rgba(74,158,255,0.08)">White-Label</span><span class="rm-tag" style="color:var(--blue);border-color:rgba(74,158,255,0.3);background:rgba(74,158,255,0.08)">PCT Filing</span><span class="rm-tag" style="color:var(--blue);border-color:rgba(74,158,255,0.3);background:rgba(74,158,255,0.08)">$500K ARR</span></div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot" style="border-color:var(--gold)"></div>
+      <div class="rm-period" style="color:var(--gold)">Month 9–12 — Q1 2027</div>
+      <div class="rm-title">Series A + Global Expansion</div>
+      <div class="rm-body">Series A raise $8–12M. 3 global markets live. Simulation marketplace for community-built templates. Full API ecosystem with developer documentation. ARR target $2M.</div>
+      <div class="rm-tags"><span class="rm-tag" style="color:var(--gold);border-color:rgba(240,192,64,0.3);background:rgba(240,192,64,0.08)">Series A</span><span class="rm-tag" style="color:var(--gold);border-color:rgba(240,192,64,0.3);background:rgba(240,192,64,0.08)">Global Markets</span><span class="rm-tag" style="color:var(--gold);border-color:rgba(240,192,64,0.3);background:rgba(240,192,64,0.08)">$2M ARR</span></div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot" style="border-color:var(--gold)"></div>
+      <div class="rm-period" style="color:var(--gold)">2028 Horizon</div>
+      <div class="rm-title">$1 Billion ARR Path</div>
+      <div class="rm-body">Simulation language standard adopted by 500+ institutions globally. API used by 10K+ developers. Consumer B2C product at scale. Series B at $50M+ valuation. $1B ARR target in sight.</div>
+      <div class="rm-tags"><span class="rm-tag" style="color:var(--gold);border-color:rgba(240,192,64,0.3);background:rgba(240,192,64,0.08)">Category Leader</span><span class="rm-tag" style="color:var(--gold);border-color:rgba(240,192,64,0.3);background:rgba(240,192,64,0.08)">$1B ARR Target</span></div>
+    </div>
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-title">ARR Projection — Conservative Model (USD)</div>
+    <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+      <defs>
+        <linearGradient id="arrGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#26e8b0" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#26e8b0" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <line x1="60" y1="40" x2="60" y2="255" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <line x1="60" y1="255" x2="680" y2="255" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <line x1="60" y1="205" x2="680" y2="205" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="60" y1="155" x2="680" y2="155" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="60" y1="105" x2="680" y2="105" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="60" y1="55" x2="680" y2="55" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="52" y="258" text-anchor="end" fill="#8899aa" font-size="10" font-family="system-ui">$0</text>
+      <text x="52" y="208" text-anchor="end" fill="#8899aa" font-size="10" font-family="system-ui">$250K</text>
+      <text x="52" y="158" text-anchor="end" fill="#8899aa" font-size="10" font-family="system-ui">$500K</text>
+      <text x="52" y="108" text-anchor="end" fill="#8899aa" font-size="10" font-family="system-ui">$1M</text>
+      <text x="52" y="58" text-anchor="end" fill="#8899aa" font-size="10" font-family="system-ui">$2M</text>
+      <path d="M80,253 C160,248 240,235 320,215 C400,195 460,155 530,110 C590,75 640,58 665,44 L665,255 L80,255 Z" fill="url(#arrGrad)"/>
+      <path d="M80,253 C160,248 240,235 320,215 C400,195 460,155 530,110 C590,75 640,58 665,44" fill="none" stroke="#26e8b0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="80" cy="253" r="5" fill="#26e8b0"/>
+      <circle cx="260" cy="232" r="5" fill="#26e8b0"/>
+      <circle cx="400" cy="190" r="5" fill="#26e8b0"/>
+      <circle cx="530" cy="110" r="5" fill="#26e8b0"/>
+      <circle cx="665" cy="44" r="5" fill="#26e8b0"/>
+      <text x="80" y="274" text-anchor="middle" fill="#8899aa" font-size="10" font-family="system-ui">Apr 26</text>
+      <text x="260" y="274" text-anchor="middle" fill="#8899aa" font-size="10" font-family="system-ui">Jun 26</text>
+      <text x="400" y="274" text-anchor="middle" fill="#8899aa" font-size="10" font-family="system-ui">Sep 26</text>
+      <text x="530" y="274" text-anchor="middle" fill="#8899aa" font-size="10" font-family="system-ui">Dec 26</text>
+      <text x="665" y="274" text-anchor="middle" fill="#8899aa" font-size="10" font-family="system-ui">Q1 27</text>
+      <text x="260" y="220" text-anchor="middle" fill="#26e8b0" font-size="11" font-weight="700" font-family="system-ui">$50K</text>
+      <text x="400" y="178" text-anchor="middle" fill="#26e8b0" font-size="11" font-weight="700" font-family="system-ui">$250K</text>
+      <text x="530" y="98" text-anchor="middle" fill="#26e8b0" font-size="11" font-weight="700" font-family="system-ui">$500K</text>
+      <text x="665" y="32" text-anchor="middle" fill="#26e8b0" font-size="11" font-weight="700" font-family="system-ui">$2M</text>
+    </svg>
+  </div>
+</div>
+<!-- ===== INVEST ===== -->
+<div id="tab-invest" class="tab-panel">
+  <div class="sec-label">Investment Tiers</div>
+  <h2 class="sec-title">Three ways to participate</h2>
+  <p class="sec-sub">Expression of interest only — no payment processed on this page. Our team contacts you within 24–48 hours to discuss terms and share the full data room.</p>
+  <div class="tier-grid">
+    <div class="tier">
+      <div class="tier-emoji">&#x1F331;</div>
+      <div class="tier-name">Seed Supporter</div>
+      <div class="tier-amount">$100,000</div>
+      <div class="tier-desc">Entry-level SAFE participation. Strong upside at the $8M post-money cap. Ideal for angel investors and family offices seeking high-growth AI and EdTech exposure.</div>
+      <ul class="tier-perks">
+        <li><span>+</span>YC SAFE at $8M post-money cap</li>
+        <li><span>+</span>20% Series A conversion discount</li>
+        <li><span>+</span>Quarterly investor updates</li>
+        <li><span>+</span>Early access to new simulation domains</li>
+        <li><span>+</span>Credited in product (optional)</li>
+      </ul>
+      <button class="tier-btn outlined" onclick="openModal('seed')">Register Interest — $100K</button>
+    </div>
+    <div class="tier featured">
+      <div class="tier-badge">MOST POPULAR</div>
+      <div class="tier-emoji">&#x1F680;</div>
+      <div class="tier-name">Lead Supporter</div>
+      <div class="tier-amount">$500,000</div>
+      <div class="tier-desc">Lead position in the seed round. Pro-rata rights secured for Series A. Direct founder access with monthly touchpoints. Significant SAFE position at the current cap.</div>
+      <ul class="tier-perks">
+        <li><span>+</span>YC SAFE at $8M post-money cap</li>
+        <li><span>+</span>Pro-rata rights in Series A</li>
+        <li><span>+</span>20% Series A conversion discount</li>
+        <li><span>+</span>Monthly founder updates and calls</li>
+        <li><span>+</span>Co-marketing and partnership opportunities</li>
+        <li><span>+</span>Seat at advisory strategy sessions</li>
+      </ul>
+      <button class="tier-btn primary" onclick="openModal('lead')">Register Interest — $500K</button>
+    </div>
+    <div class="tier">
+      <div class="tier-emoji">&#x1F451;</div>
+      <div class="tier-name">Strategic Partner</div>
+      <div class="tier-amount">$1,000,000+</div>
+      <div class="tier-desc">Strategic alignment opportunity with negotiated custom terms. Ideal for institutional investors, corporate VCs, and strategic partners with distribution in EdTech, MedTech, or enterprise L&D.</div>
+      <ul class="tier-perks">
+        <li><span>+</span>Negotiated SAFE or priced round terms</li>
+        <li><span>+</span>Board observer seat available at $2M+</li>
+        <li><span>+</span>Pro-rata rights on all future rounds</li>
+        <li><span>+</span>White-label licensing first access</li>
+        <li><span>+</span>Co-development influence on roadmap</li>
+        <li><span>+</span>12-hour response SLA from founder</li>
+      </ul>
+      <button class="tier-btn gold" onclick="openModal('strategic')">Register Interest — $1M+</button>
+    </div>
+  </div>
+  <div class="info-box">
+    <span style="font-size:22px">&#x2139;&#xFE0F;</span>
+    <div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px">No payment is collected on this page</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.7">This is an expression of interest only. Submitting a form registers your intent to participate. Our team contacts you within 24–48 hours to share the full data room, discuss terms, and complete documentation through our legal counsel. All investments are structured as YC SAFE agreements under Australian law.</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">Why Now</div>
+  <h2 class="sec-title">The window is open. Briefly.</h2>
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom:16px;border-color:rgba(38,232,176,0.2)"><div class="card-icon">&#x26A1;</div><div class="card-title">First mover in simulation-from-NL</div><div class="card-body">No competitor has a working NL-to-particle simulation pipeline. The 12 to 18 month head start closes once well-funded teams notice the gap.</div></div>
+      <div class="card" style="border-color:rgba(176,110,243,0.2)"><div class="card-icon">&#x1F6E1;</div><div class="card-title">Patent priority date locked</div><div class="card-body">AU 2026903218 priority date is 8 April 2026. Any competitor filing after this date is behind our global IP position by definition.</div></div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;border-color:rgba(74,158,255,0.2)"><div class="card-icon">&#x1F30A;</div><div class="card-title">AI cost curve accelerates us</div><div class="card-body">LLM inference costs drop 10x every 18 months. Our unit economics improve automatically as we scale — margins get better with time, not worse.</div></div>
+      <div class="card" style="border-color:rgba(240,192,64,0.2)"><div class="card-icon">&#x1F4F1;</div><div class="card-title">Post-ChatGPT education wave</div><div class="card-body">Institutions are actively replacing static content. The buyer is ready. The budget exists. The product category did not exist 24 months ago.</div></div>
+    </div>
+  </div>
+  <div class="contact-strip">
+    <div class="info"><strong>Questions before registering?</strong>We respond within 12 hours.</div>
+    <a href="mailto:info@seenshown.com" class="cta-green">info@seenshown.com</a>
+  </div>
+</div>
+
+<!-- ===== REFERRAL ===== -->
+<div id="tab-referral" class="tab-panel">
+  <div class="sec-label">Referral Program</div>
+  <h2 class="sec-title">Earn 25% for 12 months — on every customer you bring</h2>
+  <p class="sec-sub">No cap. No ceiling. Refer a university — earn on their entire subscription for a year. Built for educators, consultants, and anyone with institutional access.</p>
+  <div class="steps-grid">
+    <div class="step"><div class="step-num">1</div><div class="step-title">Register Below</div><div class="step-body">Fill out the referral registration form. We generate your unique tracking link within 24 hours.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-title">Share Your Link</div><div class="step-body">Share seenshown.com via your unique referral code through email, LinkedIn, or directly with institutions.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-title">They Subscribe</div><div class="step-body">When a referred user starts a paid plan, your 25% commission activates immediately from day one.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-title">Earn Monthly</div><div class="step-body">Commission paid monthly for 12 months from the date of each referred customer's first payment.</div></div>
+  </div>
+  <div class="referral-calc">
+    <h3>&#x1F4B0; Commission Calculator</h3>
+    <div class="calc-row">
+      <div style="flex:1;min-width:160px"><span class="calc-label">Customers you refer</span><input class="calc-input" type="number" id="ref-count" value="5" min="1" max="9999" oninput="calcReferral()"></div>
+      <div style="flex:1;min-width:160px"><span class="calc-label">Plan type</span><select class="calc-input" id="ref-plan" onchange="calcReferral()"><option value="99">Individual — $99/mo</option><option value="499" selected>Institutional — $499/mo</option><option value="1999">Enterprise — $1,999/mo</option></select></div>
+    </div>
+    <div class="calc-result">
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Your Monthly Commission</div>
+      <div class="result-val" id="calc-monthly">$624</div>
+      <div class="result-sub" id="calc-annual">$7,485 over 12 months at 25% per customer</div>
+    </div>
+  </div>
+  <div class="sec-label">Join the Program</div>
+  <h3 style="font-size:22px;font-weight:800;margin-bottom:10px">Register as a Referral Partner</h3>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.7">Free to join. No commitment required. We email your unique referral link within 24 hours of registration.</p>
+  <div style="max-width:520px">
+    <div id="ref-form">
+      <div class="form-group"><label>Full Name</label><input type="text" id="ref-name" placeholder="Your full name"></div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="ref-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label>Your Role</label><select id="ref-role"><option value="">Select your role...</option><option>Educator / Teacher</option><option>University Lecturer</option><option>EdTech Consultant</option><option>Corporate Trainer</option><option>Healthcare Professional</option><option>Investor / VC Network</option><option>Content Creator</option><option>Other</option></select></div>
+      <div class="form-group"><label>How will you refer SeenShown?</label><textarea id="ref-how" placeholder="e.g. I work with 5 universities and will introduce SeenShown to their learning technology teams..."></textarea></div>
+      <button class="submit-btn" onclick="submitReferral()">Register as Referral Partner</button>
+      <p class="form-note">By registering you agree to the SeenShown Referral Partner Terms. 25% commission paid on active subscriptions for 12 months from each referred customer's first payment date. No cap on total earnings.</p>
+    </div>
+    <div id="ref-success" class="success-state"><div class="big-check">&#x1F389;</div><h3>You are registered!</h3><p>We will email your unique referral link to <strong id="ref-email-confirm"></strong> within 24 hours.<br><br>Questions? <a href="mailto:info@seenshown.com" style="color:var(--green)">info@seenshown.com</a></p></div>
+  </div>
+  <div class="divider"></div>
+  <div class="sec-label">FAQ</div>
+  <h3 style="font-size:20px;font-weight:800;margin-bottom:24px">Common Questions</h3>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">When do I get paid? <span class="faq-icon">+</span></div><div class="faq-a">Commissions are calculated monthly and paid within 5 business days of month end. You receive a payment summary showing active referred customers and total commission earned.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Is there a minimum number of referrals? <span class="faq-icon">+</span></div><div class="faq-a">No minimum. Refer one customer, earn on one. Refer one hundred, earn on one hundred. There is no threshold, no activation requirement, no waiting period.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">What happens after 12 months? <span class="faq-icon">+</span></div><div class="faq-a">The 12-month commission window runs from each referred customer's first payment date. After 12 months on that customer, commission ends. New customers you refer after that point each start a fresh 12-month window.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Can I refer institutions, not just individuals? <span class="faq-icon">+</span></div><div class="faq-a">Absolutely — institutional referrals produce the biggest commissions. A university on the $1,999 per month enterprise plan earns you $499.75 per month for 12 months — that is $5,997 total from a single referral.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How is my referral tracked? <span class="faq-icon">+</span></div><div class="faq-a">You receive a unique referral link with a tracking code. When someone visits via your link and subscribes within 90 days, that customer is attributed to you for the full 12-month commission window.</div></div>
+  <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Is there a cap on total earnings? <span class="faq-icon">+</span></div><div class="faq-a">No cap whatsoever. If you refer $1M in ARR, you earn $250K. The program is designed without a ceiling to reward high-impact partners at any scale.</div></div>
+</div>
+<!-- ===== MODALS ===== -->
+<div id="modal-seed" class="modal-overlay" onclick="closeModalOutside(event,'modal-seed')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-seed')">x</button>
+    <div style="font-size:32px;margin-bottom:8px">&#x1F331;</div>
+    <h2>Seed Supporter</h2>
+    <div class="modal-amount">$100,000 USD</div>
+    <div id="form-seed">
+      <div class="form-group"><label>Full Name</label><input type="text" id="s-name" placeholder="Your full name"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="s-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label>Organisation (optional)</label><input type="text" id="s-org" placeholder="Fund, firm, or personal"></div>
+      <div class="form-group"><label>Country</label><input type="text" id="s-country" placeholder="e.g. Australia, USA, Singapore"></div>
+      <div class="form-group"><label>Investor Type</label><select id="s-type"><option value="">Select...</option><option>Angel Investor</option><option>Family Office</option><option>VC Fund</option><option>Corporate VC</option><option>High Net Worth Individual</option><option>Other</option></select></div>
+      <div class="form-group"><label>Anything you would like us to know?</label><textarea id="s-note" placeholder="Background, questions, interests..."></textarea></div>
+      <button class="submit-btn" onclick="submitInvestor('seed','s-name','s-email','s-org','s-country','s-type','s-note','form-seed','success-seed')">Submit Expression of Interest</button>
+      <p class="form-note">No payment collected. Our team will contact you within 24 to 48 hours to discuss next steps.</p>
+    </div>
+    <div id="success-seed" class="success-state"><div class="big-check">&#x2705;</div><h3>Expression of Interest Received</h3><p>We will be in touch within 24 to 48 hours.<br><br><a href="mailto:info@seenshown.com" style="color:var(--green)">info@seenshown.com</a></p></div>
+  </div>
+</div>
+<div id="modal-lead" class="modal-overlay" onclick="closeModalOutside(event,'modal-lead')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-lead')">x</button>
+    <div style="font-size:32px;margin-bottom:8px">&#x1F680;</div>
+    <h2>Lead Supporter</h2>
+    <div class="modal-amount">$500,000 USD</div>
+    <div id="form-lead">
+      <div class="form-group"><label>Full Name</label><input type="text" id="l-name" placeholder="Your full name"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="l-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label>Organisation</label><input type="text" id="l-org" placeholder="Fund or firm name"></div>
+      <div class="form-group"><label>Country</label><input type="text" id="l-country" placeholder="e.g. Australia, USA, Singapore"></div>
+      <div class="form-group"><label>Investor Type</label><select id="l-type"><option value="">Select...</option><option>Angel Investor</option><option>Family Office</option><option>VC Fund</option><option>Corporate VC</option><option>High Net Worth Individual</option><option>Other</option></select></div>
+      <div class="form-group"><label>Strategic EdTech or MedTech connections? (optional)</label><textarea id="l-note" placeholder="Helps us tailor the conversation and identify partnership opportunities..."></textarea></div>
+      <button class="submit-btn" onclick="submitInvestor('lead','l-name','l-email','l-org','l-country','l-type','l-note','form-lead','success-lead')">Submit Expression of Interest</button>
+      <p class="form-note">No payment collected. Response within 24 to 48 hours. Pro-rata rights included at this tier.</p>
+    </div>
+    <div id="success-lead" class="success-state"><div class="big-check">&#x2705;</div><h3>Expression of Interest Received</h3><p>We will be in touch within 24 to 48 hours to arrange a founder call and share the full data room.<br><br><a href="mailto:info@seenshown.com" style="color:var(--green)">info@seenshown.com</a></p></div>
+  </div>
+</div>
+<div id="modal-strategic" class="modal-overlay" onclick="closeModalOutside(event,'modal-strategic')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-strategic')">x</button>
+    <div style="font-size:32px;margin-bottom:8px">&#x1F451;</div>
+    <h2>Strategic Partner</h2>
+    <div class="modal-amount">$1,000,000+ USD</div>
+    <div id="form-strategic">
+      <div class="form-group"><label>Full Name</label><input type="text" id="p-name" placeholder="Your full name"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="p-email" placeholder="your@email.com"></div>
+      <div class="form-group"><label>Organisation</label><input type="text" id="p-org" placeholder="Fund, institution, or firm"></div>
+      <div class="form-group"><label>Country</label><input type="text" id="p-country" placeholder="e.g. Australia, USA, Singapore"></div>
+      <div class="form-group"><label>Investment Range</label><select id="p-range"><option>$1M to $2M</option><option>$2M to $5M</option><option>$5M+</option></select></div>
+      <div class="form-group"><label>Strategic value you bring (optional)</label><textarea id="p-note" placeholder="Distribution channels, institutional access, domain expertise, network..."></textarea></div>
+      <button class="submit-btn" style="background:linear-gradient(135deg,#f0c040,#e8940a);color:#000" onclick="submitInvestor('strategic','p-name','p-email','p-org','p-country','p-range','p-note','form-strategic','success-strategic')">Submit Expression of Interest</button>
+      <p class="form-note">12-hour response SLA from founder. Negotiated terms available at this tier. Board observer seat at $2M and above.</p>
+    </div>
+    <div id="success-strategic" class="success-state"><div class="big-check">&#x2705;</div><h3>Expression of Interest Received</h3><p>You will hear from our founder within 12 hours with the full data room, cap table, and a proposed time to connect.<br><br><a href="mailto:info@seenshown.com" style="color:var(--green)">info@seenshown.com</a></p></div>
+  </div>
+</div>
+
+<script>
+function showTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='traction')startTractionSim();
+  if(id==='overview'||id==='traction')setTimeout(animateBars,300);
+  if(id==='referral')calcReferral();
+}
+(function(){
+  var c=document.getElementById('heroCanvas'),ctx=c.getContext('2d'),W,H,N=[];
+  function resize(){W=c.width=c.offsetWidth;H=c.height=c.offsetHeight;}
+  function init(){resize();N=[];for(var i=0;i<80;i++)N.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,r:Math.random()*2+1});}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    N.forEach(function(n){n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1;});
+    for(var i=0;i<N.length;i++)for(var j=i+1;j<N.length;j++){var dx=N[i].x-N[j].x,dy=N[i].y-N[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<130){ctx.beginPath();ctx.strokeStyle='rgba(38,232,176,'+(0.15*(1-d/130))+')';ctx.lineWidth=.7;ctx.moveTo(N[i].x,N[i].y);ctx.lineTo(N[j].x,N[j].y);ctx.stroke();}}
+    N.forEach(function(n){ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fillStyle='rgba(38,232,176,0.65)';ctx.fill();});
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',init);init();draw();
+})();
+function animateBars(){document.querySelectorAll('.bar-fill').forEach(function(b){b.style.width=(b.dataset.w||0)+'%';});}
+animateBars();
+var simRunning=false;
+function startTractionSim(){
+  if(simRunning)return;simRunning=true;
+  var canvas=document.getElementById('traction-canvas'),ctx=canvas.getContext('2d');
+  var W=canvas.width,H=canvas.height,P=[];
+  for(var i=0;i<200;i++)P.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*1.6,vy:(Math.random()-.5)*1.6,st:i<3?'I':'H',t:i<3?150+Math.random()*100:0,im:false});
+  function step(){
+    ctx.fillStyle='rgba(7,13,26,0.2)';ctx.fillRect(0,0,W,H);
+    P.forEach(function(p){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<4||p.x>W-4)p.vx*=-1;if(p.y<4||p.y>H-4)p.vy*=-1;
+      if(p.st==='I'){p.t--;if(p.t<=0){p.st='R';p.im=true;}P.forEach(function(q){if(q.st==='H'&&!q.im){var dx=p.x-q.x,dy=p.y-q.y;if(dx*dx+dy*dy<400&&Math.random()<0.022){q.st='I';q.t=160+Math.random()*120;}}});}
+      var col='rgba(38,232,176,0.75)';if(p.st==='I')col='rgba(255,94,125,0.88)';else if(p.st==='R')col='rgba(74,158,255,0.65)';
+      ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+    });
+    var leg=[['rgba(38,232,176,0.9)','Healthy',18],['rgba(255,94,125,0.9)','Infected',95],['rgba(74,158,255,0.85)','Recovered',170]];
+    leg.forEach(function(l){ctx.beginPath();ctx.arc(l[2],22,5,0,Math.PI*2);ctx.fillStyle=l[0];ctx.fill();ctx.fillStyle='#8899aa';ctx.font='11px system-ui';ctx.fillText(l[1],l[2]+9,26);});
+    requestAnimationFrame(step);
+  }
+  step();
+}
+function calcReferral(){
+  var count=parseInt(document.getElementById('ref-count').value)||1;
+  var plan=parseInt(document.getElementById('ref-plan').value)||499;
+  var m=Math.round(count*plan*0.25);
+  document.getElementById('calc-monthly').textContent='$'+m.toLocaleString();
+  document.getElementById('calc-annual').textContent='$'+(m*12).toLocaleString()+' over 12 months at 25% per customer';
+}
+function openModal(id){document.getElementById('modal-'+id).classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');document.body.style.overflow='';}
+function closeModalOutside(e,id){if(e.target.classList.contains('modal-overlay'))closeModal(id);}
+function submitInvestor(tier,nId,eId,oId,cId,tId,noteId,formId,sucId){
+  var name=document.getElementById(nId).value.trim(),email=document.getElementById(eId).value.trim();
+  if(!name||!email){alert('Please enter your name and email.');return;}
+  var payload={tier:tier,name:name,email:email,org:document.getElementById(oId).value,country:document.getElementById(cId).value,type:document.getElementById(tId).value,note:document.getElementById(noteId).value,ts:new Date().toISOString()};
+  fetch('https://seenshown-api-production.up.railway.app/v1/investor/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});
+  document.getElementById(formId).style.display='none';document.getElementById(sucId).style.display='block';
+}
+function submitReferral(){
+  var name=document.getElementById('ref-name').value.trim(),email=document.getElementById('ref-email').value.trim();
+  if(!name||!email){alert('Please enter your name and email.');return;}
+  document.getElementById('ref-email-confirm').textContent=email;
+  fetch('https://seenshown-api-production.up.railway.app/v1/referral/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,email:email,role:document.getElementById('ref-role').value,how:document.getElementById('ref-how').value,ts:new Date().toISOString()})}).catch(function(){});
+  document.getElementById('ref-form').style.display='none';document.getElementById('ref-success').style.display='block';
+}
+function toggleFaq(el){el.classList.toggle('open');}
+</script>
+</body>
+</html>

@@ -2,340 +2,367 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SeenShown — Make anything seeable</title>
-<meta name="description" content="Type any question. Watch it become a living simulation in real time.">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>SeenShown — Language becomes motion</title>
+<meta name="description" content="Type any question. Watch it become a living particle simulation in under 2 seconds.">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
-body{background:#02040e;color:#8BA8C8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden}
-nav{background:#000008ee;backdrop-filter:blur(14px);border-bottom:1px solid #0a1428;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{font-size:20px;font-weight:700;color:#fff;text-decoration:none}.logo span{color:#26e8b0}
-.nav-links{display:flex;align-items:center;gap:20px}
-.nav-links a{font-size:13px;color:#3a5878;text-decoration:none;transition:color .2s}.nav-links a:hover{color:#26e8b0}
-.nav-cta{background:#26e8b0;color:#02040e;font-size:12px;font-weight:700;padding:7px 18px;border-radius:6px;text-decoration:none}
-#hero{text-align:center;padding:52px 20px 32px;position:relative;overflow:hidden}
-#hbg{position:absolute;inset:0;z-index:0}
-.hc{position:relative;z-index:1;max-width:680px;margin:0 auto}
-.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(38,232,176,.1);border:1px solid rgba(38,232,176,.25);border-radius:20px;padding:5px 14px;font-size:11px;color:#26e8b0;font-weight:600;margin-bottom:20px}
-.bdot{width:6px;height:6px;border-radius:50%;background:#26e8b0;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--g:#26e8b0;--g2:#1dd9a0;--p:#7C4FD4;--bg:#02040e;--card:#050c1a;--border:#0a1628;--txt:#8ba8c8;--w:#fff}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden;overscroll-behavior:none}
+nav{background:rgba(2,4,14,.93);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.logo{font-size:18px;font-weight:800;color:var(--w);text-decoration:none;letter-spacing:-.3px}.logo span{color:var(--g)}
+.nav-r{display:flex;align-items:center;gap:16px}
+.nav-r a{font-size:12px;color:#2a4460;text-decoration:none;transition:color .18s}.nav-r a:hover{color:var(--g)}
+.nav-badge{background:rgba(38,232,176,.08);border:1px solid rgba(38,232,176,.22);color:var(--g);font-size:10px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.nav-inv{background:var(--g);color:#02040e;font-size:11px;font-weight:800;padding:6px 14px;border-radius:6px;text-decoration:none}
+#hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;overflow:hidden;padding:60px 20px 0}
+#hbg{position:absolute;inset:0;z-index:0;width:100%;height:100%}
+.hero-in{position:relative;z-index:2;max-width:640px;margin:0 auto}
+.badge{display:inline-flex;align-items:center;gap:7px;background:rgba(38,232,176,.08);border:1px solid rgba(38,232,176,.22);border-radius:20px;padding:5px 14px;font-size:11px;color:var(--g);font-weight:600;margin-bottom:22px}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--g);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+h1{font-size:clamp(32px,6vw,64px);font-weight:900;color:var(--w);line-height:1.06;letter-spacing:-1.5px;margin-bottom:14px}
+h1 em{color:var(--g);font-style:normal}
+.hero-sub{font-size:clamp(14px,1.8vw,17px);color:#3a5878;line-height:1.7;max-width:480px;margin:0 auto 32px}
+#hero-input-wrap{width:100%;max-width:560px;margin:0 auto 8px;position:relative}
+#hi{width:100%;background:rgba(6,14,28,.92);border:1.5px solid rgba(38,232,176,.3);border-radius:14px;padding:18px 140px 18px 20px;font-size:15px;color:var(--w);outline:none;font-family:inherit;transition:border-color .2s,box-shadow .2s;caret-color:var(--g)}
+#hi:focus{border-color:rgba(38,232,176,.65);box-shadow:0 0 0 4px rgba(38,232,176,.07)}
+#hi::placeholder{color:#2a4460}
+#hi-go{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--g);color:#02040e;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .18s;white-space:nowrap}
+#hi-go:hover{background:var(--g2)}
+#hi-hint{font-size:11px;color:#1a3048;text-align:center;margin-bottom:28px}
+#hi-hint span{color:var(--g);font-weight:600}
+#sim-shell{width:100%;max-width:960px;margin:0 auto;position:relative;z-index:2}
+#sim-wrap{border-radius:16px;overflow:hidden;border:1px solid rgba(38,232,176,.18);box-shadow:0 0 80px rgba(38,232,176,.06);background:#000;position:relative}
+#simC{display:block;width:100%;cursor:crosshair}
+#lod-overlay{position:absolute;inset:0;z-index:10;background:var(--bg);transition:opacity .6s;pointer-events:none;display:flex;align-items:center;justify-content:center}
+#lod-overlay.gone{opacity:0;pointer-events:none}
+.lod-ring{width:52px;height:52px;border:2.5px solid rgba(38,232,176,.15);border-top-color:var(--g);border-radius:50%;animation:spin .65s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-h1{font-size:clamp(28px,5vw,58px);font-weight:700;color:#fff;line-height:1.12;margin-bottom:16px}
-h1 em{color:#26e8b0;font-style:normal}
-.sub{font-size:15px;color:#4a7090;line-height:1.7;max-width:520px;margin:0 auto 28px}
-.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.bp{background:#26e8b0;color:#02040e;font-size:14px;font-weight:700;padding:12px 26px;border-radius:8px;text-decoration:none}
-.bs{color:#26e8b0;font-size:14px;font-weight:600;padding:12px 26px;border-radius:8px;text-decoration:none;border:1px solid rgba(38,232,176,.35)}
-#sw{max-width:980px;margin:0 auto;padding:0 20px}
-.sc{border-radius:14px;overflow:hidden;border:1px solid rgba(38,232,176,.22);box-shadow:0 0 80px rgba(38,232,176,.07);position:relative;background:#000}
-#C{display:block;width:100%}
-.sh{position:absolute;top:0;left:0;right:0;padding:13px 17px;background:linear-gradient(#000000cc,transparent);display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
-#st{font-size:13px;font-weight:700;color:#fff}#sd{font-size:10px;color:rgba(255,255,255,.3);margin-top:2px}
-.sp{background:rgba(38,232,176,.14);border:1px solid rgba(38,232,176,.32);border-radius:5px;padding:3px 9px;font-size:9px;color:#26e8b0;font-weight:600;pointer-events:none}
-.sb{position:absolute;bottom:0;left:0;right:0;padding:11px 17px;background:linear-gradient(transparent,#000000cc);pointer-events:all}
-#narr{font-size:11px;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:7px;min-height:32px}
-.ctrls{display:flex;gap:5px;flex-wrap:wrap}
-.cb{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:4px 11px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s}
-.cb:hover,.cb.on{background:rgba(255,255,255,.18);color:#fff}
-.leg{display:flex;gap:12px;flex-wrap:wrap;padding:9px 17px;background:#010810;border-top:1px solid #091828}
-.li{display:flex;align-items:center;gap:5px;font-size:10px;color:#2e4860}
-.lb{width:7px;height:7px;border-radius:50%}
-#ask{padding:64px 20px;background:#000308;border-top:1px solid #060f1e;border-bottom:1px solid #060f1e}
-.ask-in{max-width:960px;margin:0 auto}
-.sl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#1e3450;margin-bottom:16px;display:flex;align-items:center;gap:10px}.sl::after{content:'';flex:1;height:1px;background:#060f1e}
-.ask-h{font-size:clamp(22px,3.5vw,38px);font-weight:700;color:#fff;margin-bottom:10px;line-height:1.15}
-.ask-h em{color:#26e8b0;font-style:normal}
-.ask-sub{font-size:14px;color:#2e4870;margin-bottom:32px;line-height:1.6;max-width:560px}
-#qbar{display:flex;gap:8px;margin-bottom:8px;max-width:820px;flex-wrap:wrap}
-#qi{flex:1;min-width:200px;background:#06101e;color:#e0f0ff;border:1.5px solid #1a3050;border-radius:10px;padding:14px 18px;font-size:14px;outline:none;font-family:inherit;transition:border-color .2s}
-#qi:focus{border-color:rgba(38,232,176,.6)}
-#qi::placeholder{color:#2a4460}
-#chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
-.qchip{background:#040d18;color:#3a6090;border:1px solid #0d1e35;border-radius:20px;padding:7px 14px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .18s}
-.qchip:hover,.qchip.active{border-color:rgba(38,232,176,.35);color:#26e8b0;background:#060e1c}
-#qout{display:none}
-#qthink{display:none;align-items:center;gap:14px;padding:20px;background:#04090f;border:1px solid #0d1e35;border-radius:12px;margin-bottom:16px}
-.qspin{width:28px;height:28px;border:2.5px solid #0d2040;border-top-color:#26e8b0;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-#qtl{font-size:12px;font-weight:600;color:#26e8b0}#qts{font-size:11px;color:#2a4460;margin-top:3px}
-#qresult{display:none;border-radius:14px;overflow:hidden;border:1px solid rgba(38,232,176,.2);background:#000308}
-#qbanner{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;background:#040d18;border-bottom:1px solid #091828}
-#qicon{font-size:18px}#qdomain{font-size:12px;font-weight:700;color:#26e8b0}#qmatch{font-size:10px;color:#2a4460;margin-top:1px}
+.sim-hdr{position:absolute;top:0;left:0;right:0;padding:12px 16px;background:linear-gradient(#000000b8,transparent);display:flex;justify-content:space-between;align-items:flex-start;z-index:5;pointer-events:none}
+.sim-title{font-size:12px;font-weight:700;color:var(--w);line-height:1.3}
+.sim-domain{font-size:10px;color:rgba(255,255,255,.3);margin-top:2px}
+.sim-live{background:rgba(38,232,176,.12);border:1px solid rgba(38,232,176,.3);border-radius:5px;padding:3px 9px;font-size:9px;color:var(--g);font-weight:700;pointer-events:none;animation:livepulse 2.5s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.55}}
+.sim-ftr{position:absolute;bottom:0;left:0;right:0;padding:10px 16px 12px;background:linear-gradient(transparent,#000000cc);z-index:5}
+#snarr{font-size:11px;color:rgba(255,255,255,.58);line-height:1.65;margin-bottom:8px;min-height:30px;transition:opacity .3s}
+.sim-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sim-btn{background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 12px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.sim-btn:hover,.sim-btn.on{background:rgba(255,255,255,.16);color:var(--w)}
+#slider-wrap{display:none;width:100%;max-width:360px;margin-top:8px}
+#slider-wrap.show{display:block}
+.slider-lbl{font-size:10px;color:#3a6090;margin-bottom:4px;display:flex;justify-content:space-between}
+#main-slider{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.1);outline:none;cursor:pointer}
+#main-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--g);border-radius:50%;cursor:pointer;box-shadow:0 0 8px rgba(38,232,176,.4)}
+.legend-row{display:flex;gap:12px;flex-wrap:wrap;padding:8px 16px;background:#010810;border-top:1px solid #091828}
+.li{display:flex;align-items:center;gap:5px;font-size:10px;color:#2a4460}
+.lb{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+#ask{padding:0 20px 80px;max-width:980px;margin:0 auto}
+#think-bar{display:none;align-items:center;gap:14px;padding:18px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:14px}
+.tspin{width:22px;height:22px;border:2px solid rgba(38,232,176,.15);border-top-color:var(--g);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+#tl{font-size:12px;font-weight:600;color:var(--g)}#ts{font-size:11px;color:#2a4460;margin-top:2px}
+#qresult{display:none;border-radius:14px;overflow:hidden;border:1px solid rgba(38,232,176,.18);background:#000308}
+#qbanner{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:#040d18;border-bottom:1px solid #091828}
+#qdomain{font-size:12px;font-weight:700;color:var(--g)}#qmatch{font-size:10px;color:#2a4460;margin-top:1px}
 #qcanvas{display:block;width:100%}
-#qexplain{padding:20px 18px;background:#020810;border-top:1px solid #091828}
-.qexp-lbl{font-size:11px;font-weight:600;color:#26e8b0;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
-#qexp-txt{font-size:13px;color:#6a90b8;line-height:1.75}
-#qkp{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
-.qkpc{background:#040d18;border:1px solid #0d1e35;border-radius:10px;padding:14px;display:flex;gap:10px}
-.qkpi{font-size:16px;flex-shrink:0}.qkpt{font-size:11px;font-weight:600;color:#acd4ff;margin-bottom:4px}.qkpd{font-size:10px;color:#3a5878;line-height:1.55}
-#stats{padding:48px 20px 0}
-.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:1px;max-width:860px;margin:0 auto;background:#0a1628;border:1px solid #0a1628;border-radius:12px;overflow:hidden}
-.st{background:#02040e;padding:24px 18px;text-align:center}
-.sn{font-size:28px;font-weight:700;color:#26e8b0;line-height:1}.sl2{font-size:10px;color:#2e4870;margin-top:5px}
-#domains{padding:48px 20px 64px;max-width:980px;margin:0 auto}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
+.q-ftr{padding:14px 16px;background:linear-gradient(transparent,#000000cc);position:absolute;bottom:0;left:0;right:0}
+#qnarr{font-size:11px;color:rgba(255,255,255,.6);line-height:1.65;margin-bottom:8px}
+.q-btns{display:flex;gap:6px;flex-wrap:wrap}
+#qexplain{padding:18px 16px;background:#020810;border-top:1px solid #091828}
+.qexp-lbl{font-size:10px;font-weight:700;color:var(--g);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+#qexp-txt{font-size:13px;color:#5a80a8;line-height:1.75}
+#qkp{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-top:14px}
+.qkpc{background:#040d18;border:1px solid #0d1e35;border-radius:10px;padding:12px;display:flex;gap:9px}
+.qkpi{font-size:15px;flex-shrink:0}.qkpt{font-size:11px;font-weight:600;color:#acd4ff;margin-bottom:3px}.qkpd{font-size:10px;color:#3a5878;line-height:1.5}
+#try-next{padding:14px 16px;background:#030c1a;border-top:1px solid #091828}
+.tn-lbl{font-size:10px;color:#2a4460;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.tn-chips{display:flex;gap:7px;flex-wrap:wrap}
+.tn-chip{background:#040d18;border:1px solid #0d1e35;border-radius:20px;padding:6px 13px;font-size:11px;color:#3a6090;cursor:pointer;font-family:inherit;transition:all .18s}
+.tn-chip:hover{border-color:rgba(38,232,176,.3);color:var(--g)}
+#qbar-wrap{margin-bottom:18px;display:flex;gap:8px;flex-wrap:wrap}
+#qi{flex:1;min-width:200px;background:#06101e;color:#e0f0ff;border:1.5px solid #1a3050;border-radius:10px;padding:13px 17px;font-size:14px;outline:none;font-family:inherit;transition:border-color .2s}
+#qi:focus{border-color:rgba(38,232,176,.55)}
+#qi::placeholder{color:#2a4460}
+.qbtn{font-size:13px;font-weight:700;padding:13px 18px;border:none;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .18s;flex-shrink:0}
+.qbtn.fast{background:var(--g);color:#02040e}.qbtn.fast:hover{background:var(--g2)}
+.qbtn.gen{background:var(--p);color:#fff}.qbtn.gen:hover{background:#6a3fc0}
+#chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:30px}
+.qchip{background:#040d18;color:#2e4868;border:1px solid #0c1826;border-radius:20px;padding:6px 13px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .18s}
+.qchip:hover,.qchip.active{border-color:rgba(38,232,176,.3);color:var(--g);background:#060e1c}
+#stats{padding:40px 20px 0}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;max-width:820px;margin:0 auto;background:#0a1628;border:1px solid #0a1628;border-radius:12px;overflow:hidden}
+.st{background:#02040e;padding:22px 16px;text-align:center}
+.sn{font-size:26px;font-weight:800;color:var(--g);line-height:1}.sl2{font-size:10px;color:#2e4870;margin-top:4px}
+#domains{padding:40px 20px 60px;max-width:980px;margin:0 auto}
+.sec-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#1e3450;margin-bottom:14px;display:flex;align-items:center;gap:10px}.sec-lbl::after{content:'';flex:1;height:1px;background:#060f1e}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .gc{border-radius:11px;overflow:hidden;background:#060e1c;border:1px solid #0c1826;cursor:pointer;transition:all .2s;position:relative}
 .gc:hover{border-color:rgba(38,232,176,.3);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.5)}
-.gc canvas{display:block;width:100%;height:130px}
-.gcb{position:absolute;top:8px;left:9px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:2px 8px;font-size:9px;color:rgba(255,255,255,.55);font-weight:600}
-.gi{padding:11px 12px}.gt{font-size:12px;font-weight:600;color:#fff;margin-bottom:3px}.gd{font-size:10px;color:#2a4460;line-height:1.5}
-.gtg{display:inline-block;margin-top:6px;background:#030810;border:1px solid #0a1626;border-radius:10px;padding:2px 8px;font-size:9px;color:#2a4868}
-#how{padding:64px 20px;background:#000308;border-top:1px solid #060f1e}
-.how-in{max-width:860px;margin:0 auto}
-.hh{font-size:26px;font-weight:700;color:#fff;margin-bottom:8px}.hs{font-size:14px;color:#2e4870;margin-bottom:32px;line-height:1.6}
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1px;background:#0a1628;border:1px solid #0a1628;border-radius:12px;overflow:hidden}
-.step{background:#02040e;padding:22px 18px}.stn{font-size:26px;font-weight:700;color:#26e8b0;line-height:1;margin-bottom:8px}.stt{font-size:13px;font-weight:600;color:#fff;margin-bottom:5px}.std{font-size:11px;color:#2a4460;line-height:1.55}
-#inv{padding:64px 20px;max-width:860px;margin:0 auto}
-.ih{font-size:26px;font-weight:700;color:#fff;margin-bottom:8px}.is{font-size:14px;color:#2e4870;margin-bottom:28px}
-.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:14px}
-.ic{background:#060e1c;border:1px solid #0c1826;border-radius:12px;padding:20px}
-.in{font-size:28px;font-weight:700;color:#26e8b0;margin-bottom:4px}.it{font-size:12px;font-weight:600;color:#acd4ff;margin-bottom:6px}.id{font-size:11px;color:#2a4460;line-height:1.55}
-.icta{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.inote{font-size:12px;color:#1e3450}
-footer{background:#000308;border-top:1px solid #060f1e;padding:26px 20px;text-align:center}
-footer p{font-size:11px;color:#1a3048;line-height:1.8}footer a{color:#26e8b0;text-decoration:none}
-</style></head>
+.gc canvas{display:block;width:100%;height:120px}
+.gcbadge{position:absolute;top:7px;left:8px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:2px 8px;font-size:9px;color:rgba(255,255,255,.5);font-weight:600}
+.gi{padding:10px 11px}.gt{font-size:12px;font-weight:600;color:var(--w);margin-bottom:2px}.gd{font-size:10px;color:#2a4460;line-height:1.5}
+.gtag{display:inline-block;margin-top:5px;background:#030810;border:1px solid #0a1626;border-radius:10px;padding:2px 8px;font-size:9px;color:#2a4868}
+#how{padding:56px 20px;background:#000308;border-top:1px solid #060f1e}
+.how-in{max-width:820px;margin:0 auto}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;background:#0a1628;border:1px solid #0a1628;border-radius:12px;overflow:hidden;margin-top:24px}
+.step{background:#02040e;padding:20px 16px}
+.stn{font-size:24px;font-weight:800;color:var(--g);line-height:1;margin-bottom:7px}
+.stt{font-size:12px;font-weight:700;color:var(--w);margin-bottom:4px}.std{font-size:11px;color:#2a4460;line-height:1.5}
+#inv{padding:56px 20px;max-width:820px;margin:0 auto}
+.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px}
+.ic{background:#060e1c;border:1px solid #0c1826;border-radius:12px;padding:18px}
+.in{font-size:26px;font-weight:800;color:var(--g);margin-bottom:3px}.it{font-size:11px;font-weight:700;color:#acd4ff;margin-bottom:5px}.id{font-size:11px;color:#2a4460;line-height:1.55}
+.icta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bp{background:var(--g);color:#02040e;font-size:12px;font-weight:800;padding:10px 20px;border-radius:8px;text-decoration:none}
+.bs{color:var(--g);font-size:12px;font-weight:700;padding:10px 20px;border-radius:8px;text-decoration:none;border:1px solid rgba(38,232,176,.3)}
+.inote{font-size:11px;color:#1e3450}
+footer{background:#000308;border-top:1px solid #060f1e;padding:22px 20px;text-align:center}
+footer p{font-size:11px;color:#1a3048;line-height:1.8}footer a{color:var(--g);text-decoration:none}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fadein{animation:fadein .4s ease both}
+@media(max-width:600px){h1{letter-spacing:-1px}#hi{padding:14px 120px 14px 16px}#hi-go{padding:8px 12px;font-size:12px}}
+</style>
+</head>
 <body>
 <nav>
   <a href="/" class="logo">Seen<span>Shown</span></a>
-  <div class="nav-links"><a href="#ask">Try it</a><a href="#domains">Simulations</a><a href="#how">How it works</a><a href="#inv">Investors</a></div>
-  <a href="/demo.html" class="nav-cta">Full demo &rarr;</a>
+  <div class="nav-r">
+    <span class="nav-badge">Patent Pending AU 2026903218</span>
+    <a href="/investors.html" class="nav-inv">Investors &rarr;</a>
+  </div>
 </nav>
 <section id="hero">
   <canvas id="hbg"></canvas>
-  <div class="hc">
-    <div class="badge"><span class="bdot"></span>Particle Field Biology&trade; &middot; Patent Pending</div>
-    <h1>Make anything<br><em>seeable</em></h1>
-    <p class="sub">Type any question. Watch it become a living simulation &mdash; AI-narrated, 60fps in your browser.</p>
-    <div class="btns"><a href="#ask" class="bp">&#9654;&nbsp; Try it now</a><a href="/demo.html" class="bs">Full simulation library</a></div>
+  <div class="hero-in">
+    <div class="badge"><span class="bdot"></span>Particle Field Biology&trade; &middot; Simulation, not video</div>
+    <h1>Language becomes<br><em>motion instantly</em></h1>
+    <p class="hero-sub">Type any question. The answer starts moving in under 1.5 seconds &mdash; a living particle simulation, not a video.</p>
+    <div id="hero-input-wrap">
+      <input id="hi" type="text" placeholder="e.g. How does cancer evade the immune system?" autocomplete="off" spellcheck="false">
+      <button id="hi-go" onclick="heroGo()">See it &rarr;</button>
+    </div>
+    <div id="hi-hint">Press Enter or click <span>See it</span> &mdash; motion starts in &lt;1.5s</div>
   </div>
-</section>
-<div id="sw"><div class="sc">
-  <canvas id="C"></canvas>
-  <div class="sh"><div><div id="st">SARS-CoV-2 — spike protein approaching host cell</div><div id="sd">Biology · Virology · Particle Field Biology&trade;</div></div><div class="sp">&#9679; Live</div></div>
-  <div class="sb"><div id="narr">SARS-CoV-2 approaches the host cell. 50 spike protein trimers (teal) scan the membrane for ACE2 receptors. Each spike flexes independently — real molecular motion.</div>
-  <div class="ctrls"><button class="cb on" data-p="0">&#10112; Approach</button><button class="cb" data-p="1">&#10113; Docking</button><button class="cb" data-p="2">&#10114; Fusion</button><button class="cb" id="bpause" onclick="togglePause()">&#9646;&#9646; Pause</button><button class="cb" onclick="resetSim()">&#8635;</button></div></div>
-  <div class="leg"><div class="li"><div class="lb" style="background:#26e8b0"></div>Phospholipid bilayer</div><div class="li"><div class="lb" style="background:#1edfc8"></div>Spike proteins</div><div class="li"><div class="lb" style="background:#3a6db8"></div>SARS-CoV-2</div><div class="li"><div class="lb" style="background:#f0c030"></div>ACE2 docking</div><div class="li"><div class="lb" style="background:#ff80cc"></div>ACE2 receptors</div></div>
-</div></div>
-<section id="ask"><div class="ask-in">
-  <div class="sl">Ask anything</div>
-  <h2 class="ask-h">Type a question.<br><em>Watch it become a simulation.</em></h2>
-  <p class="ask-sub">Any question. Any domain. The AI picks the closest simulation or generates a brand new one just for you.</p>
-  <div id="qbar">
-    <input id="qi" type="text" placeholder="Ask anything — e.g. How does DNA replicate?" onkeydown="if(event.key==='Enter')runQ('fast')">
-    <button onclick="runQ('fast')" title="Instant match — ~2 seconds" style="background:#26e8b0;color:#02040e;font-size:13px;font-weight:700;padding:14px 18px;border:none;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">&#9889;&nbsp;Fast match</button>
-    <button onclick="runQ('custom')" title="AI generates a brand new simulation — ~15 seconds" style="background:#7C4FD4;color:#fff;font-size:13px;font-weight:700;padding:14px 18px;border:none;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">&#10022;&nbsp;Generate new</button>
-  </div>
-  <p style="font-size:10px;color:#1e3450;margin-top:-4px;margin-bottom:20px;max-width:820px">&#9889; <strong style="color:#26e8b0">Fast match</strong> — picks the closest simulation in ~2s &nbsp;&middot;&nbsp; &#10022; <strong style="color:#7C4FD4">Generate new</strong> — AI builds a brand new simulation for your exact question (~15s)</p>
-  <div id="chips"></div>
-  <div id="qout">
-    <div id="qthink"><div class="qspin"></div><div><div id="qtl">Classifying intent...</div><div id="qts">Identifying domain and entity types</div></div></div>
-    <div id="qresult">
-      <div id="qbanner"><div style="display:flex;align-items:center;gap:10px"><div id="qicon"></div><div><div id="qdomain"></div><div id="qmatch"></div></div></div></div>
-      <div style="position:relative"><canvas id="qcanvas" style="display:block;width:100%"></canvas>
-        <div style="position:absolute;bottom:0;left:0;right:0;padding:14px 18px;background:linear-gradient(transparent,#000000dd)">
-          <div id="qnarr" style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.65;margin-bottom:8px"></div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button onclick="prevQP()" class="cb">&#8592; Prev</button><button onclick="nextQP()" class="cb">Next &#8594;</button><button onclick="toggleQP()" id="qpbtn" class="cb">&#9646;&#9646; Pause</button>
-          </div>
+  <div id="sim-shell">
+    <div id="sim-wrap">
+      <div id="lod-overlay"><div class="lod-ring"></div></div>
+      <canvas id="simC"></canvas>
+      <div class="sim-hdr">
+        <div>
+          <div class="sim-title">SARS-CoV-2 &mdash; spike protein approaching host cell</div>
+          <div class="sim-domain">Biology &middot; Virology &middot; Particle Field Biology&trade;</div>
+        </div>
+        <div class="sim-live">&bull; Live</div>
+      </div>
+      <div class="sim-ftr">
+        <div id="snarr">Loading simulation&hellip;</div>
+        <div class="sim-controls">
+          <button class="sim-btn on" data-p="0">&#10112; Approach</button>
+          <button class="sim-btn" data-p="1">&#10113; Docking</button>
+          <button class="sim-btn" data-p="2">&#10114; Fusion</button>
+          <button class="sim-btn" id="bpause" onclick="togglePause()">&#9646;&#9646; Pause</button>
+          <button class="sim-btn" onclick="resetSim()">&#8635;</button>
+        </div>
+        <div id="slider-wrap">
+          <div class="slider-lbl"><span id="slider-lbl-txt">Spike density</span><span id="slider-val">50%</span></div>
+          <input id="main-slider" type="range" min="0" max="100" value="50" oninput="onSlider(this.value)">
         </div>
       </div>
-      <div id="qexplain"><div class="qexp-lbl">What you're seeing</div><div id="qexp-txt"></div><div id="qkp"></div></div>
+    </div>
+    <div class="legend-row">
+      <div class="li"><div class="lb" style="background:#26e8b0"></div>Phospholipid bilayer</div>
+      <div class="li"><div class="lb" style="background:#1edfc8"></div>Spike proteins</div>
+      <div class="li"><div class="lb" style="background:#3a6db8"></div>SARS-CoV-2</div>
+      <div class="li"><div class="lb" style="background:#f0c030"></div>ACE2 docking</div>
+      <div class="li"><div class="lb" style="background:#ff80cc"></div>ACE2 receptors</div>
     </div>
   </div>
-</div></section>
-<section id="stats"><div class="sg"><div class="st"><div class="sn">&lt;3s</div><div class="sl2">Query to simulation</div></div><div class="st"><div class="sn">60fps</div><div class="sl2">Browser-native</div></div><div class="st"><div class="sn">8</div><div class="sl2">Domains live</div></div><div class="st"><div class="sn">68%</div><div class="sl2">Retention vs 12% text</div></div><div class="st"><div class="sn">$0</div><div class="sl2">No download needed</div></div></div></section>
-<section id="domains"><div class="sl" style="margin-top:48px">All simulations</div><div class="grid" id="grid"></div></section>
-<section id="how"><div class="how-in"><div class="sl">How it works</div><div class="hh">One engine. Every domain.</div><div class="hs">Particle Field Biology&trade; converts natural language into field equations — rendered live in your browser in under 3 seconds.</div><div class="steps"><div class="step"><div class="stn">01</div><div class="stt">Type a question</div><div class="std">&ldquo;How does amoxicillin kill bacteria?&rdquo;</div></div><div class="step"><div class="stn">02</div><div class="stt">AI classifies intent</div><div class="std">LLM finds domain, entities, causal rules.</div></div><div class="step"><div class="stn">03</div><div class="stt">Field equations load</div><div class="std">Density field functions per particle type.</div></div><div class="step"><div class="stn">04</div><div class="stt">Particles self-organise</div><div class="std">35,000 GPU particles follow gradients live.</div></div><div class="step"><div class="stn">05</div><div class="stt">AI narrates</div><div class="std">ElevenLabs voice describes every phase.</div></div></div></div></section>
-<section id="inv"><div class="sl">For investors</div><div class="ih">Raising $2M Seed</div><div class="is">YC SAFE &middot; $8M post-money cap &middot; 20% Series A discount &middot; Patent pending</div><div class="ig"><div class="ic"><div class="in">$10T</div><div class="it">Global education market 2030</div><div class="id">SeenShown targets the $214B EdTech layer with the only AI simulation engine running in any browser.</div></div><div class="ic"><div class="in">68%</div><div class="it">Retention vs 12% text-only</div><div class="id">Students retain 5&times; more from interactive simulation. Every textbook diagram becomes a SeenShown sim.</div></div><div class="ic"><div class="in">8</div><div class="it">Domains at launch</div><div class="id">Biology, chemistry, neuroscience, physics, social, climate, finance, immunology. Same engine.</div></div></div><div class="icta"><a href="/demo.html" class="bp" style="font-size:13px;padding:10px 22px">&#9654;&nbsp; See it live</a><a href="mailto:nawraselali@gmail.com" class="bs" style="font-size:13px;padding:10px 22px">Contact founder</a><span class="inote">nawraselali@gmail.com &middot; seenshown.com &middot; seenshown.ai</span></div></section>
-<footer><p>SeenShown &middot; <a href="https://seenshown.com">seenshown.com</a> &middot; <a href="https://seenshown.ai">seenshown.ai</a> &middot; Particle Field Biology&trade; &middot; Patent Pending &middot; 2026</p><p>Raising $2M Seed &middot; nawraselali@gmail.com</p></footer>
+</section>
+<section id="ask" style="padding-top:60px">
+  <div class="sec-lbl">Ask anything</div>
+  <h2 style="font-size:clamp(22px,3.5vw,36px);font-weight:800;color:var(--w);margin-bottom:8px;line-height:1.15">Type a question. <em style="color:var(--g);font-style:normal">Watch it move.</em></h2>
+  <p style="font-size:13px;color:#2e4870;margin-bottom:24px;line-height:1.6;max-width:520px">Any domain. The AI finds the closest simulation or generates a brand new one &mdash; motion starts immediately.</p>
+  <div id="qbar-wrap">
+    <input id="qi" type="text" placeholder="How does DNA replicate?" autocomplete="off" onkeydown="if(event.key==='Enter')runQ('fast')">
+    <button class="qbtn fast" onclick="runQ('fast')">&#9889; Fast</button>
+    <button class="qbtn gen" onclick="runQ('custom')">&#10022; Generate</button>
+  </div>
+  <p style="font-size:10px;color:#1a3048;margin-top:-8px;margin-bottom:18px;max-width:720px">&#9889; <strong style="color:var(--g)">Fast</strong> &mdash; nearest simulation in ~1.5s &nbsp;&middot;&nbsp; &#10022; <strong style="color:#a07fff">Generate</strong> &mdash; custom simulation for your exact question (~15s)</p>
+  <div id="chips"></div>
+  <div id="think-bar">
+    <div class="tspin"></div>
+    <div><div id="tl">Classifying intent&hellip;</div><div id="ts">Identifying domain and entity types</div></div>
+  </div>
+  <div id="qresult">
+    <div id="qbanner">
+      <div><div id="qdomain"></div><div id="qmatch"></div></div>
+    </div>
+    <div style="position:relative">
+      <canvas id="qcanvas" style="display:block;width:100%"></canvas>
+      <div class="q-ftr">
+        <div id="qnarr"></div>
+        <div class="q-btns">
+          <button onclick="prevQP()" class="sim-btn">&larr; Prev</button>
+          <button onclick="nextQP()" class="sim-btn">Next &rarr;</button>
+          <button onclick="toggleQP()" id="qpbtn" class="sim-btn">&#9646;&#9646; Pause</button>
+        </div>
+      </div>
+    </div>
+    <div id="qexplain">
+      <div class="qexp-lbl">What you're seeing</div>
+      <div id="qexp-txt"></div>
+      <div id="qkp"></div>
+    </div>
+    <div id="try-next">
+      <div class="tn-lbl">Try next &rarr;</div>
+      <div class="tn-chips" id="tn-chips"></div>
+    </div>
+  </div>
+</section>
+<section id="stats">
+  <div class="sg">
+    <div class="st"><div class="sn">&lt;1.5s</div><div class="sl2">First motion</div></div>
+    <div class="st"><div class="sn">60fps</div><div class="sl2">Browser-native</div></div>
+    <div class="st"><div class="sn">30+</div><div class="sl2">Sim domains</div></div>
+    <div class="st"><div class="sn">68%</div><div class="sl2">Day-30 retention</div></div>
+    <div class="st"><div class="sn">$0</div><div class="sl2">Install required</div></div>
+  </div>
+</section>
+<section id="domains">
+  <div class="sec-lbl">All simulations</div>
+  <div class="grid" id="grid"></div>
+</section>
+<section id="how">
+  <div class="how-in">
+    <div class="sec-lbl">How it works</div>
+    <h2 style="font-size:clamp(20px,3vw,32px);font-weight:800;color:var(--w);margin-bottom:6px">One engine. Every domain.</h2>
+    <p style="font-size:13px;color:#2e4870;line-height:1.6;max-width:480px">Particle Field Biology&trade; converts natural language into field equations &mdash; rendered live in your browser in under 1.5 seconds.</p>
+    <div class="steps">
+      <div class="step"><div class="stn">01</div><div class="stt">Type anything</div><div class="std">"How does amoxicillin kill bacteria?"</div></div>
+      <div class="step"><div class="stn">02</div><div class="stt">Motion begins (&lt;1s)</div><div class="std">Low-fidelity particles appear immediately. Zero blank screen.</div></div>
+      <div class="step"><div class="stn">03</div><div class="stt">Refinement (&lt;2s)</div><div class="std">Density increases. Interaction rules apply. AI narrates.</div></div>
+      <div class="step"><div class="stn">04</div><div class="stt">Full fidelity</div><div class="std">Sliders appear. Drag. Adjust. Explore.</div></div>
+      <div class="step"><div class="stn">05</div><div class="stt">Ask next</div><div class="std">AI suggests the next simulation. Curiosity loop continues.</div></div>
+    </div>
+  </div>
+</section>
+<section id="inv">
+  <div class="sec-lbl">For investors</div>
+  <h2 style="font-size:clamp(20px,3vw,32px);font-weight:800;color:var(--w);margin-bottom:6px">Raising $2M Seed</h2>
+  <p style="font-size:13px;color:#2e4870;margin-bottom:20px">YC SAFE &middot; $8M post-money cap &middot; 20% Series A discount &middot; Patent Pending AU 2026903218</p>
+  <div class="ig">
+    <div class="ic"><div class="in">$10T</div><div class="it">Global education market 2030</div><div class="id">SeenShown targets the $214B EdTech layer with the only AI simulation engine that runs in any browser.</div></div>
+    <div class="ic"><div class="in">68%</div><div class="it">Retention vs 12% text-only</div><div class="id">Students retain 5&times; more from interactive simulation. Every textbook diagram becomes a SeenShown sim.</div></div>
+    <div class="ic"><div class="in">30+</div><div class="it">Domains at launch</div><div class="id">Biology, chemistry, neuroscience, physics, social, climate, finance, immunology. Same engine. Same primitives.</div></div>
+  </div>
+  <div class="icta">
+    <a href="/investors.html" class="bp">Investor Portal &rarr;</a>
+    <a href="mailto:info@seenshown.com" class="bs">Contact founder</a>
+    <span class="inote">info@seenshown.com &middot; seenshown.com &middot; Patent Pending</span>
+  </div>
+</section>
+<footer>
+  <p>SeenShown &middot; <a href="https://seenshown.com">seenshown.com</a> &middot; <a href="https://seenshown.ai">seenshown.ai</a> &middot; Particle Field Biology&trade; &middot; Patent Pending AU 2026903218 &middot; 2026</p>
+  <p>Raising $2M Seed &middot; <a href="mailto:info@seenshown.com">info@seenshown.com</a></p>
+</footer>
 <script>
-function rnd(a,b){return a+(b-a)*Math.random();}
-function lerp(a,b,t){return a+(b-a)*t;}
-function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-function qvig(c,W,H){const vg=c.createRadialGradient(W/2,H/2,H*.28,W/2,H/2,H*.68);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.52)');c.fillStyle=vg;c.fillRect(0,0,W,H);}
-(function(){const cv=document.getElementById('hbg'),ctx=cv.getContext('2d');function resize(){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;}resize();window.addEventListener('resize',resize);const pts=Array.from({length:55},()=>({x:Math.random(),y:Math.random(),vx:(Math.random()-.5)*.00028,vy:(Math.random()-.5)*.00028,c:['#26e8b0','#7C4FD4','#F0C030','#E85040'][Math.floor(Math.random()*4)],a:Math.random()*.28+.06,r:Math.random()*2.2+.8}));let t=0;(function draw(){t++;const W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);pts.forEach((p,i)=>{pts.slice(i+1).forEach(q=>{const dx=(p.x-q.x)*W,dy=(p.y-q.y)*H,d=Math.hypot(dx,dy);if(d<120){ctx.beginPath();ctx.moveTo(p.x*W,p.y*H);ctx.lineTo(q.x*W,q.y*H);ctx.strokeStyle=`rgba(38,100,160,${.09*(1-d/120)})`;ctx.lineWidth=.5;ctx.stroke();}});});pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>1)p.vx*=-1;if(p.y<0||p.y>1)p.vy*=-1;const h=p.c,r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);ctx.beginPath();ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(${r},${g},${b},${p.a+.05*Math.sin(t*.02+p.x*8)})`;ctx.fill();});requestAnimationFrame(draw);})();})();
-const CV=document.getElementById('C'),CTX=CV.getContext('2d');
-const W=CV.offsetWidth||960,H=Math.min(480,W*.5),DPR=Math.min(window.devicePixelRatio||1,2);
-CV.width=W*DPR;CV.height=H*DPR;CV.style.width=W+'px';CV.style.height=H+'px';CTX.scale(DPR,DPR);
-let tick=0,phase=0,paused=false,vx=W*.64,vy=H*.3;
-const VR=Math.min(H*.21,95),MY=H*.74;
-const NARRS=['SARS-CoV-2 approaches the host cell. 50 spike protein trimers (teal) scan the membrane for ACE2 receptors (pink). Each spike flexes independently — this is real molecular motion.','A spike has locked onto an ACE2 receptor. The gold spike glows — S1 subunit bound. This primes S2 for membrane fusion. Infection is now committed.','S2 drives viral and host membrane merger. The viral RNA genome is being injected into the cytoplasm. Host ribosomes will be hijacked within minutes.'];
-const SPIKES=Array.from({length:52},(_,i)=>({a:(i/52)*Math.PI*2+rnd(-.08,.08),len:rnd(.42,.62),headR:rnd(.065,.11),ph:Math.random()*Math.PI*2,speed:rnd(.008,.018),docking:i===28}));
-const LIPIDS=Array.from({length:420},()=>({x:rnd(0,W),y:MY+rnd(-5,14),r:rnd(2.8,4.8),ph:Math.random()*Math.PI*2,layer:Math.floor(Math.random()*3)}));
-const ACE2=Array.from({length:30},()=>({x:rnd(W*.04,W*.96),y:MY-rnd(0,7),r:rnd(2.8,5),ph:Math.random()*Math.PI*2,active:false}));
-[{x:W*.62,y:MY-3},{x:W*.66,y:MY-4},{x:W*.58,y:MY-2}].forEach((p,i)=>{ACE2[i+8].x=p.x;ACE2[i+8].y=p.y;ACE2[i+8].active=true;ACE2[i+8].r=4.5;});
-function setPhase(p){phase=p;tick=0;if(p===0){vx=W*.64;vy=H*.3;}if(p>=1){vx=W*.62;vy=H*.31;}document.getElementById('narr').textContent=NARRS[p];document.querySelectorAll('[data-p]').forEach((b,i)=>b.classList.toggle('on',i===p));}
-function togglePause(){paused=!paused;document.getElementById('bpause').textContent=paused?'▶ Play':'⎦⎦ Pause';}
-function resetSim(){setPhase(0);paused=false;document.getElementById('bpause').textContent='⎦⎦ Pause';}
-function drawMainSim(){CTX.fillStyle='#000308';CTX.fillRect(0,0,W,H);const mg=CTX.createLinearGradient(0,MY-22,0,H);mg.addColorStop(0,'rgba(190,80,145,0)');mg.addColorStop(.07,'rgba(208,96,158,.72)');mg.addColorStop(.22,'rgba(165,65,128,.92)');mg.addColorStop(1,'rgba(75,18,55,.97)');CTX.fillStyle=mg;CTX.fillRect(0,MY-22,W,H-(MY-22));LIPIDS.forEach(lip=>{const y=lip.y+Math.sin(lip.ph+tick*.013)*1.9;const bright=[.72,.45,.28][lip.layer];const bR=[215,195,185][lip.layer],bG=[112,88,72][lip.layer],bB=[165,145,132][lip.layer];CTX.beginPath();CTX.arc(lip.x,y,lip.r,0,Math.PI*2);const lg=CTX.createRadialGradient(lip.x-lip.r*.3,y-lip.r*.3,0,lip.x,y,lip.r);lg.addColorStop(0,`rgba(${bR+22},${bG+28},${bB+18},${bright})`);lg.addColorStop(1,`rgba(${bR-18},${bG-18},${bB-15},${bright*.58})`);CTX.fillStyle=lg;CTX.fill();});const sl=CTX.createLinearGradient(0,0,W,0);sl.addColorStop(0,'rgba(255,145,198,0)');sl.addColorStop(.5,'rgba(255,195,230,.52)');sl.addColorStop(1,'rgba(255,145,198,0)');CTX.fillStyle=sl;CTX.fillRect(0,MY-7,W,9);ACE2.forEach(r=>{const pulse=r.active?(1+.22*Math.sin(tick*.09+r.ph)):1;if(r.active){CTX.beginPath();CTX.arc(r.x,r.y,r.r*2.6*pulse,0,Math.PI*2);CTX.fillStyle=`rgba(255,80,200,${.14*pulse})`;CTX.fill();}CTX.beginPath();CTX.moveTo(r.x,r.y+2.5);CTX.lineTo(r.x,r.y+15);CTX.strokeStyle=r.active?'rgba(255,118,208,.72)':'rgba(205,95,165,.5)';CTX.lineWidth=2;CTX.stroke();CTX.beginPath();CTX.arc(r.x,r.y,r.r*pulse,0,Math.PI*2);const rg=CTX.createRadialGradient(r.x-r.r*.3,r.y-r.r*.3,0,r.x,r.y,r.r*pulse);if(r.active){rg.addColorStop(0,'rgba(255,162,228,.96)');rg.addColorStop(1,'rgba(225,62,182,.86)');}else{rg.addColorStop(0,'rgba(238,128,198,.8)');rg.addColorStop(1,'rgba(188,68,148,.7)');}CTX.fillStyle=rg;CTX.fill();CTX.strokeStyle=r.active?'rgba(255,178,238,.58)':'rgba(218,118,188,.38)';CTX.lineWidth=.75;CTX.stroke();});CTX.save();CTX.translate(vx,vy);const vg=CTX.createRadialGradient(-VR*.26,-VR*.3,VR*.07,0,0,VR);vg.addColorStop(0,'#6292ca');vg.addColorStop(.38,'#4272b2');vg.addColorStop(.76,'#2a4c8e');vg.addColorStop(1,'#182c62');CTX.beginPath();CTX.arc(0,0,VR,0,Math.PI*2);CTX.fillStyle=vg;CTX.fill();for(let i=0;i<145;i++){const a=(i/145)*Math.PI*2+tick*.002*(i%2===0?1:-1);const r=VR-2-Math.random()*8;CTX.beginPath();CTX.arc(Math.cos(a)*r,Math.sin(a)*r,1.1+Math.random()*1.9,0,Math.PI*2);CTX.fillStyle=`rgba(${112+Math.floor(Math.random()*62)},${152+Math.floor(Math.random()*58)},${218+Math.floor(Math.random()*32)},.26)`;CTX.fill();}CTX.beginPath();CTX.arc(0,0,VR,0,Math.PI*2);CTX.strokeStyle='rgba(75,138,212,.38)';CTX.lineWidth=1.7;CTX.stroke();SPIKES.forEach(sp=>{const wob=Math.sin(sp.ph+tick*sp.speed)*.13;const a=sp.a+wob;const slen=sp.len*VR*(sp.docking?1.5:1);const sx=Math.cos(a)*VR,sy=Math.sin(a)*VR;const ex=Math.cos(a)*(VR+slen),ey=Math.sin(a)*(VR+slen);const hr=sp.headR*VR;const mx=(sx+ex)/2,my=(sy+ey)/2;const sl2=Math.hypot(ex-sx,ey-sy);CTX.save();CTX.translate(mx,my);CTX.rotate(a-Math.PI/2);CTX.beginPath();CTX.rect(sp.docking?-2.8:-2.2,-sl2/2,sp.docking?5.6:4.4,sl2);CTX.fillStyle=sp.docking?'rgba(235,158,18,.82)':'rgba(16,175,162,.6)';CTX.fill();CTX.restore();const hg=CTX.createRadialGradient(ex-hr*.28,ey-hr*.28,0,ex,ey,hr);if(sp.docking){hg.addColorStop(0,'rgba(255,235,72,.96)');hg.addColorStop(1,'rgba(215,145,12,.85)');}else{hg.addColorStop(0,'rgba(95,238,218,.92)');hg.addColorStop(1,'rgba(10,152,142,.8)');}CTX.beginPath();CTX.arc(ex,ey,hr,0,Math.PI*2);CTX.fillStyle=hg;CTX.fill();for(let l=0;l<3;l++){const la=a+(l/3)*Math.PI*.78-Math.PI*.39;CTX.beginPath();CTX.arc(ex+Math.cos(la)*hr*.54,ey+Math.sin(la)*hr*.54,hr*.52,0,Math.PI*2);CTX.fillStyle=sp.docking?'rgba(255,218,55,.7)':'rgba(32,208,188,.65)';CTX.fill();}if(sp.docking){CTX.beginPath();CTX.arc(ex,ey,hr*2.1,0,Math.PI*2);CTX.strokeStyle=`rgba(255,205,42,${.22*Math.abs(Math.sin(tick*.07))})`;CTX.lineWidth=2.2;CTX.stroke();}});if(phase>=2){const ip=clamp(tick/60,0,1);CTX.beginPath();CTX.moveTo(Math.cos(2.74)*VR,Math.sin(2.74)*VR);for(let s=0;s<20*ip;s++){const f=s/20;CTX.lineTo(Math.cos(2.74)*VR+(MY-vy-VR)*.12*f,(Math.sin(2.74)*VR)+(MY-vy)*f+Math.sin(f*Math.PI*4.5+tick*.07)*7);}CTX.strokeStyle='rgba(205,75,152,.4)';CTX.lineWidth=1.8;CTX.setLineDash([4,4]);CTX.stroke();CTX.setLineDash([]);}CTX.restore();const vg2=CTX.createRadialGradient(W/2,H/2,H*.26,W/2,H/2,H*.7);vg2.addColorStop(0,'rgba(0,0,0,0)');vg2.addColorStop(1,'rgba(0,0,0,.58)');CTX.fillStyle=vg2;CTX.fillRect(0,0,W,H);}
-(function mainLoop(){if(!paused){tick++;if(phase===0){const tx=W*.62+Math.sin(tick*.013)*6,ty=H*.31+Math.cos(tick*.011)*4.5;vx+=(tx-vx)*.007;vy+=(ty-vy)*.007;}drawMainSim();}requestAnimationFrame(mainLoop);})();
-setPhase(0);document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>setPhase(+b.dataset.p));
-
-// ═══════════════════════════════════════
-// FREE TEXT QUERY ENGINE
-// ⚡ Fast match  +  ✦ Generate new
-// ═══════════════════════════════════════
 const API='https://seenshown-api-production.up.railway.app';
-
-function runQ(mode){
-  const val=document.getElementById('qi').value.trim();
-  if(!val)return;
-  if(mode==='custom')runCustom(val);
-  else runFast(val);
+function rnd(a,b){return a+(b-a)*Math.random()}
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+(function(){
+  const cv=document.getElementById('hbg'),ctx=cv.getContext('2d');
+  function resize(){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight}
+  resize();window.addEventListener('resize',resize);
+  const pts=Array.from({length:45},()=>({x:Math.random(),y:Math.random(),vx:(Math.random()-.5)*.00025,vy:(Math.random()-.5)*.00025,c:['#26e8b0','#7C4FD4','#4a9eff'][Math.floor(Math.random()*3)],a:Math.random()*.22+.04,r:Math.random()*1.8+.5}));
+  let t=0;
+  (function draw(){t++;const W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);pts.forEach((p,i)=>{pts.slice(i+1).forEach(q=>{const dx=(p.x-q.x)*W,dy=(p.y-q.y)*H,d=Math.hypot(dx,dy);if(d<100){ctx.beginPath();ctx.moveTo(p.x*W,p.y*H);ctx.lineTo(q.x*W,q.y*H);ctx.strokeStyle='rgba(38,100,160,'+(0.07*(1-d/100))+')';ctx.lineWidth=.4;ctx.stroke()}})});
+  pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>1)p.vx*=-1;if(p.y<0||p.y>1)p.vy*=-1;const r=parseInt(p.c.slice(1,3),16),g=parseInt(p.c.slice(3,5),16),b=parseInt(p.c.slice(5,7),16);ctx.beginPath();ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);ctx.fillStyle='rgba('+r+','+g+','+b+','+(p.a+.04*Math.sin(t*.018+p.x*6))+')';ctx.fill()});requestAnimationFrame(draw)})()})();
+document.getElementById('hi').addEventListener('keydown',function(e){if(e.key==='Enter')heroGo()});
+function heroGo(){var val=document.getElementById('hi').value.trim();if(!val)return;document.getElementById('qi').value=val;document.getElementById('ask').scrollIntoView({behavior:'smooth'});setTimeout(function(){runQ('fast')},400)}
+var CV=document.getElementById('simC'),CTX=CV.getContext('2d');
+var simW=0,simH=0,simDPR=1,mainTick=0,mainPhase=0,mainPaused=false,mainLOD=0,spikeCount=52;
+var _vx=-1,_vy=-1,lipInit=false;
+var LIPIDS=[],ACE2_PTS=[];
+function resizeMainSim(){var w=CV.offsetWidth||960,h=Math.min(w*.5,480);simDPR=Math.min(window.devicePixelRatio||1,2);CV.width=w*simDPR;CV.height=h*simDPR;CV.style.width=w+'px';CV.style.height=h+'px';CTX.scale(simDPR,simDPR);simW=w;simH=h}
+resizeMainSim();
+var NARRS=['SARS-CoV-2 approaches the host cell. 50 spike protein trimers (teal) scan the membrane for ACE2 receptors (pink). Each spike flexes independently — real molecular motion.','A spike has locked onto an ACE2 receptor. The gold spike glows — S1 subunit bound. This primes S2 for membrane fusion. Infection is now committed.','S2 drives viral and host membrane merger. The viral RNA genome is being injected into the cytoplasm. Host ribosomes will be hijacked within minutes.'];
+var ALL_SPIKES=Array.from({length:52},function(_,i){return{a:(i/52)*Math.PI*2+rnd(-.08,.08),len:rnd(.42,.62),headR:rnd(.065,.11),ph:Math.random()*Math.PI*2,speed:rnd(.008,.018),docking:i===28}});
+function initLipids(){if(lipInit)return;lipInit=true;var MY=simH*.74;for(var i=0;i<320;i++)LIPIDS.push({x:rnd(0,simW),y:MY+rnd(-5,13),r:rnd(2.5,4.5),ph:Math.random()*Math.PI*2,layer:i%3});for(var i=0;i<28;i++){var active=i>=7&&i<=10;ACE2_PTS.push({x:active?simW*(.56+(i-7)*.09):rnd(simW*.04,simW*.96),y:simH*.74-rnd(0,6),r:rnd(2.5,4.5),ph:Math.random()*Math.PI*2,active:active})}}
+function drawMainSim(){
+  if(simW===0||simH===0)return;
+  if(_vx<0){_vx=simW*.82;_vy=simH*.3}
+  initLipids();
+  var MY=simH*.74,VR=Math.min(simH*.21,92);
+  _vx+=(simW*.62+Math.sin(mainTick*.013)*6-_vx)*.007;_vy+=(simH*.31+Math.cos(mainTick*.011)*4.5-_vy)*.007;
+  var bg=CTX.createLinearGradient(0,0,simW*.4,simH);bg.addColorStop(0,'#1c0540');bg.addColorStop(.45,'#0e0222');bg.addColorStop(1,'#040010');CTX.fillStyle=bg;CTX.fillRect(0,0,simW,simH);
+  var mg=CTX.createLinearGradient(0,MY-20,0,simH);mg.addColorStop(0,'rgba(190,80,145,0)');mg.addColorStop(.07,'rgba(208,96,158,.72)');mg.addColorStop(.22,'rgba(165,65,128,.92)');mg.addColorStop(1,'rgba(75,18,55,.97)');CTX.fillStyle=mg;CTX.fillRect(0,MY-20,simW,simH-(MY-20));
+  var lipCount=mainLOD===0?80:mainLOD===1?180:LIPIDS.length;
+  for(var i=0;i<Math.min(lipCount,LIPIDS.length);i++){var l=LIPIDS[i];var y=l.y+Math.sin(l.ph+mainTick*.013)*1.9;var b=[.72,.45,.28][l.layer],R=[215,195,185][l.layer],G=[112,88,72][l.layer],B=[165,145,132][l.layer];CTX.beginPath();CTX.arc(l.x,y,l.r,0,Math.PI*2);var lg=CTX.createRadialGradient(l.x-l.r*.3,y-l.r*.3,0,l.x,y,l.r);lg.addColorStop(0,'rgba('+(R+22)+','+(G+28)+','+(B+18)+','+b+')');lg.addColorStop(1,'rgba('+(R-18)+','+(G-18)+','+(B-15)+','+(b*.55)+')');CTX.fillStyle=lg;CTX.fill()}
+  var sl=CTX.createLinearGradient(0,0,simW,0);sl.addColorStop(0,'rgba(255,145,198,0)');sl.addColorStop(.5,'rgba(255,195,230,.48)');sl.addColorStop(1,'rgba(255,145,198,0)');CTX.fillStyle=sl;CTX.fillRect(0,MY-6,simW,8);
+  ACE2_PTS.forEach(function(r){var pulse=r.active?(1+.22*Math.sin(mainTick*.09+r.ph)):1;CTX.beginPath();CTX.moveTo(r.x,r.y+3);CTX.lineTo(r.x,r.y+14);CTX.strokeStyle=r.active?'rgba(255,118,208,.72)':'rgba(205,95,165,.45)';CTX.lineWidth=2;CTX.stroke();CTX.beginPath();CTX.arc(r.x,r.y,r.r*pulse,0,Math.PI*2);CTX.fillStyle=r.active?'rgba(255,80,180,'+(0.7+.25*Math.sin(mainTick*.08))+')':'rgba(225,55,136,.45)';CTX.fill()});
+  CTX.save();CTX.translate(_vx,_vy);var vg=CTX.createRadialGradient(-VR*.26,-VR*.3,VR*.07,0,0,VR);vg.addColorStop(0,'#6292ca');vg.addColorStop(.38,'#4272b2');vg.addColorStop(.76,'#2a4c8e');vg.addColorStop(1,'#182c62');CTX.beginPath();CTX.arc(0,0,VR,0,Math.PI*2);CTX.fillStyle=vg;CTX.fill();
+  if(mainLOD>=1){var ptCount=mainLOD===1?70:140;for(var i=0;i<ptCount;i++){var a=(i/ptCount)*Math.PI*2+mainTick*.002*(i%2?1:-1);var r2=VR-2-Math.random()*8;CTX.beginPath();CTX.arc(Math.cos(a)*r2,Math.sin(a)*r2,1.1+Math.random()*1.9,0,Math.PI*2);CTX.fillStyle='rgba('+(112+Math.floor(Math.random()*62))+','+(152+Math.floor(Math.random()*58))+','+(215+Math.floor(Math.random()*32))+',.24)';CTX.fill()}}
+  CTX.beginPath();CTX.arc(0,0,VR,0,Math.PI*2);CTX.strokeStyle='rgba(75,138,212,.38)';CTX.lineWidth=1.8;CTX.stroke();
+  var drawCount=Math.max(4,Math.round(spikeCount*(mainLOD===0?.35:mainLOD===1?.7:1)));
+  for(var si=0;si<drawCount;si++){var sp=ALL_SPIKES[si];var wob=Math.sin(sp.ph+mainTick*sp.speed)*.13;var a=sp.a+wob;var slen=sp.len*VR*(sp.docking?1.5:1);var sx=Math.cos(a)*VR,sy=Math.sin(a)*VR;var ex=Math.cos(a)*(VR+slen),ey=Math.sin(a)*(VR+slen);var hr=sp.headR*VR;var mx=(sx+ex)/2,my=(sy+ey)/2;var sl2=Math.hypot(ex-sx,ey-sy);CTX.save();CTX.translate(mx,my);CTX.rotate(a-Math.PI/2);CTX.beginPath();CTX.rect(sp.docking?-2.8:-2.2,-sl2/2,sp.docking?5.6:4.4,sl2);CTX.fillStyle=sp.docking?'rgba(235,158,18,.82)':'rgba(16,175,162,.6)';CTX.fill();CTX.restore();var hg=CTX.createRadialGradient(ex-hr*.28,ey-hr*.28,0,ex,ey,hr);if(sp.docking){hg.addColorStop(0,'rgba(255,235,72,.96)');hg.addColorStop(1,'rgba(215,145,12,.85)')}else{hg.addColorStop(0,'rgba(95,238,218,.92)');hg.addColorStop(1,'rgba(10,152,142,.8)')}CTX.beginPath();CTX.arc(ex,ey,hr,0,Math.PI*2);CTX.fillStyle=hg;CTX.fill();if(mainLOD>=1){for(var l=0;l<3;l++){var la=a+(l/3)*Math.PI*.78-Math.PI*.39;CTX.beginPath();CTX.arc(ex+Math.cos(la)*hr*.54,ey+Math.sin(la)*hr*.54,hr*.52,0,Math.PI*2);CTX.fillStyle=sp.docking?'rgba(255,218,55,.7)':'rgba(32,208,188,.65)';CTX.fill()}}if(sp.docking&&mainLOD>=1){CTX.beginPath();CTX.arc(ex,ey,hr*2.1,0,Math.PI*2);CTX.strokeStyle='rgba(255,205,42,'+(0.22*Math.abs(Math.sin(mainTick*.07)))+')';CTX.lineWidth=2.2;CTX.stroke()}}
+  if(mainPhase>=2&&mainLOD>=1){var ip=clamp(mainTick/60,0,1);CTX.beginPath();CTX.moveTo(Math.cos(2.74)*VR,Math.sin(2.74)*VR);for(var s=0;s<20*ip;s++){var f=s/20;CTX.lineTo(Math.cos(2.74)*VR+(simH*.74-_vy-VR)*.12*f,Math.sin(2.74)*VR+(simH*.74-_vy)*f+Math.sin(f*Math.PI*4.5+mainTick*.07)*7)}CTX.strokeStyle='rgba(205,75,152,.4)';CTX.lineWidth=1.8;CTX.setLineDash([4,4]);CTX.stroke();CTX.setLineDash([])}
+  CTX.restore();
+  var vg2=CTX.createRadialGradient(simW/2,simH/2,simH*.26,simW/2,simH/2,simH*.7);vg2.addColorStop(0,'rgba(0,0,0,0)');vg2.addColorStop(1,'rgba(0,0,0,.55)');CTX.fillStyle=vg2;CTX.fillRect(0,0,simW,simH)
 }
-
-function runFast(question){
-  document.getElementById('qout').style.display='block';
-  document.getElementById('qthink').style.display='flex';
-  document.getElementById('qresult').style.display='none';
-  const steps=[['Classifying intent...','Identifying domain and entity types',350],['Loading field equations...','Selecting particle simulation template',700],['Initialising particles...','Spawning 35,000 particles',1100]];
-  let s=0;const iv=setInterval(()=>{if(s<steps.length){document.getElementById('qtl').textContent=steps[s][0];document.getElementById('qts').textContent=steps[s][1];s++;}else clearInterval(iv);},400);
-  fetch(API+'/v1/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,mode:'fast'})})
-  .then(r=>r.json())
-  .then(data=>{clearInterval(iv);renderQResult(data,question,false);})
-  .catch(err=>{clearInterval(iv);console.error('Fast query error:',err);let best=0,score=0;QUESTIONS.forEach((q,i)=>{const words=[...q.q.toLowerCase().split(' '),...q.domain.toLowerCase().split(' '),...q.keypoints.map(k=>k.t.toLowerCase()).join(' ').split(' ')];const inp=question.toLowerCase();let sc=words.filter(k=>k.length>3&&inp.includes(k)).length;if(sc>score){score=sc;best=i;}});renderQResult(null,question,false,best);});
-}
-
-function runCustom(question){
-  document.getElementById('qout').style.display='block';
-  document.getElementById('qthink').style.display='flex';
-  document.getElementById('qresult').style.display='none';
-  document.getElementById('qtl').textContent='Queued — generating your simulation...';
-  document.getElementById('qts').textContent='AI is designing a brand new particle simulation for your exact question';
-  const msgs=[['Analysing your question...','Understanding domain and entities'],['Designing particle field...','Mapping entities to field equations'],['Writing simulation code...','Generating Canvas 2D renderer'],['Building narration...','Writing phase-by-phase explanation'],['Almost ready...','Compiling your custom simulation']];
-  let mi=0;const iv=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('qtl').textContent=msgs[mi][0];document.getElementById('qts').textContent=msgs[mi][1];},2800);
-  fetch(API+'/v1/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,mode:'custom'})})
-  .then(r=>r.json())
-  .then(data=>{if(data.jobId){pollJob(data.jobId,question,iv);}else{clearInterval(iv);renderQResult(data,question,true);}})
-  .catch(err=>{clearInterval(iv);console.error('Custom query error:',err);renderQResult(null,question,true);});
-}
-
-function pollJob(jobId,question,iv){
-  const poll=setInterval(()=>{
-    fetch(API+'/v1/query/job/'+jobId)
-    .then(r=>r.json())
-    .then(data=>{
-      if(data.status==='done'){clearInterval(poll);clearInterval(iv);renderQResult(data.result,question,true);}
-      else if(data.status==='error'){clearInterval(poll);clearInterval(iv);document.getElementById('qtl').textContent='Error: '+( data.error||'Try again');}
-    })
-    .catch(()=>{});
-  },2000);
-  setTimeout(()=>{clearInterval(poll);clearInterval(iv);},60000);
-}
-
-function renderQResult(data,question,isCustom,fallbackIdx){
-  document.getElementById('qthink').style.display='none';
-  document.getElementById('qresult').style.display='block';
-  if(!data&&fallbackIdx===undefined)fallbackIdx=0;
-  let narration=[],explanation='',keypoints=[],matchLabel='Closest match',domain='biology',confidence=0.5,drawCode=null;
-  if(data){narration=data.narration||[];explanation=data.explanation||'';keypoints=data.keypoints||[];matchLabel=data.matchLabel||data.title||'Simulation';domain=data.domain||'biology';confidence=data.confidence||0.8;drawCode=data.drawCode||null;}
-  else if(fallbackIdx!==undefined){const sim=QUESTIONS[fallbackIdx];narration=sim.narrs.map((text,phase)=>({phase,text}));explanation=sim.explain;keypoints=sim.keypoints.map(k=>({icon:k.i,title:k.t,detail:k.d}));matchLabel=sim.domain;domain=sim.domain.toLowerCase().split('\u00b7')[0].trim();confidence=0.6;}
-  const confPct=Math.round((confidence||0.8)*100);
-  const modeTag=isCustom?'<span style="background:#7C4FD480;border:1px solid #7C4FD4;border-radius:4px;padding:2px 8px;font-size:9px;color:#bf9fff;font-weight:600">\u2728 Custom simulation</span>':'<span style="background:rgba(38,232,176,.12);border:1px solid rgba(38,232,176,.28);border-radius:4px;padding:2px 8px;font-size:9px;color:#26e8b0;font-weight:600">\u26a1 Closest match</span>';
-  document.getElementById('qicon').textContent=isCustom?'\u2728':'';
-  document.getElementById('qdomain').innerHTML=matchLabel+'<span style="font-size:10px;color:#3a6090;font-weight:400;margin-left:8px">'+domain+'</span>';
-  document.getElementById('qmatch').innerHTML=modeTag+'<span style="margin-left:8px;font-size:10px;color:#2a4460">'+confPct+'% confidence</span>';
-  document.getElementById('qnarr').textContent=(narration[0]&&narration[0].text)||question;
-  document.getElementById('qexp-txt').textContent=explanation;
-  const kpEl=document.getElementById('qkp');kpEl.innerHTML='';
-  (keypoints||[]).forEach(kp=>{const icon=kp.icon||kp.i||'';const t=kp.title||kp.t||'';const d=kp.detail||kp.d||'';kpEl.innerHTML+='<div class="qkpc"><div class="qkpi">'+icon+'<\/div><div><div class="qkpt">'+t+'<\/div><div class="qkpd">'+d+'<\/div><\/div><\/div>';});
-  resizeQCV();if(qAnimId)cancelAnimationFrame(qAnimId);qTick=0;qPhase=0;
-  window._narration=narration;
-  window._getPhaseText=p=>{const n=window._narration||[];const item=n.find(x=>x.phase===p)||n[p]||{};return item.text||''};
-  if(isCustom&&drawCode){
-    let fn=null;try{fn=new Function('ctx','W','H','t','phase',drawCode);}catch(e){console.error('drawCode error:',e);}
-    if(fn){window._inCustomSim=true;(function ql(){if(!qPaused){qTick++;try{QCTX.clearRect(0,0,QW,QH);fn(QCTX,QW,QH,qTick,qPhase);}catch(e){QCTX.fillStyle='#02040e';QCTX.fillRect(0,0,QW,QH);}}qAnimId=requestAnimationFrame(ql);})();}
-    else{window._inCustomSim=false;renderFallbackSim(0,narration);}
-  } else {
-    window._inCustomSim=false;
-    let simIdx=fallbackIdx!==undefined?fallbackIdx:0;
-    if(data&&data.templateId){const m={virus_infecting_cell:0,antibiotic_killing_bacteria:1,epidemic_sir:3,bystander_effect:3,collective_panic:3,rumour_school:3,neural_signal:4,trust_collapse:5,viral_misinformation:3};if(m[data.templateId]!==undefined)simIdx=m[data.templateId];}
-    const sim=QUESTIONS[simIdx];
-    (function ql(){if(!qPaused){qTick++;QCTX.clearRect(0,0,QW,QH);sim.draw(QCTX,QW,QH,qTick,qPhase);}qAnimId=requestAnimationFrame(ql);})();
-  }
-  document.getElementById('qresult').scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-function renderFallbackSim(idx,narration){
-  const sim=QUESTIONS[idx||0];
-  window._inCustomSim=false;
-  (function ql(){if(!qPaused){qTick++;QCTX.clearRect(0,0,QW,QH);sim.draw(QCTX,QW,QH,qTick,qPhase);}qAnimId=requestAnimationFrame(ql);})();
-}
-
-function setQPhase(p){
-  qPhase=Math.max(0,Math.min(2,p));qTick=0;
-  const text=window._getPhaseText?window._getPhaseText(qPhase):'';
-  if(text)document.getElementById('qnarr').textContent=text;
-}
-function nextQP(){setQPhase(qPhase+1);}function prevQP(){setQPhase(qPhase-1);}
-function toggleQP(){qPaused=!qPaused;document.getElementById('qpbtn').textContent=qPaused?'\u25b6 Play':'\u23a6\u23a6 Pause';}
-
-// ── Pre-built QUESTIONS for chips + fallback sims ──
-const QUESTIONS=[
-{q:'How does a virus infect a cell?',domain:'Biology · Virology',icon:'🧬',match:'Matched: SARS-CoV-2 spike protein — ACE2 receptor docking',narrs:['SARS-CoV-2 hovers above the host cell. Dense spike protein trimers (teal) probe the membrane. The virus must find and bind an ACE2 receptor to enter.','A spike has locked onto an ACE2 receptor — the pink dot glows gold. S1 binding triggers a conformational change in S2. Infection is now committed.','Membrane fusion underway. S2 drives lipid bilayer merger. The viral RNA genome uncoils and enters the cytoplasm.'],explain:'SARS-CoV-2 spike proteins act as molecular keys. S1 scans for ACE2 receptors. Once bound, S2 drives irreversible membrane fusion — the viral envelope merges with the host cell.',keypoints:[{i:'🔑',t:'Spike protein S1/S2',d:'S1 binds ACE2; S2 drives membrane fusion. Both are targeted by COVID-19 vaccines.'},{i:'🎯',t:'ACE2 receptor',d:'Found in lungs, heart, kidneys. The molecular lock SARS-CoV-2 evolved to target.'},{i:'💉',t:'Membrane fusion',d:'Viral and host membranes merge. RNA genome enters. Infection becomes irreversible.'}],draw:qDrawCovid,qi:0},
-{q:'How does amoxicillin kill bacteria?',domain:'Pharmacology · Microbiology',icon:'💊',match:'Matched: Beta-lactam antibiotic — cell wall disruption',narrs:['Amoxicillin molecules (gold) target penicillin-binding proteins (PBPs) — enzymes that cross-link the bacterial cell wall.','With PBPs blocked, new cell wall cannot be synthesised. The mesh weakens as bacteria continue to divide.','The cell wall fails under osmotic pressure. Water floods in and the bacterium lyses — bursts open.'],explain:'Amoxicillin’s beta-lactam ring binds PBPs irreversibly, blocking peptidoglycan cross-linking. Without a functional cell wall, bacteria lyse under osmotic pressure.',keypoints:[{i:'🧱',t:'Peptidoglycan cell wall',d:'Bacteria have a rigid cell wall. Without it they cannot resist osmotic pressure.'},{i:'🚫',t:'PBP inhibition',d:'Amoxicillin binds PBPs permanently, stopping new cell wall cross-links.'},{i:'💥',t:'Osmotic lysis',d:'Water floods the weakened wall. The cell bursts. Only happens during active division.'}],draw:qDrawBact,qi:1},
-{q:'What happens when light bends around a black hole?',domain:'Physics · Astrophysics',icon:'⭐',match:'Matched: Gravitational lensing — Einstein ring formation',narrs:['Light travels in straight lines through flat spacetime. Photons move undisturbed. No massive object nearby.','The black hole’s mass warps spacetime. Light paths curve toward the singularity. Some photons orbit at the photon sphere.','An Einstein ring forms. Light from a source directly behind the black hole is bent into a perfect ring.'],explain:'Mass warps spacetime geometry. Light follows geodesics through curved space. Near a black hole these paths bend dramatically. Perfect alignment produces an Einstein ring.',keypoints:[{i:'🌀',t:'Spacetime curvature',d:'Mass tells spacetime how to curve; spacetime tells light how to travel.'},{i:'💫',t:'Photon sphere',d:'At 1.5× Schwarzschild radius, photons can orbit the black hole.'},{i:'💍',t:'Einstein ring',d:'Perfect alignment produces a ring image revealing the black hole mass.'}],draw:qDrawBH,qi:2},
-{q:'How does a rumour spread through a population?',domain:'Social Dynamics · Epidemiology',icon:'👥',match:'Matched: SIR contagion model — information cascade',narrs:['10,000 people as particles. Blue = unaware. A single source begins transmitting.','Yellow = just heard. Red = actively spreading. Dense clusters saturate first.','Saturation phase. 85%+ reached. Blue islands remain — protected by low connectivity.'],explain:'Rumour spread follows the SIR model. Dense clusters amplify; isolated nodes are protected by low connectivity.',keypoints:[{i:'📡',t:'SIR contagion model',d:'Same equations describe COVID-19 spread and information contagion.'},{i:'🔗',t:'Network topology matters',d:'A rumour in a hub spreads 10× faster than one at the periphery.'},{i:'🏙',t:'Information immunity',d:'Isolated communities are naturally protected by low connectivity.'}],draw:qDrawRumour,qi:3},
-{q:'How does the brain send electrical signals?',domain:'Neuroscience · Electrophysiology',icon:'🧠',match:'Matched: Action potential propagation — sodium-potassium channels',narrs:['A neuron at rest. Axon interior at −70mV. Sodium ions wait outside. Voltage-gated channels are closed.','An action potential fires. Na⁺ floods in. Membrane depolarises to +40mV. Wave propagates at 100 m/s.','The signal reaches the synaptic terminal. Ca²⁺ triggers vesicle fusion. Neurotransmitters flood the cleft.'],explain:'Neural signalling relies on controlled ion flow. A stimulus opens Na⁺ channels, creating a depolarisation wave that propagates until triggering neurotransmitter release.',keypoints:[{i:'⚡',t:'Action potential',d:'All-or-nothing electrical pulse. Firing rate encodes signal intensity.'},{i:'🔋',t:'Resting potential (−70mV)',d:'Na⁺/K⁺ pump spends 20% of brain energy keeping neurons charged.'},{i:'🎯',t:'Synaptic transmission',d:'Neurotransmitters carry the signal across the 20nm synaptic gap.'}],draw:qDrawNeuron,qi:4},
-{q:'How does a stock market crash cascade?',domain:'Finance · Complex Systems',icon:'📉',match:'Matched: Cascade failure — correlated selling and liquidity crisis',narrs:['Markets in equilibrium. Green = buyers, red = sellers. A shock hits.','Fear spreads. Correlated positions trigger stop-losses simultaneously.','Cascade failure. Margin calls force liquidation. 38% of value destroyed in minutes.'],explain:'Market crashes are cascade failures. A small shock triggers correlated selling, triggering margin calls, which force more selling until liquidity is exhausted.',keypoints:[{i:'📊',t:'Correlated risk models',d:'All participants use similar VAR models — amplifying shocks instead of absorbing.'},{i:'⚙️',t:'Margin call cascade',d:'Small price falls trigger forced selling. A self-reinforcing loop.'},{i:'💧',t:'Liquidity illusion',d:'Assets appear liquid until everyone sells simultaneously.'}],draw:qDrawMarket,qi:5},
-{q:'How does the immune system kill cancer?',domain:'Immunology · Oncology',icon:'🔬',match:'Matched: Cytotoxic T-lymphocyte — perforin-granzyme pathway',narrs:['A cytotoxic T-lymphocyte (green) patrols the bloodstream. Its receptors scan for abnormal MHC-I peptides.','The T-cell has recognised the cancer cell. The immune synapse forms. Killing machinery assembles.','Perforin punches pores in the cancer membrane. Granzymes trigger apoptosis.'],explain:'CTLs recognise abnormal peptides displayed by MHC-I. Perforin creates pores and granzymes trigger apoptosis — the cancer cell dismantles itself without inflammation.',keypoints:[{i:'🎯',t:'MHC-I antigen presentation',d:'Every nucleated cell displays internal protein fragments for T-cell inspection.'},{i:'🔫',t:'Perforin pores',d:'Perforin polymerises in the target membrane. Granzymes enter and activate death.'},{i:'💀',t:'Apoptosis',d:'The cancer cell dismantles itself. Death without inflammation.'}],draw:qDrawImmune,qi:6},
-];
-
-const chips=document.getElementById('chips');
-QUESTIONS.forEach((q,i)=>{const b=document.createElement('button');b.className='qchip';b.textContent=q.q;b.onclick=()=>{document.getElementById('qi').value=q.q;document.querySelectorAll('.qchip').forEach(c=>c.classList.remove('active'));b.classList.add('active');runQWith(i);};chips.appendChild(b);});
-
-const QCV=document.getElementById('qcanvas'),QCTX=QCV.getContext('2d');
-let QW=0,QH=0,qTick=0,qPhase=0,qPaused=false,qAnimId=null,qIdx=-1;
-function resizeQCV(){const w=QCV.offsetWidth||960,h=Math.min(440,w*.46),dpr=Math.min(window.devicePixelRatio||1,2);QCV.width=w*dpr;QCV.height=h*dpr;QCV.style.width=w+'px';QCV.style.height=h+'px';QCTX.scale(dpr,dpr);QW=w;QH=h;}
-
-function runQWith(idx){
-  qIdx=idx;qPhase=0;qTick=0;qPaused=false;window._inCustomSim=false;
-  const sim=QUESTIONS[idx];
-  document.getElementById('qout').style.display='block';
-  document.getElementById('qthink').style.display='flex';
-  document.getElementById('qresult').style.display='none';
-  document.getElementById('qtl').textContent='Classifying intent...';
-  document.getElementById('qts').textContent='Identifying domain and entity types';
-  const steps=[['Classifying intent...','Identifying domain and entity types',350],['Loading field equations...','Selecting particle simulation template',700],['Initialising particles...','Spawning 35,000 particles',1100]];
-  let s=0;const iv=setInterval(()=>{if(s<steps.length){document.getElementById('qtl').textContent=steps[s][0];document.getElementById('qts').textContent=steps[s][1];s++;}else clearInterval(iv);},400);
-  setTimeout(()=>{
-    clearInterval(iv);
-    document.getElementById('qthink').style.display='none';
-    document.getElementById('qresult').style.display='block';
-    document.getElementById('qicon').textContent=sim.icon;
-    document.getElementById('qdomain').innerHTML=sim.domain;
-    document.getElementById('qmatch').innerHTML='<span style="background:rgba(38,232,176,.12);border:1px solid rgba(38,232,176,.28);border-radius:4px;padding:2px 8px;font-size:9px;color:#26e8b0;font-weight:600">&#9889; Pre-built<\/span><span style="margin-left:8px;font-size:10px;color:#2a4460">'+sim.match+'<\/span>';
-    document.getElementById('qnarr').textContent=sim.narrs[0];
-    document.getElementById('qexp-txt').textContent=sim.explain;
-    const kpEl=document.getElementById('qkp');kpEl.innerHTML='';
-    sim.keypoints.forEach(kp=>{kpEl.innerHTML+='<div class="qkpc"><div class="qkpi">'+kp.i+'<\/div><div><div class="qkpt">'+kp.t+'<\/div><div class="qkpd">'+kp.d+'<\/div><\/div><\/div>';});
-    window._narration=sim.narrs.map((text,phase)=>({phase,text}));
-    window._getPhaseText=p=>sim.narrs[Math.min(p,sim.narrs.length-1)];
-    resizeQCV();if(qAnimId)cancelAnimationFrame(qAnimId);qTick=0;qPhase=0;
-    (function ql(){if(!qPaused){qTick++;QCTX.clearRect(0,0,QW,QH);sim.draw(QCTX,QW,QH,qTick,qPhase);}qAnimId=requestAnimationFrame(ql);})();
-    document.getElementById('qresult').scrollIntoView({behavior:'smooth',block:'nearest'});
-  },1600);
-}
-
-// ── Query draw functions ──
-const _cSp=Array.from({length:48},(_,i)=>({a:(i/48)*Math.PI*2+rnd(-.07,.07),len:rnd(.44,.62),hr:rnd(.065,.108),ph:Math.random()*Math.PI*2,sp:rnd(.009,.018),dock:i===26}));
-const _cLip=[],_cAce2=[];let _cInit=false,_cvx=-1,_cvy=-1;
-function initC(W,H){if(_cInit)return;_cInit=true;const MY=H*.74;for(let i=0;i<280;i++)_cLip.push({x:rnd(0,W),y:MY+rnd(-5,12),r:rnd(2.5,4.5),ph:Math.random()*Math.PI*2,layer:i%3});for(let i=0;i<22;i++){const active=i>=8&&i<=11;_cAce2.push({x:active?W*(.58+(i-8)*.08):rnd(W*.04,W*.96),y:H*.74-rnd(0,6),r:rnd(2.5,4.5),ph:Math.random()*Math.PI*2,active});}}
-function qDrawCovid(ctx,W,H,t,ph){if(!_cInit){initC(W,H);_cvx=W*.82;_cvy=H*.3;}const MY=H*.74,VR=Math.min(H*.19,86);_cvx+=(W*.62+Math.sin(t*.013)*6-_cvx)*.007;_cvy+=(H*.31+Math.cos(t*.011)*4.5-_cvy)*.007;const bg=ctx.createLinearGradient(0,0,W*.4,H);bg.addColorStop(0,'#1c0540');bg.addColorStop(.45,'#0e0222');bg.addColorStop(1,'#040010');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);const mg=ctx.createLinearGradient(0,MY-18,0,H);mg.addColorStop(0,'rgba(190,80,145,0)');mg.addColorStop(.07,'rgba(208,96,158,.72)');mg.addColorStop(.22,'rgba(165,65,128,.92)');mg.addColorStop(1,'rgba(75,18,55,.97)');ctx.fillStyle=mg;ctx.fillRect(0,MY-18,W,H-(MY-18));_cLip.forEach(l=>{const y=l.y+Math.sin(l.ph+t*.013)*1.9;const b=[.72,.45,.28][l.layer],R=[215,195,185][l.layer],G=[112,88,72][l.layer],B=[165,145,132][l.layer];ctx.beginPath();ctx.arc(l.x,y,l.r,0,Math.PI*2);const lg=ctx.createRadialGradient(l.x-l.r*.3,y-l.r*.3,0,l.x,y,l.r);lg.addColorStop(0,`rgba(${R+22},${G+28},${B+18},${b})`);lg.addColorStop(1,`rgba(${R-18},${G-18},${B-15},${b*.58})`);ctx.fillStyle=lg;ctx.fill();});const sl=ctx.createLinearGradient(0,0,W,0);sl.addColorStop(0,'rgba(255,145,198,0)');sl.addColorStop(.5,'rgba(255,195,230,.5)');sl.addColorStop(1,'rgba(255,145,198,0)');ctx.fillStyle=sl;ctx.fillRect(0,MY-6,W,8);_cAce2.forEach(r=>{const p=r.active?(1+.22*Math.sin(t*.09+r.ph)):1;ctx.beginPath();ctx.moveTo(r.x,r.y+3);ctx.lineTo(r.x,r.y+14);ctx.strokeStyle=r.active?'rgba(255,118,208,.72)':'rgba(205,95,165,.5)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(r.x,r.y,r.r*p,0,Math.PI*2);ctx.fillStyle=r.active?`rgba(255,80,180,${.7+.28*Math.sin(t*.08)})`:'rgba(225,55,136,.5)';ctx.fill();});ctx.save();ctx.translate(_cvx,_cvy);const vg=ctx.createRadialGradient(-VR*.25,-VR*.28,VR*.07,0,0,VR);vg.addColorStop(0,'#6292ca');vg.addColorStop(.38,'#4272b2');vg.addColorStop(.76,'#2a4c8e');vg.addColorStop(1,'#182c62');ctx.beginPath();ctx.arc(0,0,VR,0,Math.PI*2);ctx.fillStyle=vg;ctx.fill();for(let i=0;i<90;i++){const a=(i/90)*Math.PI*2+t*.002*(i%2?1:-1);const r=VR-2-Math.random()*7;ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r,1+Math.random()*1.6,0,Math.PI*2);ctx.fillStyle=`rgba(${112+Math.floor(Math.random()*58)},${152+Math.floor(Math.random()*55)},${215+Math.floor(Math.random()*30)},.28)`;ctx.fill();}ctx.beginPath();ctx.arc(0,0,VR,0,Math.PI*2);ctx.strokeStyle='rgba(75,138,212,.4)';ctx.lineWidth=2;ctx.stroke();_cSp.forEach(sp=>{const a=sp.a+Math.sin(sp.ph+t*sp.sp)*.13;const slen=sp.len*VR*(sp.dock?1.5:1);const ex=Math.cos(a)*(VR+slen),ey=Math.sin(a)*(VR+slen);const sx=Math.cos(a)*VR,sy=Math.sin(a)*VR;const hr=sp.hr*VR;const mx=(sx+ex)/2,my=(sy+ey)/2;const sl2=Math.hypot(ex-sx,ey-sy);ctx.save();ctx.translate(mx,my);ctx.rotate(a-Math.PI/2);ctx.beginPath();ctx.rect(sp.dock?-2.8:-2.2,-sl2/2,sp.dock?5.6:4.4,sl2);ctx.fillStyle=sp.dock?'rgba(238,158,18,.82)':'rgba(18,172,158,.6)';ctx.fill();ctx.restore();const hg=ctx.createRadialGradient(ex-hr*.28,ey-hr*.28,0,ex,ey,hr);if(sp.dock){hg.addColorStop(0,'rgba(255,235,75,.96)');hg.addColorStop(1,'rgba(218,148,18,.9)');}else{hg.addColorStop(0,'rgba(100,240,220,.92)');hg.addColorStop(1,'rgba(20,182,168,.82)');}ctx.beginPath();ctx.arc(ex,ey,hr,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();for(let l=0;l<3;l++){const la=a+(l/3)*Math.PI*.78-Math.PI*.39;ctx.beginPath();ctx.arc(ex+Math.cos(la)*hr*.54,ey+Math.sin(la)*hr*.54,hr*.52,0,Math.PI*2);ctx.fillStyle=sp.dock?'rgba(255,218,55,.7)':'rgba(32,208,188,.65)';ctx.fill();}if(sp.dock){ctx.beginPath();ctx.arc(ex,ey,hr*2.1,0,Math.PI*2);ctx.strokeStyle=`rgba(255,205,42,${.22*Math.abs(Math.sin(t*.07))})`;ctx.lineWidth=2.2;ctx.stroke();}});ctx.restore();qvig(ctx,W,H);}
-const _bact=Array.from({length:10},()=>({x:rnd(.15,.85),y:rnd(.2,.8),a:rnd(0,Math.PI*2),ph:Math.random()*Math.PI*2,lysis:0}));const _amox=Array.from({length:30},()=>({x:rnd(0,1),y:rnd(0,1),vx:rnd(-.004,.004),vy:rnd(-.004,.004),ph:Math.random()*Math.PI*2}));
-function qDrawBact(ctx,W,H,t,ph){ctx.fillStyle='#001A0A';ctx.fillRect(0,0,W,H);const ll=ph>=1?Math.min(1,(t-40)/80):0;_bact.forEach((b,bi)=>{const bx=b.x*W,by=b.y*H,bw=W*.07,bh=H*.11;if(ph>=1&&bi<Math.floor(ll*_bact.length))b.lysis=Math.min(1,b.lysis+.015);if(b.lysis<1){const ex=1+b.lysis*.6;ctx.save();ctx.translate(bx,by);ctx.rotate(b.a+Math.sin(b.ph+t*.01)*.1);ctx.scale(ex,ex);const bg=ctx.createRadialGradient(-bw*.2,-bh*.2,0,0,0,bh*.6);bg.addColorStop(0,'rgba(60,200,100,.85)');bg.addColorStop(.6,'rgba(30,140,60,.8)');bg.addColorStop(1,'rgba(10,80,30,.7)');ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle=`rgba(80,220,120,${.6-b.lysis*.4})`;ctx.lineWidth=1.5;ctx.stroke();if(b.lysis>.3){for(let f=0;f<5;f++){const angle=Math.random()*Math.PI*2,rad=bh*.5+b.lysis*bh*.8;ctx.beginPath();ctx.arc(Math.cos(angle)*rad,Math.sin(angle)*rad,2.5,0,Math.PI*2);ctx.fillStyle=`rgba(80,220,100,${.5*b.lysis})`;ctx.fill();}}ctx.restore();}});_amox.forEach(m=>{m.x+=m.vx;m.y+=m.vy;if(m.x<0||m.x>1)m.vx*=-1;if(m.y<0||m.y>1)m.vy*=-1;ctx.beginPath();ctx.arc(m.x*W,m.y*H,5,0,Math.PI*2);ctx.fillStyle=`rgba(255,200,40,${.5+.3*Math.sin(m.ph+t*.04)})`;ctx.fill();});qvig(ctx,W,H);}
-function qDrawBH(ctx,W,H,t,ph){ctx.fillStyle='#000005';ctx.fillRect(0,0,W,H);const BX=W*.5,BY=H*.47,SR=Math.min(H*.12,52);for(let i=0;i<80;i++){const sx=(i*173)%W,sy=(i*97)%H;if(Math.hypot(sx-BX,sy-BY)>SR*2){ctx.beginPath();ctx.arc(sx,sy,.8+(i%3)*.4,0,Math.PI*2);ctx.fillStyle=`rgba(200,200,255,${.28+.2*(i%5)/4})`;ctx.fill();}}for(let ring=0;ring<12;ring++){const r=SR*1.6+ring*12;ctx.beginPath();ctx.ellipse(BX,BY,r,r*.28,.1,0,Math.PI*2);ctx.strokeStyle=`rgba(255,${180-ring*12},${40-ring*3},${Math.max(0,.48-ring*.04)})`;ctx.lineWidth=4.5-ring*.28;ctx.stroke();}if(ph>=1){const rp=Math.min(1,t/80);for(let ray=0;ray<28;ray++){const sa=ray*(Math.PI*2/28)+t*.003;const sR=W*.52;ctx.beginPath();ctx.moveTo(BX+Math.cos(sa)*sR,BY+Math.sin(sa)*sR*.7);for(let s=0;s<30;s++){const f=s/29;ctx.lineTo(BX+Math.cos(sa+(f*.8-.4)*rp)*lerp(sR,SR*1.5,f*rp),BY+Math.sin(sa+(f*.8-.4)*rp)*lerp(sR,SR*1.5,f*rp)*.7);}ctx.strokeStyle=`rgba(255,210,40,${.38*rp})`;ctx.lineWidth=1.2;ctx.stroke();}}if(ph>=2){const ep=Math.min(1,(t-40)/60);ctx.beginPath();ctx.ellipse(BX,BY,SR*2.2,SR*2.2*.88,0,0,Math.PI*2);ctx.strokeStyle=`rgba(255,220,80,${ep*.9})`;ctx.lineWidth=4*ep;ctx.stroke();ctx.beginPath();ctx.ellipse(BX,BY,SR*2.2,SR*2.2*.88,0,0,Math.PI*2);ctx.strokeStyle=`rgba(255,240,160,${ep*.45})`;ctx.lineWidth=12*ep;ctx.stroke();}const bhG=ctx.createRadialGradient(BX,BY,0,BX,BY,SR);bhG.addColorStop(0,'#000');bhG.addColorStop(.7,'#000');bhG.addColorStop(1,'rgba(0,0,0,.8)');ctx.beginPath();ctx.arc(BX,BY,SR,0,Math.PI*2);ctx.fillStyle=bhG;ctx.fill();qvig(ctx,W,H);}
-const _ppl=Array.from({length:500},(_,i)=>({x:rnd(.04,.96),y:rnd(.08,.82),state:i===0?2:0,timer:0,ph:Math.random()*Math.PI*2}));
-function qDrawRumour(ctx,W,H,t,ph){ctx.fillStyle='#040010';ctx.fillRect(0,0,W,H);if(ph>=1&&t%5===0){_ppl.forEach(p=>{if(p.state===2){_ppl.forEach(q=>{if(q.state===0&&Math.hypot(p.x-q.x,p.y-q.y)<.055+Math.random()*.04){q.state=1;q.timer=18;}});}});_ppl.forEach(p=>{if(p.state===1){p.timer--;if(p.timer<=0)p.state=2;}});}_ppl.forEach(p=>{ctx.beginPath();ctx.arc(p.x*W,p.y*H,2.4,0,Math.PI*2);ctx.fillStyle=p.state===2?`rgba(255,60,40,${.55+.3*Math.sin(t*.08+p.ph)})`:p.state===1?'rgba(255,195,30,.75)':'rgba(40,60,180,.38)';ctx.fill();});const heard=_ppl.filter(p=>p.state>0).length;ctx.save();ctx.font='bold 12px sans-serif';ctx.fillStyle='rgba(255,255,255,.65)';ctx.textAlign='right';ctx.fillText(Math.round(heard/_ppl.length*100)+'% reached',W-20,H*.1);ctx.restore();qvig(ctx,W,H);}
-function qDrawNeuron(ctx,W,H,t,ph){ctx.fillStyle='#0a0028';ctx.fillRect(0,0,W,H);const AX1=W*.07,AX2=W*.8,AY=H*.47,AW=22;const axG=ctx.createLinearGradient(0,AY-AW,0,AY+AW);axG.addColorStop(0,'rgba(80,30,160,.9)');axG.addColorStop(.5,'rgba(50,15,120,.95)');axG.addColorStop(1,'rgba(80,30,160,.9)');ctx.fillStyle=axG;ctx.fillRect(AX1,AY-AW,AX2-AX1,AW*2);for(let i=0;i<5;i++){const mx=AX1+i*(AX2-AX1)/5+28;ctx.beginPath();ctx.rect(mx,AY-AW-5,52,AW*2+10);ctx.fillStyle='rgba(40,10,100,.6)';ctx.fill();ctx.strokeStyle='rgba(100,60,200,.35)';ctx.lineWidth=1;ctx.stroke();}if(ph>=1){const wp=((t*2)%(AX2-AX1));const wg=ctx.createRadialGradient(AX1+wp,AY,0,AX1+wp,AY,52);wg.addColorStop(0,'rgba(180,100,255,.8)');wg.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(AX1+wp,AY,52,0,Math.PI*2);ctx.fillStyle=wg;ctx.fill();}const sbG=ctx.createRadialGradient(W*.08-12,H*.47-12,0,W*.08,H*.47,42);sbG.addColorStop(0,'rgba(120,60,220,.9)');sbG.addColorStop(1,'rgba(40,10,100,.65)');ctx.beginPath();ctx.arc(W*.08,H*.47,38,0,Math.PI*2);ctx.fillStyle=sbG;ctx.fill();ctx.strokeStyle='rgba(150,80,255,.58)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(W*.8,H*.47,36,0,Math.PI*2);ctx.fillStyle='rgba(80,30,150,.85)';ctx.fill();ctx.beginPath();ctx.arc(W*.8+60,H*.47,30,0,Math.PI*2);ctx.fillStyle='rgba(40,100,180,.7)';ctx.fill();if(ph>=2){for(let i=0;i<16;i++){const prog=((t*.016+i*.22)%1);ctx.beginPath();ctx.arc(W*.8+lerp(-5,60,prog),H*.47+Math.sin(i*2.1+t*.05)*15,3.5,0,Math.PI*2);const alpha=prog<.5?prog*2:2-prog*2;ctx.fillStyle=`rgba(180,80,255,${alpha*.85})`;ctx.fill();}}qvig(ctx,W,H);}
-const _mA=Array.from({length:280},()=>({x:rnd(.05,.95),y:rnd(.1,.85),vx:rnd(-.003,.003),vy:rnd(-.002,.002),state:Math.random()>.5?1:0,ph:Math.random()*Math.PI*2}));
-function qDrawMarket(ctx,W,H,t,ph){ctx.fillStyle='#001008';ctx.fillRect(0,0,W,H);const pl=ph>=2?Math.min(1,(t-20)/60):ph>=1?Math.min(.4,t/80):0;_mA.forEach(a=>{a.x+=a.vx*(1+pl*3);a.y+=a.vy*(1+pl*2);if(a.x<.02||a.x>.98)a.vx*=-1;if(a.y<.05||a.y>.9)a.vy*=-1;if(pl>.2&&Math.random()<.008)a.state=0;ctx.beginPath();ctx.arc(a.x*W,a.y*H,2.2,0,Math.PI*2);ctx.fillStyle=a.state===1?'rgba(40,220,80,.5)':`rgba(255,${40+Math.floor(pl*80)},40,.5)`;ctx.fill();});ctx.beginPath();ctx.moveTo(0,H*.42);for(let x=0;x<W;x+=4){ctx.lineTo(x,H*.42+Math.sin(x*.03+t*.08)*8+Math.sin(x*.07)*4+(x>W*.5?pl*(x-W*.5)/W*H*.35:0));}ctx.strokeStyle=`rgba(${lerp(40,255,pl)},${lerp(200,40,pl)},40,.8)`;ctx.lineWidth=2.5;ctx.stroke();if(pl>.5){ctx.save();ctx.font='bold 14px sans-serif';ctx.fillStyle=`rgba(255,60,40,${(pl-.5)*2})`;ctx.textAlign='center';ctx.fillText('-'+Math.round(pl*38)+'%  CASCADE',W*.72,H*.12);ctx.restore();}qvig(ctx,W,H);}
-function qDrawImmune(ctx,W,H,t,ph){ctx.fillStyle='#000818';ctx.fillRect(0,0,W,H);const TCX=W*.32,TCY=H*.47,TR=46,CCX=W*.66,CCY=H*.47,CR=56;const cg=ctx.createRadialGradient(CCX-15,CCY-15,0,CCX,CCY,CR);cg.addColorStop(0,'rgba(220,80,175,.95)');cg.addColorStop(.6,'rgba(180,40,140,.9)');cg.addColorStop(1,'rgba(100,10,80,.8)');ctx.beginPath();ctx.arc(CCX,CCY,CR,0,Math.PI*2);ctx.fillStyle=cg;ctx.fill();for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2+t*.005;ctx.beginPath();ctx.arc(CCX+Math.cos(a)*(CR+3),CCY+Math.sin(a)*(CR+3),3.5,0,Math.PI*2);ctx.fillStyle=ph>=1?'rgba(255,220,60,.9)':'rgba(255,180,60,.5)';ctx.fill();}const tcg=ctx.createRadialGradient(TCX-12,TCY-12,0,TCX,TCY,TR);tcg.addColorStop(0,'rgba(80,220,120,.95)');tcg.addColorStop(.55,'rgba(40,180,80,.88)');tcg.addColorStop(1,'rgba(10,100,40,.75)');ctx.beginPath();ctx.arc(TCX,TCY,TR,0,Math.PI*2);ctx.fillStyle=tcg;ctx.fill();ctx.strokeStyle='rgba(100,240,140,.55)';ctx.lineWidth=2;ctx.stroke();for(let i=0;i<10;i++){const a=(i/10)*Math.PI*2+t*.008;ctx.beginPath();ctx.moveTo(TCX+Math.cos(a)*TR,TCY+Math.sin(a)*TR);ctx.lineTo(TCX+Math.cos(a)*(TR+12),TCY+Math.sin(a)*(TR+12));ctx.strokeStyle='rgba(100,240,140,.65)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(TCX+Math.cos(a)*(TR+12),TCY+Math.sin(a)*(TR+12),4,0,Math.PI*2);ctx.fillStyle='rgba(140,255,160,.8)';ctx.fill();}if(ph>=1){const gap=CCX-CR-TCX-TR;ctx.beginPath();ctx.moveTo(TCX+TR,TCY);ctx.lineTo(CCX-CR,CCY);ctx.strokeStyle='rgba(255,220,60,.35)';ctx.lineWidth=gap;ctx.stroke();}if(ph>=2){for(let i=0;i<14;i++){const prog=((t*.016+i*.22)%1);ctx.beginPath();ctx.arc(TCX+TR+(CCX-CR-TCX-TR)*prog,TCY+Math.sin(i*2.1+t*.05)*18,3.5,0,Math.PI*2);ctx.fillStyle=`rgba(255,100,200,${(1-prog)*.85})`;ctx.fill();}}qvig(ctx,W,H);}
-
-// ── Mini grid ──
-const SIMS=[{badge:'Biology',title:'SARS-CoV-2 infecting a cell',desc:'Spike S1 docks ACE2. S2 drives membrane fusion.',tag:'Virology',qi:0,draw:(c,W,H,t)=>{c.fillStyle='#08001A';c.fillRect(0,0,W,H);const MY=H*.74;c.fillStyle='rgba(195,80,148,.6)';c.fillRect(0,MY,W,H-MY);for(let i=0;i<55;i++){c.beginPath();c.arc((i/55)*W*1.05,MY+(i%3)*5+Math.sin(i*1.7+t*.012)*1.6,2.2+(i%4)*.5,0,Math.PI*2);c.fillStyle=['rgba(215,108,168,.65)','rgba(195,82,148,.5)','rgba(235,128,188,.4)'][i%3];c.fill();}const sl=c.createLinearGradient(0,0,W,0);sl.addColorStop(0,'rgba(255,145,198,0)');sl.addColorStop(.5,'rgba(255,195,230,.45)');sl.addColorStop(1,'rgba(255,145,198,0)');c.fillStyle=sl;c.fillRect(0,MY-5,W,7);const VX=W*.52,VY=H*.33,VR=Math.min(H*.18,26);c.save();c.translate(VX,VY);const vg=c.createRadialGradient(-VR*.25,-VR*.28,VR*.06,0,0,VR);vg.addColorStop(0,'#6292ca');vg.addColorStop(.38,'#4272b2');vg.addColorStop(1,'#182c62');c.beginPath();c.arc(0,0,VR,0,Math.PI*2);c.fillStyle=vg;c.fill();for(let i=0;i<14;i++){const a=(i/14)*Math.PI*2+Math.sin(i*.82+t*.038)*.11;c.beginPath();c.arc(Math.cos(a)*(VR+VR*.52),Math.sin(a)*(VR+VR*.52),VR*.14,0,Math.PI*2);c.fillStyle='rgba(95,238,218,.9)';c.fill();}c.restore();}},{badge:'Chemistry',title:'Molecular bond — H₂O',desc:'Electron orbitals overlap. Covalent bonding.',tag:'Quantum',qi:0,draw:(c,W,H,t)=>{c.fillStyle='#001428';c.fillRect(0,0,W,H);const cx=W*.5,cy=H*.46,orb=H*.2;c.beginPath();c.arc(cx,cy,18,0,Math.PI*2);c.fillStyle='#3060c8';c.fill();[[-0.9,orb*1.6],[Math.PI+0.9,orb*1.6]].forEach(([a2,d])=>{const hx=cx+Math.cos(a2+t*.012)*d,hy=cy+Math.sin(a2+t*.012)*d;c.beginPath();c.moveTo(cx+Math.cos(a2+t*.012)*18,cy+Math.sin(a2+t*.012)*18);c.lineTo(hx-Math.cos(a2+t*.012)*10,hy-Math.sin(a2+t*.012)*10);c.strokeStyle='rgba(180,220,255,.5)';c.lineWidth=2;c.stroke();c.beginPath();c.arc(hx,hy,10,0,Math.PI*2);c.fillStyle='#a0c8f0';c.fill();});}},{badge:'Neuroscience',title:'Neural action potential',desc:'Action potential at 100m/s. Synapse fires.',tag:'Brain',qi:4,draw:(c,W,H,t)=>{c.fillStyle='#0a0028';c.fillRect(0,0,W,H);const ax1=W*.07,ax2=W*.82,ay=H*.47,aw=13;c.fillStyle='rgba(60,20,130,.9)';c.fillRect(ax1,ay-aw,ax2-ax1,aw*2);const wp=((t*1.5)%(ax2-ax1));const wg=c.createRadialGradient(ax1+wp,ay,0,ax1+wp,ay,36);wg.addColorStop(0,'rgba(160,80,255,.7)');wg.addColorStop(1,'rgba(0,0,0,0)');c.beginPath();c.arc(ax1+wp,ay,36,0,Math.PI*2);c.fillStyle=wg;c.fill();c.beginPath();c.arc(W*.08,ay,28,0,Math.PI*2);c.fillStyle='rgba(90,30,180,.85)';c.fill();}},{badge:'Physics',title:'Black hole lensing',desc:'Spacetime curves light. Einstein ring forms.',tag:'Astrophysics',qi:2,draw:(c,W,H,t)=>{c.fillStyle='#000005';c.fillRect(0,0,W,H);const bx=W*.5,by=H*.47,sr=Math.min(H*.12,20);for(let i=0;i<40;i++){const sx=(i*167)%W,sy=(i*97)%H;if(Math.hypot(sx-bx,sy-by)>sr*2){c.beginPath();c.arc(sx,sy,.8,0,Math.PI*2);c.fillStyle='rgba(200,200,255,.4)';c.fill();}}for(let i=0;i<7;i++){c.beginPath();c.ellipse(bx,by,sr*1.5+i*10,sr*.38+i*2.8,.1,0,Math.PI*2);c.strokeStyle=`rgba(255,${160-i*12},30,${.4-i*.04})`;c.lineWidth=3-i*.2;c.stroke();}c.beginPath();c.arc(bx,by,sr,0,Math.PI*2);c.fillStyle='#000';c.fill();}},{badge:'Social',title:'Rumour spreads',desc:'10,000 people as particles. Belief cascade.',tag:'Social',qi:3,draw:(c,W,H,t)=>{c.fillStyle='#040010';c.fillRect(0,0,W,H);for(let i=0;i<200;i++){const a=(i/200)*Math.PI*2+Math.sin(i*.27)*.12;const r=12+Math.random()*Math.min(W,H)*.32;const px=W*.5+Math.cos(a)*r,py=H*.5+Math.sin(a)*r;const d=Math.hypot(px-W*.22,py-H*.72);c.beginPath();c.arc(px,py,1.6,0,Math.PI*2);c.fillStyle=d<t*.6?'rgba(255,60,40,.6)':d<t*.4?'rgba(255,195,30,.6)':'rgba(40,60,180,.38)';c.fill();}}},{badge:'Climate',title:'Hurricane eye wall',desc:'Coriolis force organises warm air into storm.',tag:'Climate',qi:0,draw:(c,W,H,t)=>{c.fillStyle='#000818';c.fillRect(0,0,W,H);const cx=W*.5,cy=H*.47,mR=Math.min(W,H)*.42;for(let i=0;i<120;i++){const a=(i/120)*Math.PI*2+t*.015*(i%2?1:-.3)+i*.01;const r=(.1+(i/120)*.88)*mR;c.beginPath();c.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r*.75,1.8,0,Math.PI*2);c.fillStyle=(i/120)>.6?`rgba(255,${120+i},30,.55)`:`rgba(40,${180+i%50},${180+i%60},.5)`;c.fill();}}},{badge:'Finance',title:'Market cascade failure',desc:'Correlated selling triggers margin calls.',tag:'Finance',qi:5,draw:(c,W,H,t)=>{c.fillStyle='#001008';c.fillRect(0,0,W,H);const pl=Math.min(1,t/120);for(let i=0;i<150;i++){const a=(i/150)*Math.PI*2+t*.008;const r=13+Math.random()*Math.min(W,H)*.34;c.beginPath();c.arc(W*.5+Math.cos(a)*r,H*.5+Math.sin(a)*r,2,0,Math.PI*2);c.fillStyle=Math.random()>.4+pl*.4?'rgba(40,200,80,.5)':'rgba(255,40,40,.5)';c.fill();}c.beginPath();c.moveTo(0,H*.42);for(let x=0;x<W;x+=4){c.lineTo(x,H*.42+Math.sin(x*.07)*6+(x>W*.5?pl*(x-W*.5)/W*H*.3:0));}c.strokeStyle=`rgba(${40+pl*215},${200-pl*160},40,.8)`;c.lineWidth=2;c.stroke();}},{badge:'Immunology',title:'T-cell destroys cancer',desc:'Perforin triggers apoptosis. Cancer eliminated.',tag:'Oncology',qi:6,draw:(c,W,H,t)=>{c.fillStyle='#000818';c.fillRect(0,0,W,H);const tx=W*.3,ty=H*.47;c.beginPath();c.arc(W*.68,ty,30,0,Math.PI*2);c.fillStyle='rgba(200,50,150,.85)';c.fill();const tg=c.createRadialGradient(tx-8,ty-8,0,tx,ty,24);tg.addColorStop(0,'rgba(80,220,120,.95)');tg.addColorStop(1,'rgba(16,126,72,.68)');c.beginPath();c.arc(tx,ty,24,0,Math.PI*2);c.fillStyle=tg;c.fill();for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2+t*.012;c.beginPath();c.arc(tx+Math.cos(a)*30,ty+Math.sin(a)*30,3.2,0,Math.PI*2);c.fillStyle='rgba(100,255,140,.75)';c.fill();}}}];
-const grid=document.getElementById('grid');
-SIMS.forEach((sim,idx)=>{const gc=document.createElement('div');gc.className='gc';gc.innerHTML='<canvas id="gc'+idx+'"><\/canvas><div class="gcb">'+sim.badge+'<\/div><div class="gi"><div class="gt">'+sim.title+'<\/div><div class="gd">'+sim.desc+'<\/div><span class="gtg">'+sim.tag+'<\/span><\/div>';gc.onclick=()=>{document.getElementById('qi').value=QUESTIONS[sim.qi].q;document.getElementById('ask').scrollIntoView({behavior:'smooth'});setTimeout(()=>runQWith(sim.qi),500);};grid.appendChild(gc);const mc=document.getElementById('gc'+idx);const mw=mc.offsetWidth||215,mh=130,mdpr=Math.min(window.devicePixelRatio||1,2);mc.width=mw*mdpr;mc.height=mh*mdpr;mc.style.width=mw+'px';mc.style.height=mh+'px';const mctx=mc.getContext('2d');mctx.scale(mdpr,mdpr);let mt=0;(function loop(){mt++;mctx.clearRect(0,0,mw,mh);sim.draw(mctx,mw,mh,mt);requestAnimationFrame(loop);})();});
-fetch(API+'/health').catch(()=>{});
+function bootMainSim(){mainLOD=0;setTimeout(function(){mainLOD=1;document.getElementById('lod-overlay').classList.add('gone');document.getElementById('snarr').textContent=NARRS[0];setTimeout(function(){mainLOD=2;setTimeout(function(){document.getElementById('slider-wrap').classList.add('show')},800)},700)},700)}
+(function mainLoop(){if(!mainPaused){mainTick++;if(mainPhase===0&&_vx>0){var tx=simW*.62+Math.sin(mainTick*.013)*6,ty=simH*.31+Math.cos(mainTick*.011)*4.5;_vx+=( tx-_vx)*.007;_vy+=(ty-_vy)*.007}if(simW>0)drawMainSim()}requestAnimationFrame(mainLoop)})();
+bootMainSim();
+function setPhase(p){mainPhase=p;mainTick=0;document.getElementById('snarr').textContent=NARRS[p];document.querySelectorAll('[data-p]').forEach(function(b,i){b.classList.toggle('on',i===p)})}
+function togglePause(){mainPaused=!mainPaused;document.getElementById('bpause').textContent=mainPaused?'▶ Play':'⎦⎦ Pause'}
+function resetSim(){setPhase(0);mainPaused=false;document.getElementById('bpause').textContent='⎦⎦ Pause'}
+document.querySelectorAll('[data-p]').forEach(function(b){b.onclick=function(){setPhase(+b.dataset.p)}});
+function onSlider(v){spikeCount=Math.round(4+(52-4)*(v/100));document.getElementById('slider-val').textContent=v+'%'}
+var TRY_NEXT_MAP={'biology':['How does HIV evade the immune system?','What happens when cancer cells divide?','How does mRNA get translated into protein?'],'virology':['How does HIV evade the immune system?','How do vaccines train the immune system?','What is cytokine storm?'],'pharmacology':['How does penicillin kill bacteria?','What is antibiotic resistance?','How do painkillers block pain signals?'],'physics':['What happens inside a neutron star?','How does nuclear fission work?','What is quantum tunnelling?'],'neuroscience':['How does PTSD change the brain?','What happens during a seizure?','How does dopamine affect decision making?'],'social':['How does misinformation spread?','What causes a bank run?','How does trust collapse in organisations?'],'finance':['How does a bank run happen?','What causes hyperinflation?','How does quantitative easing work?'],'immunology':['How does HIV evade the immune system?','What is an autoimmune disease?','How do vaccines train T-cells?'],'chemistry':['How does a catalytic converter work?','What makes explosives explode?','How does soap clean oil?'],'climate':['How does ocean acidification work?','What is the greenhouse effect?','How do hurricanes intensify?']};
+function buildTryNext(domain,templateId,question){var key=Object.keys(TRY_NEXT_MAP).find(function(k){return domain&&domain.toLowerCase().includes(k)})||'biology';var suggestions=TRY_NEXT_MAP[key].filter(function(s){return s.toLowerCase()!==question.toLowerCase()}).slice(0,3);var el=document.getElementById('tn-chips');el.innerHTML='';suggestions.forEach(function(s){var b=document.createElement('button');b.className='tn-chip';b.textContent=s;b.onclick=function(){document.getElementById('qi').value=s;runQ('fast')};el.appendChild(b)})}
+var QCV=document.getElementById('qcanvas'),QCTX=QCV.getContext('2d'),QW=0,QH=0,qTick=0,qPhase=0,qPaused=false,qAnimId=null;
+function resizeQCV(){var w=QCV.offsetWidth||900,h=Math.min(w*.46,420),dpr=Math.min(window.devicePixelRatio||1,2);QCV.width=w*dpr;QCV.height=h*dpr;QCV.style.width=w+'px';QCV.style.height=h+'px';QCTX.scale(dpr,dpr);QW=w;QH=h}
+function showThink(msg,sub){document.getElementById('think-bar').style.display='flex';document.getElementById('qresult').style.display='none';document.getElementById('tl').textContent=msg;document.getElementById('ts').textContent=sub}
+function hideThink(){document.getElementById('think-bar').style.display='none'}
+function runQ(mode){var val=document.getElementById('qi').value.trim();if(!val)return;if(mode==='custom')runCustom(val);else runFast(val)}
+function runFast(question){document.getElementById('qresult').style.display='none';showThink('Finding closest simulation…','Motion starts in under 1.5s');var steps=[['Finding closest simulation…','Motion starts in under 1.5s',0],['Loading field equations…','Selecting simulation template',350],['Spawning particles…','Building your simulation',700]];var s=0;var iv=setInterval(function(){if(s<steps.length){document.getElementById('tl').textContent=steps[s][0];document.getElementById('ts').textContent=steps[s][1];s++}else clearInterval(iv)},380);fetch(API+'/v1/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:question,mode:'fast'})}).then(function(r){return r.json()}).then(function(data){clearInterval(iv);hideThink();renderQResult(data,question,false)}).catch(function(){clearInterval(iv);hideThink();renderQResult(null,question,false,bestFallback(question))})}
+function runCustom(question){showThink('Generating your simulation…','AI is designing a custom particle field for your exact question');var msgs=[['Analysing your question…','Understanding domain and entities'],['Designing particle field…','Mapping entities to field equations'],['Writing simulation code…','Generating Canvas 2D renderer'],['Building narration…','Writing phase-by-phase explanation'],['Almost ready…','Compiling your custom simulation']];var mi=0;var iv=setInterval(function(){mi=(mi+1)%msgs.length;document.getElementById('tl').textContent=msgs[mi][0];document.getElementById('ts').textContent=msgs[mi][1]},2600);fetch(API+'/v1/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:question,mode:'custom'})}).then(function(r){return r.json()}).then(function(data){if(data.jobId){pollJob(data.jobId,question,iv)}else{clearInterval(iv);hideThink();renderQResult(data,question,true)}}).catch(function(){clearInterval(iv);hideThink();renderQResult(null,question,true,bestFallback(question))})}
+function pollJob(jobId,question,iv){var poll=setInterval(function(){fetch(API+'/v1/query/job/'+jobId).then(function(r){return r.json()}).then(function(data){if(data.status==='done'){clearInterval(poll);clearInterval(iv);hideThink();renderQResult(data.result,question,true)}else if(data.status==='error'){clearInterval(poll);clearInterval(iv);hideThink();document.getElementById('tl').textContent='Error '+(data.error||'Try again')}}).catch(function(){})},2000);setTimeout(function(){clearInterval(poll);clearInterval(iv)},65000)}
+function bestFallback(question){var best=0,score=0;QUESTIONS.forEach(function(q,i){var words=q.q.toLowerCase().split(' ').concat(q.domain.toLowerCase().split(' '));var inp=question.toLowerCase();var sc=words.filter(function(k){return k.length>3&&inp.includes(k)}).length;if(sc>score){score=sc;best=i}});return best}
+function renderQResult(data,question,isCustom,fallbackIdx){var narration=[],explanation='',keypoints=[],matchLabel='Closest match',domain='biology',confidence=.8,drawCode=null,templateId=null;if(data){narration=data.narration||[];explanation=data.explanation||'';keypoints=data.keypoints||[];matchLabel=data.matchLabel||data.title||'Simulation';domain=data.domain||'biology';confidence=data.confidence||.8;drawCode=data.drawCode||null;templateId=data.templateId||null}else if(fallbackIdx!==undefined){var sim=QUESTIONS[fallbackIdx];narration=sim.narrs.map(function(text,phase){return{phase:phase,text:text}});explanation=sim.explain;keypoints=sim.keypoints.map(function(k){return{icon:k.i,title:k.t,detail:k.d}});matchLabel=sim.domain;domain=sim.domain.toLowerCase().split('·')[0].trim();confidence=.6}
+document.getElementById('qresult').style.display='block';document.getElementById('qresult').classList.add('fadein');var confPct=Math.round((confidence||.8)*100);var modeTag=isCustom?'<span style="background:#7C4FD440;border:1px solid #7C4FD4;border-radius:4px;padding:2px 8px;font-size:9px;color:#bf9fff;font-weight:600">✨ Custom</span>':'<span style="background:rgba(38,232,176,.1);border:1px solid rgba(38,232,176,.28);border-radius:4px;padding:2px 8px;font-size:9px;color:#26e8b0;font-weight:600">⚡ Match</span>';
+document.getElementById('qdomain').innerHTML=matchLabel+'<span style="font-size:10px;color:#3a6090;font-weight:400;margin-left:8px">'+domain+'</span>';document.getElementById('qmatch').innerHTML=modeTag+'<span style="margin-left:7px;font-size:10px;color:#2a4460">'+confPct+'% confidence</span>';
+window._narration=narration;window._getPhaseText=function(p){var n=window._narration||[];var item=n.find(function(x){return x.phase===p})||n[p]||{};return item.text||''};
+document.getElementById('qnarr').textContent=window._getPhaseText(0)||question;document.getElementById('qexp-txt').textContent=explanation;
+var kpEl=document.getElementById('qkp');kpEl.innerHTML='';(keypoints||[]).forEach(function(kp){var icon=kp.icon||kp.i||'';var t=kp.title||kp.t||'';var d=kp.detail||kp.d||'';kpEl.innerHTML+='<div class="qkpc"><div class="qkpi">'+icon+'</div><div><div class="qkpt">'+t+'</div><div class="qkpd">'+d+'</div></div></div>'});
+buildTryNext(domain,templateId,question);
+resizeQCV();if(qAnimId)cancelAnimationFrame(qAnimId);qTick=0;qPhase=0;qPaused=false;
+if(isCustom&&drawCode){var fn=null;try{fn=new Function('ctx','W','H','t','phase',drawCode)}catch(e){console.error(e)}if(fn){(function ql(){if(!qPaused){qTick++;try{QCTX.clearRect(0,0,QW,QH);fn(QCTX,QW,QH,qTick,qPhase)}catch(e){QCTX.fillStyle='#02040e';QCTX.fillRect(0,0,QW,QH)}}qAnimId=requestAnimationFrame(ql)})()} else{fbAnim(fallbackIdx||0)}}else{var simIdx=fallbackIdx!==undefined?fallbackIdx:0;var TID_MAP={virus_infecting_cell:0,antibiotic_killing_bacteria:1,epidemic_sir:3,neural_signal:4,trust_collapse:5};if(templateId&&TID_MAP[templateId]!==undefined)simIdx=TID_MAP[templateId];var sim2=QUESTIONS[simIdx];(function ql(){if(!qPaused){qTick++;QCTX.clearRect(0,0,QW,QH);sim2.draw(QCTX,QW,QH,qTick,qPhase)}qAnimId=requestAnimationFrame(ql)})()} document.getElementById('qresult').scrollIntoView({behavior:'smooth',block:'nearest'})}
+function fbAnim(idx){var sim=QUESTIONS[idx||0];(function ql(){if(!qPaused){qTick++;QCTX.clearRect(0,0,QW,QH);sim.draw(QCTX,QW,QH,qTick,qPhase)}qAnimId=requestAnimationFrame(ql)})()}
+function setQPhase(p){qPhase=Math.max(0,Math.min(2,p));qTick=0;var text=window._getPhaseText?window._getPhaseText(qPhase):'';if(text)document.getElementById('qnarr').textContent=text}
+function nextQP(){setQPhase(qPhase+1)}function prevQP(){setQPhase(qPhase-1)}
+function toggleQP(){qPaused=!qPaused;document.getElementById('qpbtn').textContent=qPaused?'▶ Play':'⎦⎦ Pause'}
+function qvig(c,W,H){var vg=c.createRadialGradient(W/2,H/2,H*.26,W/2,H/2,H*.68);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.52)');c.fillStyle=vg;c.fillRect(0,0,W,H)}
+var _cSp=Array.from({length:48},function(_,i){return{a:(i/48)*Math.PI*2+rnd(-.07,.07),len:rnd(.44,.62),hr:rnd(.065,.108),ph:Math.random()*Math.PI*2,sp:rnd(.009,.018),dock:i===26}});
+var _cLip=[],_cAce2=[],_cInit=false,_cvx=-1,_cvy=-1;
+function initC(W,H){if(_cInit)return;_cInit=true;var MY=H*.74;for(var i=0;i<240;i++)_cLip.push({x:rnd(0,W),y:MY+rnd(-5,12),r:rnd(2.5,4.5),ph:Math.random()*Math.PI*2,layer:i%3});for(var i=0;i<22;i++){var active=i>=8&&i<=11;_cAce2.push({x:active?W*(.58+(i-8)*.08):rnd(W*.04,W*.96),y:H*.74-rnd(0,6),r:rnd(2.5,4.5),ph:Math.random()*Math.PI*2,active:active})}}
+function qDrawCovid(ctx,W,H,t,ph){if(!_cInit){initC(W,H);_cvx=W*.82;_cvy=H*.3}var MY=H*.74,VR=Math.min(H*.19,82);_cvx+=(W*.62+Math.sin(t*.013)*6-_cvx)*.007;_cvy+=(H*.31+Math.cos(t*.011)*4.5-_cvy)*.007;var bg=ctx.createLinearGradient(0,0,W*.4,H);bg.addColorStop(0,'#1c0540');bg.addColorStop(.45,'#0e0222');bg.addColorStop(1,'#040010');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);var mg=ctx.createLinearGradient(0,MY-18,0,H);mg.addColorStop(0,'rgba(190,80,145,0)');mg.addColorStop(.07,'rgba(208,96,158,.72)');mg.addColorStop(.22,'rgba(165,65,128,.92)');mg.addColorStop(1,'rgba(75,18,55,.97)');ctx.fillStyle=mg;ctx.fillRect(0,MY-18,W,H-(MY-18));_cLip.forEach(function(l){var y=l.y+Math.sin(l.ph+t*.013)*1.9;var b=[.72,.45,.28][l.layer],R=[215,195,185][l.layer],G=[112,88,72][l.layer],B=[165,145,132][l.layer];ctx.beginPath();ctx.arc(l.x,y,l.r,0,Math.PI*2);var lg=ctx.createRadialGradient(l.x-l.r*.3,y-l.r*.3,0,l.x,y,l.r);lg.addColorStop(0,'rgba('+(R+22)+','+(G+28)+','+(B+18)+','+b+')');lg.addColorStop(1,'rgba('+(R-18)+','+(G-18)+','+(B-15)+','+(b*.58)+')');ctx.fillStyle=lg;ctx.fill()});var sl=ctx.createLinearGradient(0,0,W,0);sl.addColorStop(0,'rgba(255,145,198,0)');sl.addColorStop(.5,'rgba(255,195,230,.48)');sl.addColorStop(1,'rgba(255,145,198,0)');ctx.fillStyle=sl;ctx.fillRect(0,MY-6,W,8);_cAce2.forEach(function(r){var p=r.active?(1+.22*Math.sin(t*.09+r.ph)):1;ctx.beginPath();ctx.moveTo(r.x,r.y+3);ctx.lineTo(r.x,r.y+14);ctx.strokeStyle=r.active?'rgba(255,118,208,.72)':'rgba(205,95,165,.45)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(r.x,r.y,r.r*p,0,Math.PI*2);ctx.fillStyle=r.active?'rgba(255,80,180,'+(0.7+.28*Math.sin(t*.08))+')':'rgba(225,55,136,.48)';ctx.fill()});ctx.save();ctx.translate(_cvx,_cvy);var vg=ctx.createRadialGradient(-VR*.25,-VR*.28,VR*.07,0,0,VR);vg.addColorStop(0,'#6292ca');vg.addColorStop(.38,'#4272b2');vg.addColorStop(.76,'#2a4c8e');vg.addColorStop(1,'#182c62');ctx.beginPath();ctx.arc(0,0,VR,0,Math.PI*2);ctx.fillStyle=vg;ctx.fill();for(var i=0;i<80;i++){var a=(i/80)*Math.PI*2+t*.002*(i%2?1:-1);var r2=VR-2-Math.random()*7;ctx.beginPath();ctx.arc(Math.cos(a)*r2,Math.sin(a)*r2,1+Math.random()*1.6,0,Math.PI*2);ctx.fillStyle='rgba('+(112+Math.floor(Math.random()*58))+','+(152+Math.floor(Math.random()*55))+','+(215+Math.floor(Math.random()*30))+',.26)';ctx.fill()}ctx.beginPath();ctx.arc(0,0,VR,0,Math.PI*2);ctx.strokeStyle='rgba(75,138,212,.38)';ctx.lineWidth=2;ctx.stroke();_cSp.forEach(function(sp){var a=sp.a+Math.sin(sp.ph+t*sp.sp)*.13;var slen=sp.len*VR*(sp.dock?1.5:1);var ex=Math.cos(a)*(VR+slen),ey=Math.sin(a)*(VR+slen);var sx=Math.cos(a)*VR,sy=Math.sin(a)*VR;var hr=sp.hr*VR;var mx=(sx+ex)/2,my=(sy+ey)/2;var sl2=Math.hypot(ex-sx,ey-sy);ctx.save();ctx.translate(mx,my);ctx.rotate(a-Math.PI/2);ctx.beginPath();ctx.rect(sp.dock?-2.8:-2.2,-sl2/2,sp.dock?5.6:4.4,sl2);ctx.fillStyle=sp.dock?'rgba(238,158,18,.82)':'rgba(18,172,158,.6)';ctx.fill();ctx.restore();var hg=ctx.createRadialGradient(ex-hr*.28,ey-hr*.28,0,ex,ey,hr);if(sp.dock){hg.addColorStop(0,'rgba(255,235,75,.96)');hg.addColorStop(1,'rgba(218,148,18,.9)')}else{hg.addColorStop(0,'rgba(100,240,220,.92)');hg.addColorStop(1,'rgba(20,182,168,.82)')}ctx.beginPath();ctx.arc(ex,ey,hr,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();for(var l=0;l<3;l++){var la=a+(l/3)*Math.PI*.78-Math.PI*.39;ctx.beginPath();ctx.arc(ex+Math.cos(la)*hr*.54,ey+Math.sin(la)*hr*.54,hr*.52,0,Math.PI*2);ctx.fillStyle=sp.dock?'rgba(255,218,55,.7)':'rgba(32,208,188,.65)';ctx.fill()}if(sp.dock){ctx.beginPath();ctx.arc(ex,ey,hr*2.1,0,Math.PI*2);ctx.strokeStyle='rgba(255,205,42,'+(0.22*Math.abs(Math.sin(t*.07)))+')';ctx.lineWidth=2.2;ctx.stroke()}});ctx.restore();qvig(ctx,W,H)}
+var _bact=Array.from({length:10},function(){return{x:rnd(.15,.85),y:rnd(.2,.8),a:rnd(0,Math.PI*2),ph:Math.random()*Math.PI*2,lysis:0}}),_amox=Array.from({length:28},function(){return{x:rnd(0,1),y:rnd(0,1),vx:rnd(-.004,.004),vy:rnd(-.004,.004),ph:Math.random()*Math.PI*2}});
+function qDrawBact(ctx,W,H,t,ph){ctx.fillStyle='#001A0A';ctx.fillRect(0,0,W,H);var ll=ph>=1?Math.min(1,(t-40)/80):0;_bact.forEach(function(b,bi){var bx=b.x*W,by=b.y*H,bw=W*.07,bh=H*.11;if(ph>=1&&bi<Math.floor(ll*_bact.length))b.lysis=Math.min(1,b.lysis+.015);if(b.lysis<1){var ex=1+b.lysis*.6;ctx.save();ctx.translate(bx,by);ctx.rotate(b.a+Math.sin(b.ph+t*.01)*.1);ctx.scale(ex,ex);var bg=ctx.createRadialGradient(-bw*.2,-bh*.2,0,0,0,bh*.6);bg.addColorStop(0,'rgba(60,200,100,.85)');bg.addColorStop(.6,'rgba(30,140,60,.8)');bg.addColorStop(1,'rgba(10,80,30,.7)');ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle='rgba(80,220,120,'+(0.6-b.lysis*.4)+')';ctx.lineWidth=1.5;ctx.stroke();if(b.lysis>.3){for(var f=0;f<5;f++){var angle=Math.random()*Math.PI*2,rad=bh*.5+b.lysis*bh*.8;ctx.beginPath();ctx.arc(Math.cos(angle)*rad,Math.sin(angle)*rad,2.5,0,Math.PI*2);ctx.fillStyle='rgba(80,220,100,'+(0.5*b.lysis)+')';ctx.fill()}}ctx.restore()}});_amox.forEach(function(m){m.x+=m.vx;m.y+=m.vy;if(m.x<0||m.x>1)m.vx*=-1;if(m.y<0||m.y>1)m.vy*=-1;ctx.beginPath();ctx.arc(m.x*W,m.y*H,5,0,Math.PI*2);ctx.fillStyle='rgba(255,200,40,'+(0.5+.3*Math.sin(m.ph+t*.04))+')';ctx.fill()});qvig(ctx,W,H)}
+function qDrawBH(ctx,W,H,t,ph){ctx.fillStyle='#000005';ctx.fillRect(0,0,W,H);var BX=W*.5,BY=H*.47,SR=Math.min(H*.12,50);for(var i=0;i<80;i++){var sx=(i*173)%W,sy=(i*97)%H;if(Math.hypot(sx-BX,sy-BY)>SR*2){ctx.beginPath();ctx.arc(sx,sy,.8+(i%3)*.4,0,Math.PI*2);ctx.fillStyle='rgba(200,200,255,'+(0.28+.2*(i%5)/4)+')';ctx.fill()}}for(var ring=0;ring<12;ring++){var r=SR*1.6+ring*12;ctx.beginPath();ctx.ellipse(BX,BY,r,r*.28,.1,0,Math.PI*2);ctx.strokeStyle='rgba(255,'+(180-ring*12)+','+(40-ring*3)+','+(Math.max(0,.48-ring*.04))+')';ctx.lineWidth=4.5-ring*.28;ctx.stroke()}if(ph>=1){var rp=Math.min(1,t/80);for(var ray=0;ray<28;ray++){var sa=ray*(Math.PI*2/28)+t*.003;var sR=W*.52;ctx.beginPath();ctx.moveTo(BX+Math.cos(sa)*sR,BY+Math.sin(sa)*sR*.7);for(var s=0;s<30;s++){var f=s/29;ctx.lineTo(BX+Math.cos(sa+(f*.8-.4)*rp)*lerp(sR,SR*1.5,f*rp),BY+Math.sin(sa+(f*.8-.4)*rp)*lerp(sR,SR*1.5,f*rp)*.7)}ctx.strokeStyle='rgba(255,210,40,'+(0.38*rp)+')';ctx.lineWidth=1.2;ctx.stroke()}}if(ph>=2){var ep=Math.min(1,(t-40)/60);ctx.beginPath();ctx.ellipse(BX,BY,SR*2.2,SR*2.2*.88,0,0,Math.PI*2);ctx.strokeStyle='rgba(255,220,80,'+(ep*.9)+')';ctx.lineWidth=4*ep;ctx.stroke();ctx.beginPath();ctx.ellipse(BX,BY,SR*2.2,SR*2.2*.88,0,0,Math.PI*2);ctx.strokeStyle='rgba(255,240,160,'+(ep*.45)+')';ctx.lineWidth=12*ep;ctx.stroke()}var bhG=ctx.createRadialGradient(BX,BY,0,BX,BY,SR);bhG.addColorStop(0,'#000');bhG.addColorStop(.7,'#000');bhG.addColorStop(1,'rgba(0,0,0,.8)');ctx.beginPath();ctx.arc(BX,BY,SR,0,Math.PI*2);ctx.fillStyle=bhG;ctx.fill();qvig(ctx,W,H)}
+var _ppl=Array.from({length:500},function(_,i){return{x:rnd(.04,.96),y:rnd(.08,.82),state:i===0?2:0,timer:0,ph:Math.random()*Math.PI*2}});
+function qDrawRumour(ctx,W,H,t,ph){ctx.fillStyle='#040010';ctx.fillRect(0,0,W,H);if(ph>=1&&t%5===0){_ppl.forEach(function(p){if(p.state===2){_ppl.forEach(function(q){if(q.state===0&&Math.hypot(p.x-q.x,p.y-q.y)<.055+Math.random()*.04){q.state=1;q.timer=18}})}});_ppl.forEach(function(p){if(p.state===1){p.timer--;if(p.timer<=0)p.state=2}})}_ppl.forEach(function(p){ctx.beginPath();ctx.arc(p.x*W,p.y*H,2.4,0,Math.PI*2);ctx.fillStyle=p.state===2?'rgba(255,60,40,'+(0.55+.3*Math.sin(t*.08+p.ph))+')':p.state===1?'rgba(255,195,30,.75)':'rgba(40,60,180,.38)';ctx.fill()});var heard=_ppl.filter(function(p){return p.state>0}).length;ctx.save();ctx.font='bold 12px sans-serif';ctx.fillStyle='rgba(255,255,255,.65)';ctx.textAlign='right';ctx.fillText(Math.round(heard/_ppl.length*100)+'% reached',W-20,H*.1);ctx.restore();qvig(ctx,W,H)}
+function qDrawNeuron(ctx,W,H,t,ph){ctx.fillStyle='#0a0028';ctx.fillRect(0,0,W,H);var AX1=W*.07,AX2=W*.8,AY=H*.47,AW=22;var axG=ctx.createLinearGradient(0,AY-AW,0,AY+AW);axG.addColorStop(0,'rgba(80,30,160,.9)');axG.addColorStop(.5,'rgba(50,15,120,.95)');axG.addColorStop(1,'rgba(80,30,160,.9)');ctx.fillStyle=axG;ctx.fillRect(AX1,AY-AW,AX2-AX1,AW*2);if(ph>=1){var wp=((t*2)%(AX2-AX1));var wg=ctx.createRadialGradient(AX1+wp,AY,0,AX1+wp,AY,50);wg.addColorStop(0,'rgba(180,100,255,.8)');wg.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();ctx.arc(AX1+wp,AY,50,0,Math.PI*2);ctx.fillStyle=wg;ctx.fill()}var sbG=ctx.createRadialGradient(W*.08-12,H*.47-12,0,W*.08,H*.47,42);sbG.addColorStop(0,'rgba(120,60,220,.9)');sbG.addColorStop(1,'rgba(40,10,100,.65)');ctx.beginPath();ctx.arc(W*.08,H*.47,38,0,Math.PI*2);ctx.fillStyle=sbG;ctx.fill();if(ph>=2){for(var i=0;i<16;i++){var prog=((t*.016+i*.22)%1);ctx.beginPath();ctx.arc(W*.8+lerp(-5,60,prog),H*.47+Math.sin(i*2.1+t*.05)*15,3.5,0,Math.PI*2);var alpha=prog<.5?prog*2:2-prog*2;ctx.fillStyle='rgba(180,80,255,'+(alpha*.85)+')';ctx.fill()}}qvig(ctx,W,H)}
+var _mA=Array.from({length:280},function(){return{x:rnd(.05,.95),y:rnd(.1,.85),vx:rnd(-.003,.003),vy:rnd(-.002,.002),state:Math.random()>.5?1:0,ph:Math.random()*Math.PI*2}});
+function qDrawMarket(ctx,W,H,t,ph){ctx.fillStyle='#001008';ctx.fillRect(0,0,W,H);var pl=ph>=2?Math.min(1,(t-20)/60):ph>=1?Math.min(.4,t/80):0;_mA.forEach(function(a){a.x+=a.vx*(1+pl*3);a.y+=a.vy*(1+pl*2);if(a.x<.02||a.x>.98)a.vx*=-1;if(a.y<.05||a.y>.9)a.vy*=-1;if(pl>.2&&Math.random()<.008)a.state=0;ctx.beginPath();ctx.arc(a.x*W,a.y*H,2.2,0,Math.PI*2);ctx.fillStyle=a.state===1?'rgba(40,220,80,.5)':'rgba(255,'+(40+Math.floor(pl*80))+',40,.5)';ctx.fill()});ctx.beginPath();ctx.moveTo(0,H*.42);for(var x=0;x<W;x+=4){ctx.lineTo(x,H*.42+Math.sin(x*.03+t*.08)*8+Math.sin(x*.07)*4+(x>W*.5?pl*(x-W*.5)/W*H*.35:0))}ctx.strokeStyle='rgba('+(lerp(40,255,pl))+','+(lerp(200,40,pl))+',40,.8)';ctx.lineWidth=2.5;ctx.stroke();if(pl>.5){ctx.save();ctx.font='bold 14px sans-serif';ctx.fillStyle='rgba(255,60,40,'+(((pl-.5)*2))+')';ctx.textAlign='center';ctx.fillText('-'+Math.round(pl*38)+'% CASCADE',W*.72,H*.12);ctx.restore()}qvig(ctx,W,H)}
+function qDrawImmune(ctx,W,H,t,ph){ctx.fillStyle='#000818';ctx.fillRect(0,0,W,H);var TCX=W*.32,TCY=H*.47,TR=46,CCX=W*.66,CCY=H*.47,CR=56;var cg=ctx.createRadialGradient(CCX-15,CCY-15,0,CCX,CCY,CR);cg.addColorStop(0,'rgba(220,80,175,.95)');cg.addColorStop(.6,'rgba(180,40,140,.9)');cg.addColorStop(1,'rgba(100,10,80,.8)');ctx.beginPath();ctx.arc(CCX,CCY,CR,0,Math.PI*2);ctx.fillStyle=cg;ctx.fill();for(var i=0;i<8;i++){var a=(i/8)*Math.PI*2+t*.005;ctx.beginPath();ctx.arc(CCX+Math.cos(a)*(CR+3),CCY+Math.sin(a)*(CR+3),3.5,0,Math.PI*2);ctx.fillStyle=ph>=1?'rgba(255,220,60,.9)':'rgba(255,180,60,.45)';ctx.fill()}var tcg=ctx.createRadialGradient(TCX-12,TCY-12,0,TCX,TCY,TR);tcg.addColorStop(0,'rgba(80,220,120,.95)');tcg.addColorStop(.55,'rgba(40,180,80,.88)');tcg.addColorStop(1,'rgba(10,100,40,.75)');ctx.beginPath();ctx.arc(TCX,TCY,TR,0,Math.PI*2);ctx.fillStyle=tcg;ctx.fill();for(var i=0;i<10;i++){var a=(i/10)*Math.PI*2+t*.008;ctx.beginPath();ctx.moveTo(TCX+Math.cos(a)*TR,TCY+Math.sin(a)*TR);ctx.lineTo(TCX+Math.cos(a)*(TR+12),TCY+Math.sin(a)*(TR+12));ctx.strokeStyle='rgba(100,240,140,.6)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(TCX+Math.cos(a)*(TR+12),TCY+Math.sin(a)*(TR+12),4,0,Math.PI*2);ctx.fillStyle='rgba(140,255,160,.8)';ctx.fill()}if(ph>=2){for(var i=0;i<14;i++){var prog=((t*.016+i*.22)%1);ctx.beginPath();ctx.arc(TCX+TR+(CCX-CR-TCX-TR)*prog,TCY+Math.sin(i*2.1+t*.05)*18,3.5,0,Math.PI*2);ctx.fillStyle='rgba(255,100,200,'+(((1-prog)*.85))+')';ctx.fill()}}qvig(ctx,W,H)}
+var QUESTIONS=[{q:'How does a virus infect a cell?',domain:'Biology · Virology',narrs:['SARS-CoV-2 hovers above the host cell. Dense spike protein trimers (teal) probe the membrane. The virus must find and bind an ACE2 receptor to enter.','A spike has locked onto an ACE2 receptor. S1 binding triggers a conformational change in S2. Infection is now committed.','Membrane fusion underway. S2 drives lipid bilayer merger. The viral RNA genome uncoils and enters the cytoplasm.'],explain:'SARS-CoV-2 spike proteins act as molecular keys. S1 scans for ACE2 receptors. Once bound, S2 drives irreversible membrane fusion.',keypoints:[{i:'🔑',t:'Spike protein S1/S2',d:'S1 binds ACE2; S2 drives membrane fusion.'},{i:'🎯',t:'ACE2 receptor',d:'Found in lungs, heart, kidneys. The molecular lock SARS-CoV-2 evolved to target.'},{i:'💉',t:'Membrane fusion',d:'Viral and host membranes merge. Infection becomes irreversible.'}],draw:qDrawCovid},{q:'How does amoxicillin kill bacteria?',domain:'Pharmacology · Microbiology',narrs:['Amoxicillin molecules (gold) target penicillin-binding proteins — enzymes that cross-link the bacterial cell wall.','With PBPs blocked, new cell wall cannot be synthesised. The mesh weakens as bacteria continue to divide.','The cell wall fails under osmotic pressure. Water floods in and the bacterium lyses.'],explain:'Amoxicillin binds PBPs irreversibly, blocking peptidoglycan cross-linking. Without a functional cell wall, bacteria lyse under osmotic pressure.',keypoints:[{i:'🧱',t:'Peptidoglycan cell wall',d:'Bacteria have a rigid cell wall. Without it they cannot resist osmotic pressure.'},{i:'🚫',t:'PBP inhibition',d:'Amoxicillin binds PBPs permanently, stopping new cell wall cross-links.'},{i:'💥',t:'Osmotic lysis',d:'Water floods the weakened wall. The cell bursts. Only during active division.'}],draw:qDrawBact},{q:'What happens when light bends around a black hole?',domain:'Physics · Astrophysics',narrs:['Light travels in straight lines through flat spacetime. Photons move undisturbed.','The black hole mass warps spacetime. Light paths curve toward the singularity.','An Einstein ring forms. Light from a source directly behind the black hole bends into a perfect ring.'],explain:'Mass warps spacetime geometry. Light follows geodesics through curved space. Near a black hole these paths bend dramatically.',keypoints:[{i:'🌀',t:'Spacetime curvature',d:'Mass tells spacetime how to curve; spacetime tells light how to travel.'},{i:'💫',t:'Photon sphere',d:'At 1.5× Schwarzschild radius, photons can orbit the black hole.'},{i:'💍',t:'Einstein ring',d:'Perfect alignment produces a ring image.'}],draw:qDrawBH},{q:'How does a rumour spread through a population?',domain:'Social Dynamics · Epidemiology',narrs:['10,000 people as particles. Blue = unaware. A single source begins transmitting.','Yellow = just heard. Red = actively spreading. Dense clusters saturate first.','Saturation phase. 85%+ reached. Blue islands remain protected by low connectivity.'],explain:'Rumour spread follows the SIR model. Dense clusters amplify; isolated nodes are protected by low connectivity.',keypoints:[{i:'📡',t:'SIR contagion model',d:'Same equations describe COVID-19 spread and information contagion.'},{i:'🔗',t:'Network topology matters',d:'A rumour in a hub spreads 10× faster than one at the periphery.'},{i:'🏙',t:'Information immunity',d:'Isolated communities are naturally protected by low connectivity.'}],draw:qDrawRumour},{q:'How does the brain send electrical signals?',domain:'Neuroscience · Electrophysiology',narrs:['A neuron at rest. Axon interior at −70mV. Sodium ions wait outside. Voltage-gated channels are closed.','An action potential fires. Na⁺ floods in. Membrane depolarises to +40mV. Wave propagates at 100 m/s.','The signal reaches the synaptic terminal. Ca²⁺ triggers vesicle fusion. Neurotransmitters flood the cleft.'],explain:'Neural signalling relies on controlled ion flow. A stimulus opens Na⁺ channels, creating a depolarisation wave that propagates until triggering neurotransmitter release.',keypoints:[{i:'⚡',t:'Action potential',d:'All-or-nothing electrical pulse. Firing rate encodes signal intensity.'},{i:'🔋',t:'Resting potential (−70mV)',d:'Na⁺/K⁺ pump spends 20% of brain energy keeping neurons charged.'},{i:'🎯',t:'Synaptic transmission',d:'Neurotransmitters carry the signal across the 20nm synaptic gap.'}],draw:qDrawNeuron},{q:'How does a stock market crash cascade?',domain:'Finance · Complex Systems',narrs:['Markets in equilibrium. Green = buyers, red = sellers. A shock hits.','Fear spreads. Correlated positions trigger stop-losses simultaneously.','Cascade failure. Margin calls force liquidation. 38% of value destroyed in minutes.'],explain:'Market crashes are cascade failures. A small shock triggers correlated selling, triggering margin calls, which force more selling until liquidity is exhausted.',keypoints:[{i:'📊',t:'Correlated risk models',d:'All participants use similar VAR models, amplifying shocks.'},{i:'⚙️',t:'Margin call cascade',d:'Small price falls trigger forced selling. A self-reinforcing loop.'},{i:'💧',t:'Liquidity illusion',d:'Assets appear liquid until everyone sells simultaneously.'}],draw:qDrawMarket},{q:'How does the immune system kill cancer?',domain:'Immunology · Oncology',narrs:['A cytotoxic T-lymphocyte (green) patrols the bloodstream. Its receptors scan for abnormal MHC-I peptides.','The T-cell has recognised the cancer cell. The immune synapse forms. Killing machinery assembles.','Perforin punches pores in the cancer membrane. Granzymes trigger apoptosis.'],explain:'CTLs recognise abnormal peptides displayed by MHC-I. Perforin creates pores and granzymes trigger apoptosis.',keypoints:[{i:'🎯',t:'MHC-I antigen presentation',d:'Every nucleated cell displays internal protein fragments for T-cell inspection.'},{i:'🔫',t:'Perforin pores',d:'Perforin polymerises in the target membrane. Granzymes activate death.'},{i:'💀',t:'Apoptosis',d:'The cancer cell dismantles itself. Death without inflammation.'}],draw:qDrawImmune}];
+var chips=document.getElementById('chips');QUESTIONS.forEach(function(q,i){var b=document.createElement('button');b.className='qchip';b.textContent=q.q;b.onclick=function(){document.getElementById('qi').value=q.q;document.querySelectorAll('.qchip').forEach(function(c){c.classList.remove('active')});b.classList.add('active');runQWith(i)};chips.appendChild(b)});
+function runQWith(idx){var sim=QUESTIONS[idx];showThink('Loading simulation…','Motion starts in under 1.5s');setTimeout(function(){hideThink();var fakeData={narration:sim.narrs.map(function(text,phase){return{phase:phase,text:text}}),explanation:sim.explain,keypoints:sim.keypoints.map(function(k){return{icon:k.i,title:k.t,detail:k.d}}),matchLabel:sim.domain,domain:sim.domain.toLowerCase().split('·')[0].trim(),confidence:.95};renderQResult(fakeData,sim.q,false,idx);if(qAnimId)cancelAnimationFrame(qAnimId);qTick=0;qPhase=0;qPaused=false;resizeQCV();(function ql(){if(!qPaused){qTick++;QCTX.clearRect(0,0,QW,QH);sim.draw(QCTX,QW,QH,qTick,qPhase)}qAnimId=requestAnimationFrame(ql)})()},900)}
+var SIMS=[{badge:'Biology',title:'SARS-CoV-2 infecting a cell',desc:'Spike S1 docks ACE2. S2 drives membrane fusion.',tag:'Virology',qi:0,draw:function(c,W,H,t){c.fillStyle='#08001A';c.fillRect(0,0,W,H);var MY=H*.74;c.fillStyle='rgba(195,80,148,.6)';c.fillRect(0,MY,W,H-MY);for(var i=0;i<55;i++){c.beginPath();c.arc((i/55)*W*1.05,MY+(i%3)*5+Math.sin(i*1.7+t*.012)*1.6,2.2+(i%4)*.5,0,Math.PI*2);c.fillStyle=['rgba(215,108,168,.65)','rgba(195,82,148,.5)','rgba(235,128,188,.4)'][i%3];c.fill()}var VX=W*.52,VY=H*.33,VR=Math.min(H*.18,26);c.save();c.translate(VX,VY);var vg=c.createRadialGradient(-VR*.25,-VR*.28,VR*.06,0,0,VR);vg.addColorStop(0,'#6292ca');vg.addColorStop(.38,'#4272b2');vg.addColorStop(1,'#182c62');c.beginPath();c.arc(0,0,VR,0,Math.PI*2);c.fillStyle=vg;c.fill();for(var i=0;i<14;i++){var a=(i/14)*Math.PI*2+Math.sin(i*.82+t*.038)*.11;c.beginPath();c.arc(Math.cos(a)*(VR+VR*.52),Math.sin(a)*(VR+VR*.52),VR*.14,0,Math.PI*2);c.fillStyle='rgba(95,238,218,.9)';c.fill()}c.restore()}},{badge:'Neuroscience',title:'Neural action potential',desc:'Action potential at 100m/s. Synapse fires.',tag:'Brain',qi:4,draw:function(c,W,H,t){c.fillStyle='#0a0028';c.fillRect(0,0,W,H);var ax1=W*.07,ax2=W*.82,ay=H*.47,aw=13;c.fillStyle='rgba(60,20,130,.9)';c.fillRect(ax1,ay-aw,ax2-ax1,aw*2);var wp=((t*1.5)%(ax2-ax1));var wg=c.createRadialGradient(ax1+wp,ay,0,ax1+wp,ay,36);wg.addColorStop(0,'rgba(160,80,255,.7)');wg.addColorStop(1,'rgba(0,0,0,0)');c.beginPath();c.arc(ax1+wp,ay,36,0,Math.PI*2);c.fillStyle=wg;c.fill();c.beginPath();c.arc(W*.08,ay,28,0,Math.PI*2);c.fillStyle='rgba(90,30,180,.85)';c.fill()}},{badge:'Physics',title:'Black hole lensing',desc:'Spacetime curves light. Einstein ring forms.',tag:'Astrophysics',qi:2,draw:function(c,W,H,t){c.fillStyle='#000005';c.fillRect(0,0,W,H);var bx=W*.5,by=H*.47,sr=Math.min(H*.12,20);for(var i=0;i<40;i++){var sx=(i*167)%W,sy=(i*97)%H;if(Math.hypot(sx-bx,sy-by)>sr*2){c.beginPath();c.arc(sx,sy,.8,0,Math.PI*2);c.fillStyle='rgba(200,200,255,.4)';c.fill()}}for(var i=0;i<7;i++){c.beginPath();c.ellipse(bx,by,sr*1.5+i*10,sr*.38+i*2.8,.1,0,Math.PI*2);c.strokeStyle='rgba(255,'+(160-i*12)+',30,'+(0.4-i*.04)+')';c.lineWidth=3-i*.2;c.stroke()}c.beginPath();c.arc(bx,by,sr,0,Math.PI*2);c.fillStyle='#000';c.fill()}},{badge:'Social',title:'Rumour spreads',desc:'10,000 people as particles. Belief cascade.',tag:'Social',qi:3,draw:function(c,W,H,t){c.fillStyle='#040010';c.fillRect(0,0,W,H);for(var i=0;i<200;i++){var a=(i/200)*Math.PI*2+Math.sin(i*.27)*.12;var r=12+Math.random()*Math.min(W,H)*.32;var px=W*.5+Math.cos(a)*r,py=H*.5+Math.sin(a)*r;var d=Math.hypot(px-W*.22,py-H*.72);c.beginPath();c.arc(px,py,1.6,0,Math.PI*2);c.fillStyle=d<t*.6?'rgba(255,60,40,.6)':d<t*.4?'rgba(255,195,30,.6)':'rgba(40,60,180,.38)';c.fill()}}},{badge:'Climate',title:'Hurricane eye wall',desc:'Coriolis force organises warm air into storm.',tag:'Climate',qi:0,draw:function(c,W,H,t){c.fillStyle='#000818';c.fillRect(0,0,W,H);var cx=W*.5,cy=H*.47,mR=Math.min(W,H)*.42;for(var i=0;i<120;i++){var a=(i/120)*Math.PI*2+t*.015*(i%2?1:-.3)+i*.01;var r=(0.1+(i/120)*.88)*mR;c.beginPath();c.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r*.75,1.8,0,Math.PI*2);c.fillStyle=(i/120)>.6?'rgba(255,'+(120+i)+',30,.55)':'rgba(40,'+(180+i%50)+','+(180+i%60)+',.5)';c.fill()}}},{badge:'Finance',title:'Market cascade failure',desc:'Correlated selling triggers margin calls.',tag:'Finance',qi:5,draw:function(c,W,H,t){c.fillStyle='#001008';c.fillRect(0,0,W,H);var pl=Math.min(1,t/120);for(var i=0;i<150;i++){var a=(i/150)*Math.PI*2+t*.008;var r=13+Math.random()*Math.min(W,H)*.34;c.beginPath();c.arc(W*.5+Math.cos(a)*r,H*.5+Math.sin(a)*r,2,0,Math.PI*2);c.fillStyle=Math.random()>.4+pl*.4?'rgba(40,200,80,.5)':'rgba(255,40,40,.5)';c.fill()}c.beginPath();c.moveTo(0,H*.42);for(var x=0;x<W;x+=4){c.lineTo(x,H*.42+Math.sin(x*.07)*6+(x>W*.5?pl*(x-W*.5)/W*H*.3:0))}c.strokeStyle='rgba('+(40+pl*215)+','+(200-pl*160)+',40,.8)';c.lineWidth=2;c.stroke()}},{badge:'Immunology',title:'T-cell destroys cancer',desc:'Perforin triggers apoptosis. Cancer eliminated.',tag:'Oncology',qi:6,draw:function(c,W,H,t){c.fillStyle='#000818';c.fillRect(0,0,W,H);var tx=W*.3,ty=H*.47;c.beginPath();c.arc(W*.68,ty,30,0,Math.PI*2);c.fillStyle='rgba(200,50,150,.85)';c.fill();var tg=c.createRadialGradient(tx-8,ty-8,0,tx,ty,24);tg.addColorStop(0,'rgba(80,220,120,.95)');tg.addColorStop(1,'rgba(16,126,72,.68)');c.beginPath();c.arc(tx,ty,24,0,Math.PI*2);c.fillStyle=tg;c.fill();for(var i=0;i<8;i++){var a=(i/8)*Math.PI*2+t*.012;c.beginPath();c.arc(tx+Math.cos(a)*30,ty+Math.sin(a)*30,3.2,0,Math.PI*2);c.fillStyle='rgba(100,255,140,.75)';c.fill()}}}];
+var grid=document.getElementById('grid');SIMS.forEach(function(sim,idx){var gc=document.createElement('div');gc.className='gc';gc.innerHTML='<canvas id="gc'+idx+'"></canvas><div class="gcbadge">'+sim.badge+'</div><div class="gi"><div class="gt">'+sim.title+'</div><div class="gd">'+sim.desc+'</div><span class="gtag">'+sim.tag+'</span></div>';gc.onclick=function(){document.getElementById('qi').value=QUESTIONS[sim.qi].q;document.getElementById('ask').scrollIntoView({behavior:'smooth'});setTimeout(function(){runQWith(sim.qi)},400)};grid.appendChild(gc);var mc=document.getElementById('gc'+idx);var mw=mc.offsetWidth||200,mh=120,mdpr=Math.min(window.devicePixelRatio||1,2);mc.width=mw*mdpr;mc.height=mh*mdpr;mc.style.width=mw+'px';mc.style.height=mh+'px';var mctx=mc.getContext('2d');mctx.scale(mdpr,mdpr);var mt=0;(function loop(){mt++;mctx.clearRect(0,0,mw,mh);sim.draw(mctx,mw,mh,mt);requestAnimationFrame(loop)})()});
+fetch(API+'/health').catch(function(){});
 </script>
 </body>
 </html>

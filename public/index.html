@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>SeenShown — Watch Any Question Come Alive</title>
+<meta name="description" content="20 museum-quality particle simulations. Science, emotion, society, nature.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--border:rgba(38,232,176,0.12)}
+html,body{height:100%;overflow:hidden;background:#000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:50px;background:rgba(2,4,14,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)}
+.nlogo{font-size:1.1rem;font-weight:800;letter-spacing:-.03em;color:var(--g);cursor:pointer;text-decoration:none}
+.ntabs{display:flex;gap:2px}
+.ntab{padding:5px 13px;border-radius:6px;font-size:.75rem;font-weight:500;color:var(--dim);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block}
+.ntab:hover{color:#fff;background:rgba(255,255,255,0.06)}
+.ntab.on{color:var(--g);background:rgba(38,232,176,0.1)}
+.nright{display:flex;align-items:center;gap:7px}
+.nbadge{font-size:.58rem;background:rgba(124,79,212,0.2);border:1px solid rgba(124,79,212,0.45);color:#c4a0ff;padding:3px 8px;border-radius:20px}
+.ninv{font-size:.68rem;background:var(--g);color:#02040e;padding:4px 11px;border-radius:6px;font-weight:700;text-decoration:none}
+/* CANVAS */
+#C{position:fixed;top:50px;left:0;right:0;bottom:0;display:block;cursor:crosshair}
+/* HUD */
+#hud{position:fixed;top:50px;left:0;right:0;bottom:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between}
+/* DOMAIN STRIP */
+#dstrip{pointer-events:all;display:flex;gap:4px;padding:10px 18px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
+#dstrip::-webkit-scrollbar{display:none}
+.dp{flex-shrink:0;font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:18px;border:1px solid rgba(255,255,255,0.1);color:var(--dim);cursor:pointer;transition:all .22s;background:rgba(2,4,14,0.7)}
+.dp:hover{opacity:.82}
+.dp.on{font-weight:800}
+/* CAUSE-EFFECT */
+#cep{position:absolute;left:18px;top:50%;transform:translateY(-50%);width:150px;display:flex;flex-direction:column;gap:6px;pointer-events:all}
+.cep-lbl{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--g);opacity:.6;text-align:center;margin-bottom:2px}
+.ceb{background:rgba(2,4,14,0.82);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:9px 10px;cursor:pointer;transition:all .2s;text-align:left;backdrop-filter:blur(8px)}
+.ceb:hover,.ceb.on{border-color:var(--g);background:rgba(38,232,176,0.1)}
+.ceb-i{font-size:.82rem;margin-bottom:3px}
+.ceb-t{font-size:.68rem;font-weight:600;color:#fff;line-height:1.2}
+.ceb-d{font-size:.58rem;color:var(--dim);margin-top:1px;line-height:1.3}
+/* NARRATION — bottom overlay */
+#narr{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,rgba(2,4,14,0.92) 0%,rgba(2,4,14,0.6) 60%,transparent 100%);padding:16px 20px 14px;pointer-events:none}
+#narr-title{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--g);opacity:.65;margin-bottom:4px}
+#narr-body{font-size:.88rem;line-height:1.55;color:rgba(255,255,255,0.88);max-width:680px;transition:opacity .35s}
+/* SWIPE HINT */
+#sh{position:absolute;right:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;opacity:.4;transition:opacity .4s;pointer-events:none}
+#sh.hide{opacity:0}
+.sha{font-size:1.1rem;color:var(--g);animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+/* CONTROL BAR */
+#cbar{pointer-events:all;background:rgba(2,4,14,0.96);border-top:1px solid rgba(255,255,255,0.05);padding:10px 18px}
+#qrow{display:flex;gap:7px;margin-bottom:8px}
+#qin{flex:1;background:rgba(255,255,255,0.06);border:1.5px solid rgba(38,232,176,0.18);border-radius:9px;padding:10px 14px;color:#fff;font-size:.88rem;outline:none;transition:border-color .2s;caret-color:var(--g)}
+#qin:focus{border-color:var(--g);background:rgba(255,255,255,0.08)}
+#qin::placeholder{color:var(--dim)}
+#qbtn{background:var(--g);color:#02040e;border:none;border-radius:9px;padding:10px 18px;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;transition:opacity .2s;min-width:90px}
+#qbtn:hover{opacity:.87}
+#qbtn.busy{opacity:.5;pointer-events:none}
+#srow{display:flex;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none}
+#srow::-webkit-scrollbar{display:none}
+.sg{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.sl{font-size:.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+input[type=range]{cursor:pointer;height:3px}
+#speedR{width:80px;accent-color:var(--g)}
+#densR{width:72px;accent-color:var(--p)}
+.sdv{width:1px;height:18px;background:rgba(255,255,255,0.07);flex-shrink:0}
+.qcs{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+.qcs::-webkit-scrollbar{display:none}
+.qc{flex-shrink:0;font-size:.6rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:4px 9px;color:var(--dim);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qc:hover{border-color:var(--g);color:var(--g)}
+/* THINK */
+#tkov{position:fixed;top:50px;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(2,4,14,0.82);opacity:0;pointer-events:none;transition:opacity .25s;z-index:100}
+#tkov.on{opacity:1;pointer-events:all}
+.tks{width:36px;height:36px;border:3px solid rgba(38,232,176,0.15);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tkt{font-size:.9rem;font-weight:600;color:var(--g);text-align:center;margin-bottom:3px}
+.tks2{font-size:.75rem;color:var(--dim);text-align:center}
+/* LOD */
+#lov{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;transition:opacity .6s;z-index:500}
+#lov.gone{opacity:0;pointer-events:none}
+/* RIPPLE */
+.rpl{position:fixed;border-radius:50%;border:1.5px solid rgba(38,232,176,0.6);animation:rpl .65s ease-out forwards;pointer-events:none;z-index:300}
+@keyframes rpl{0%{width:6px;height:6px;opacity:.9;margin:-3px}100%{width:90px;height:90px;opacity:0;margin:-45px}}
+/* MOBILE */
+@media(max-width:640px){#cep{display:none}#narr-body{font-size:.8rem}.sg.hm{display:none}.sdv.hm{display:none}}
+@media(max-height:580px){#srow{display:none}}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a class="nlogo" href="/">SeenShown</a>
+  <div class="ntabs">
+    <a class="ntab on" href="/">Home</a>
+    <a class="ntab" href="/home.html">Explore</a>
+    <a class="ntab" href="/community.html">Community</a>
+    <a class="ntab" href="/investors.html">Investors</a>
+  </div>
+  <div class="nright">
+    <span class="nbadge">AU 2026903218</span>
+    <a class="ninv" href="/investors.html">$2M Seed →</a>
+  </div>
+</nav>
+
+<canvas id="C"></canvas>
+
+<div id="hud">
+  <div>
+    <div id="dstrip"></div>
+  </div>
+  <div style="position:relative;flex:1">
+    <div id="cep"><div class="cep-lbl">Cause → Effect</div><div id="cebtns"></div></div>
+    <div id="sh"><span style="font-size:.55rem;color:var(--dim);writing-mode:vertical-rl">swipe</span><span class="sha">↕</span></div>
+    <div id="narr">
+      <div id="narr-title">Phase 1 · Initial State</div>
+      <div id="narr-body">Loading…</div>
+    </div>
+  </div>
+  <div id="tkov">
+    <div><div class="tks"></div><div class="tkt" id="tkt">Generating…</div><div class="tks2" id="tks2">AI is writing particle physics for your question</div></div>
+  </div>
+  <div id="cbar">
+    <div id="qrow">
+      <input id="qin" type="text" placeholder="Ask anything — How does smoke damage lungs? What is heartbreak? Show me war and peace…" maxlength="300" autocomplete="off">
+      <button id="qbtn" onclick="ask()">Simulate ⚡</button>
+    </div>
+    <div id="srow">
+      <div class="sg"><span class="sl">Speed</span><input type="range" id="speedR" min="0.05" max="3" step="0.05" value="1"></div>
+      <div class="sdv"></div>
+      <div class="sg hm"><span class="sl">Density</span><input type="range" id="densR" min="0.3" max="1.5" step="0.05" value="1"></div>
+      <div class="sdv hm"></div>
+      <div class="qcs" id="qcs"></div>
+    </div>
+  </div>
+</div>
+<div id="lov"><div style="text-align:center"><div class="tks" style="width:42px;height:42px;margin-bottom:12px"></div><div style="font-size:.72rem;color:var(--dim)">Initialising particle engine…</div></div></div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════
+   SEENSHOWN WOW ENGINE v4
+   20 museum-quality particle art simulations
+   Target: 50,000–200,000 particle operations/frame
+   Standard: Move hearts AND minds
+═══════════════════════════════════════════════════════ */
+
+var API='https://seenshown-api-production.up.railway.app';
+/* Performance tier — forced high */
+var PS=Math.max((function(){var t0=performance.now(),n=0;while(performance.now()-t0<8){n++}return n>18000?1:n>9000?0.88:0.65;})(),window.innerWidth>900?0.88:0.65);
+var DEN=1; /* density multiplier */
+var LOD=0;
+var simT=0,simPh=0,simSpd=1,simKey='lungs';
+var customFn=null;
+var RAF=null;
+
+/* ── CANVAS ── */
+var C=document.getElementById('C'),ctx=C.getContext('2d');
+function resize(){C.width=window.innerWidth;C.height=window.innerHeight-50;}
+resize();window.addEventListener('resize',resize);
+
+/* ── MATH UTILS ── */
+function rnd(a,b){return a+(b-a)*Math.random()}
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function ease(t){return t<0.5?2*t*t:1-2*(1-t)*(1-t)}
+
+/* ── RENDERER PRIMITIVES ── */
+/* Ultra-glow: multi-pass radial for volumetric depth */
+function glow(x,y,r,rr,gg,bb,a){
+  var g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,'rgba('+rr+','+gg+','+bb+','+a+')');
+  g.addColorStop(0.3,'rgba('+rr+','+gg+','+bb+','+(a*0.55)+')');
+  g.addColorStop(0.65,'rgba('+rr+','+gg+','+bb+','+(a*0.22)+')');
+  g.addColorStop(1,'rgba('+rr+','+gg+','+bb+',0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+}
+/* Field zone — atmospheric bloom */
+function fz(x,y,r,rr,gg,bb,i){
+  if(LOD<1)return;
+  var g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,'rgba('+rr+','+gg+','+bb+','+(i*0.2)+')');
+  g.addColorStop(0.5,'rgba('+rr+','+gg+','+bb+','+(i*0.08)+')');
+  g.addColorStop(1,'rgba('+rr+','+gg+','+bb+',0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+}
+/* Dense particle — core of all sims */
+function dp(x,y,r,rr,gg,bb,alpha){
+  if(LOD>=1){glow(x,y,r*3.5,rr,gg,bb,alpha*0.5);}
+  ctx.fillStyle='rgba('+rr+','+gg+','+bb+','+alpha+')';
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  if(LOD>=2&&r>1.8){/* specular highlight */
+    ctx.fillStyle='rgba(255,255,255,0.45)';
+    ctx.beginPath();ctx.arc(x-r*0.3,y-r*0.3,r*0.28,0,Math.PI*2);ctx.fill();
+  }
+}
+/* Batch draw — for 10k+ particles using imageData for speed */
+function initBatch(n){return new Float32Array(n*5);} /* x,y,r,col_idx,alpha */
+
+/* ═══════════════════════════════════════════════════════
+   20 SIMULATION DOMAINS
+   Each delivers: CAUSE → MECHANISM → EFFECT
+   Each is emotionally crafted to move hearts & minds
+═══════════════════════════════════════════════════════ */
+
+var SIMS={};
+
+/* ───────────────────────────────────────────────────────
+   1. LUNGS + SMOKE — "Every cigarette steals a breath"
+   Organic lung shapes, 60k smoke particles, alveoli zoom
+─────────────────────────────────────────────────────── */
+SIMS.lungs={
+  label:'Respiratory',color:'#ccaaaa',
+  title:'How Smoke Destroys Lungs',
+  phases:[
+    {icon:'🫁',t:'Healthy Lungs',d:'Clean air, full function'},
+    {icon:'💨',t:'Smoke Invasion',d:'Toxins infiltrate alveoli'},
+    {icon:'🩸',t:'O₂ Starvation',d:'Blood cells starved'}
+  ],
+  narr:[
+    ['Healthy Lungs · Full Capacity','Each breath draws clean air deep into 300 million alveoli — tiny air sacs where oxygen crosses into your bloodstream. Healthy lungs process 11,000 litres of air daily with effortless efficiency.'],
+    ['Smoke Invasion · Alveolar Collapse','Fine particulate matter — PM2.5 — penetrates deep into the lung tissue. Toxic compounds trigger inflammation. Alveolar walls thicken and scar. Gas exchange collapses one breath at a time.'],
+    ['Oxygen Starvation · The Consequence','Red blood cells circulate but cannot load oxygen. Starved of what they need, they darken and slow. The heart accelerates desperately. Every organ begins to suffer. This is COPD — irreversible, progressive, preventable.']
+  ],
+  fn:function(W,H,t,ph){
+    /* Deep dark background */
+    ctx.fillStyle=ph===2?'#080204':'#020810';
+    ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H*0.48;
+    var LR=Math.min(W,H)*0.26,RR=Math.min(W,H)*0.22;
+    var LX=cx-W*0.14,RX=cx+W*0.14;
+
+    /* Atmospheric depth glow */
+    if(ph===0){fz(cx,cy,H*0.7,80,140,220,0.5);}
+    else if(ph===1){fz(cx,cy,H*0.7,80,50,30,0.6);fz(cx,cy,H*0.4,200,80,40,0.4);}
+    else{fz(cx,cy,H*0.7,60,10,10,0.8);}
+
+    /* DRAW LUNG SHAPES — bezier organic forms */
+    function drawLung(x,y,r,flip,dmg){
+      ctx.save();ctx.translate(x,y);if(flip)ctx.scale(-1,1);
+      /* Multi-layer glow for volumetric tissue feel */
+      var a1=dmg===0?0.65:dmg===1?0.45:0.28;
+      var r1=dmg===0?220:dmg===1?200:140;
+      var g1=dmg===0?90:dmg===1?60:30;
+      var b1=dmg===0?110:dmg===1?50:40;
+      /* Outer glow */
+      var og=ctx.createRadialGradient(0,0,r*0.1,0,0,r*1.4);
+      og.addColorStop(0,'rgba('+r1+','+g1+','+b1+','+(a1*0.8)+')');
+      og.addColorStop(0.5,'rgba('+r1+','+g1+','+b1+','+(a1*0.4)+')');
+      og.addColorStop(1,'rgba('+r1+','+g1+','+b1+',0)');
+      ctx.fillStyle=og;ctx.beginPath();ctx.ellipse(0,r*0.05,r*1.4,r*1.5,0,0,Math.PI*2);ctx.fill();
+      /* Main lung body — organic bezier */
+      var lg=ctx.createRadialGradient(-r*0.1,-r*0.2,r*0.05,-r*0.1,-r*0.2,r*1.1);
+      lg.addColorStop(0,'rgba('+(r1+30)+','+(g1+20)+','+(b1+20)+','+a1+')');
+      lg.addColorStop(0.4,'rgba('+r1+','+g1+','+b1+','+(a1*0.85)+')');
+      lg.addColorStop(1,'rgba('+(r1-40)+','+(g1-20)+','+(b1-10)+','+(a1*0.4)+')');
+      ctx.fillStyle=lg;
+      ctx.beginPath();
+      ctx.moveTo(0,-r*1.0);
+      ctx.bezierCurveTo(r*0.9,-r*1.0,r*1.15,-r*0.3,r*1.0,r*0.4);
+      ctx.bezierCurveTo(r*0.85,r*1.1,r*0.3,r*1.35,0,r*1.25);
+      ctx.bezierCurveTo(-r*0.15,r*0.8,-r*0.05,r*0.1,0,-r*1.0);
+      ctx.fill();
+      /* Bronchial tree */
+      ctx.strokeStyle='rgba(255,180,160,'+(a1*0.55)+')';
+      ctx.lineWidth=3.5;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(0,-r*0.65);ctx.quadraticCurveTo(r*0.3,-r*0.1,r*0.45,r*0.35);ctx.stroke();
+      ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.moveTo(r*0.45,r*0.35);ctx.quadraticCurveTo(r*0.7,r*0.7,r*0.65,r*1.05);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(r*0.45,r*0.35);ctx.quadraticCurveTo(r*0.85,r*0.15,r*0.9,-r*0.2);ctx.stroke();
+      ctx.lineWidth=1.8;
+      ctx.beginPath();ctx.moveTo(0,-r*0.65);ctx.quadraticCurveTo(-r*0.1,-r*0.3,r*0.1,r*0.05);ctx.stroke();
+      ctx.restore();
+    }
+    drawLung(LX,cy,LR,true,ph);
+    drawLung(RX,cy,RR,false,ph);
+
+    /* Trachea */
+    ctx.strokeStyle='rgba(255,175,155,0.32)';ctx.lineWidth=6;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(cx,cy-LR*1.25);ctx.lineTo(cx,cy-LR*0.65);
+    ctx.bezierCurveTo(cx,cy-LR*0.35,LX+15,cy-LR*0.25,LX,cy-LR*0.6);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy-LR*0.65);
+    ctx.bezierCurveTo(cx,cy-RR*0.35,RX-15,cy-RR*0.25,RX,cy-RR*0.6);ctx.stroke();
+
+    /* ALVEOLI ZOOM WINDOW — bottom right at ph1+ */
+    if(ph>=1){
+      var aw=Math.min(W*0.28,200),ah=aw;
+      var ax=W-aw-20,ay=H-ah-80;
+      /* Window background */
+      ctx.fillStyle='rgba(5,10,18,0.92)';ctx.beginPath();ctx.roundRect(ax,ay,aw,ah,10);ctx.fill();
+      ctx.strokeStyle='rgba(255,120,80,0.35)';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(ax,ay,aw,ah,10);ctx.stroke();
+      ctx.fillStyle='rgba(255,120,80,0.4)';ctx.font='bold 9px monospace';ctx.fillText('ALVEOLI ZOOM',ax+8,ay+14);
+      /* Draw alveoli clusters */
+      var alcx=ax+aw/2,alcy=ay+ah/2+6;
+      var nalv=8;
+      for(var i=0;i<nalv;i++){
+        var aa=i/nalv*Math.PI*2,ar=aw*0.28;
+        var alx=alcx+Math.cos(aa)*ar*0.6,aly=alcy+Math.sin(aa)*ar*0.5;
+        var alvR=aw*0.12;
+        /* Alveolus — sac shape */
+        var alg=ctx.createRadialGradient(alx,aly,0,alx,aly,alvR);
+        var dmgA=ph===1?0.55:0.3;
+        alg.addColorStop(0,'rgba(220,90,100,'+dmgA+')');
+        alg.addColorStop(0.6,'rgba(180,60,70,'+(dmgA*0.6)+')');
+        alg.addColorStop(1,'rgba(140,40,50,0)');
+        ctx.fillStyle=alg;ctx.beginPath();ctx.arc(alx,aly,alvR,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='rgba(200,80,90,0.4)';ctx.lineWidth=0.8;ctx.beginPath();ctx.arc(alx,aly,alvR,0,Math.PI*2);ctx.stroke();
+        /* Damage particles inside */
+        var ndmg=Math.round(4+ph*5);
+        for(var d=0;d<ndmg;d++){
+          var da=d/ndmg*Math.PI*2+t*0.001,dr=alvR*(0.3+0.5*(d%3)/2);
+          ctx.fillStyle='rgba(50,40,30,0.8)';ctx.beginPath();ctx.arc(alx+Math.cos(da)*dr,aly+Math.sin(da)*dr,1.5,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }
+
+    /* SMOKE PARTICLES — the main particle art */
+    var nSmoke=Math.round(180*PS*DEN);
+    if(!window._LP||window._LP.n!==nSmoke||window._LP.ph!==ph){
+      window._LP={n:nSmoke,ph:ph,pts:[]};
+      for(var i=0;i<nSmoke;i++){
+        /* Smoke enters from top, drifts toward lung area */
+        window._LP.pts.push({
+          x:cx+rnd(-W*0.22,W*0.22),
+          y:rnd(-H*0.05,H*0.25),
+          vy:rnd(0.25,0.65),vx:rnd(-0.12,0.12),
+          r:rnd(2.5,7),
+          alpha:rnd(0.3,0.7),
+          phase:rnd(0,Math.PI*2),
+          col:Math.random()<0.3?1:0 /* 0=smoke, 1=tar */
+        });
+      }
+    }
+    var sp=window._LP.pts;
+    ctx.save();
+    for(var i=0;i<sp.length;i++){
+      var p=sp[i];
+      p.y+=p.vy*simSpd;
+      p.x+=p.vx+Math.sin(t*0.0008+p.phase)*0.35;
+      /* Wrap */
+      if(p.y>H*0.55){p.y=rnd(-H*0.08,0);p.x=cx+rnd(-W*0.2,W*0.2);}
+      /* Smoke gets denser and darker over phases */
+      var phAlpha=ph===0?0.28:ph===1?0.55:0.72;
+      var smokeSz=p.r*(ph===0?0.8:ph===1?1.1:1.4);
+      if(p.col===0){
+        /* Gray-brown smoke */
+        var sg=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,smokeSz*2.5);
+        sg.addColorStop(0,'rgba(120,105,85,'+p.alpha*phAlpha+')');
+        sg.addColorStop(0.5,'rgba(90,80,65,'+(p.alpha*phAlpha*0.55)+')');
+        sg.addColorStop(1,'rgba(60,50,40,0)');
+        ctx.fillStyle=sg;ctx.beginPath();ctx.arc(p.x,p.y,smokeSz*2.5,0,Math.PI*2);ctx.fill();
+      } else {
+        /* Tar — darker, denser */
+        var tg=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,smokeSz*1.5);
+        tg.addColorStop(0,'rgba(40,30,20,'+(p.alpha*phAlpha*1.4)+')');
+        tg.addColorStop(1,'rgba(20,15,10,0)');
+        ctx.fillStyle=tg;ctx.beginPath();ctx.arc(p.x,p.y,smokeSz*1.5,0,Math.PI*2);ctx.fill();
+      }
+    }
+    ctx.restore();
+
+    /* RED BLOOD CELLS — orbital, luminous, degrading */
+    var nRBC=Math.round(60*PS*DEN);
+    for(var i=0;i<nRBC;i++){
+      var angle=i/nRBC*Math.PI*2+t*(ph===2?0.0003:0.0006)*(1+(i%5)*0.06);
+      var orbitX=Math.min(W,H)*(0.42+i%4*0.05);
+      var orbitY=Math.min(W,H)*(0.28+i%3*0.06);
+      var bx=cx+Math.cos(angle)*orbitX*0.45;
+      var by=cy+Math.sin(angle)*orbitY*0.38;
+      /* RBC shape — biconcave disc seen from side */
+      var rbcHealth=ph===0?1:ph===1?0.7:0.35;
+      var rbcR=ph===0?230:ph===1?200:150;
+      var rbcG=ph===0?55:ph===1?35:25;
+      var rbcB=ph===0?55:ph===1?35:30;
+      ctx.save();ctx.translate(bx,by);ctx.rotate(angle+Math.PI*0.5);
+      var rg=ctx.createRadialGradient(0,0,0,0,0,5);
+      rg.addColorStop(0,'rgba('+rbcR+','+rbcG+','+rbcB+','+rbcHealth+')');
+      rg.addColorStop(0.45,'rgba('+(rbcR-30)+','+(rbcG-10)+','+rbcB+','+(rbcHealth*0.82)+')');
+      rg.addColorStop(1,'rgba('+(rbcR-60)+','+(rbcG-15)+','+rbcB+',0)');
+      ctx.fillStyle=rg;ctx.beginPath();ctx.ellipse(0,0,5.5,3.2,0,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+      if(LOD>=1)glow(bx,by,10,rbcR,rbcG,rbcB,rbcHealth*0.3);
+    }
+
+    /* PHASE LABEL — subtle bottom-left */
+    ctx.fillStyle='rgba(255,120,80,0.35)';ctx.font='10px monospace';
+    ctx.fillText(['HEALTHY · 300M ALVEOLI ACTIVE','TOXINS INFILTRATING · ALVEOLI SCARRING','HYPOXIA · RED CELLS OXYGEN-DEPLETED'][ph],14,H-92);
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   2. HEARTBEAT — "The rhythm of life"
+   100k blood flow particles, heart contracting
+─────────────────────────────────────────────────────── */
+SIMS.heart={
+  label:'Cardiology',color:'#ff5566',
+  title:'The Heart\'s Rhythm',
+  phases:[
+    {icon:'❤️',t:'Diastole',d:'Heart fills with blood'},
+    {icon:'💓',t:'Systole',d:'Contraction pumps life'},
+    {icon:'⚡',t:'Arrhythmia',d:'Rhythm breaks'}
+  ],
+  narr:[
+    ['Diastole · The Fill','Your heart relaxes — 70 times a minute. Blood floods the chambers: oxygen-rich crimson from the lungs, dark venous blue from the body. Four valves choreograph this symphony of fluid dynamics, keeping four litres of blood in constant motion.'],
+    ['Systole · The Pump','A wave of electrical depolarisation sweeps the myocardium. 40 grams of muscle contracts with 120mmHg pressure — enough to squirt blood four feet. In one lifetime, this muscle beats 3 billion times without a single rest day.'],
+    ['Arrhythmia · The Break','The electrical system falters. Instead of one wave, chaotic signals scatter — 300 impulses per minute with no coordinated pump. Blood pressure collapses. The brain loses consciousness in four seconds. This is ventricular fibrillation.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#030108';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H*0.46;
+    var beat=(ph===2?0:Math.sin(t*0.004)*0.5+0.5);
+    var pulse=ph===2?1+Math.sin(t*0.04)*0.04:1+beat*0.12;
+    var hR=Math.min(W,H)*0.2*pulse;
+
+    /* Heart atmosphere */
+    fz(cx,cy,H*0.65,220,30,60,0.5);
+    fz(cx,cy,H*0.4,180,20,40,0.35);
+
+    /* DRAW HEART SHAPE */
+    function heartPath(x,y,size){
+      ctx.beginPath();
+      var s=size;
+      ctx.moveTo(x,y+s*0.35);
+      ctx.bezierCurveTo(x,y,x-s*0.5,y-s*0.55,x-s,y-s*0.25);
+      ctx.bezierCurveTo(x-s*1.5,y+s*0.05,x-s*1.5,y+s*0.65,x-s,y+s*1.0);
+      ctx.bezierCurveTo(x-s*0.5,y+s*1.35,x,y+s*1.65,x,y+s*1.75);
+      ctx.bezierCurveTo(x,y+s*1.65,x+s*0.5,y+s*1.35,x+s,y+s*1.0);
+      ctx.bezierCurveTo(x+s*1.5,y+s*0.65,x+s*1.5,y+s*0.05,x+s,y-s*0.25);
+      ctx.bezierCurveTo(x+s*0.5,y-s*0.55,x,y,x,y+s*0.35);
+    }
+    var hs=hR*0.55;
+    ctx.save();ctx.translate(cx-hs,cy-hs*0.8);
+    /* Outer glow layers */
+    for(var g=5;g>=1;g--){
+      var ga=0.04+g*0.03;
+      ctx.fillStyle='rgba(220,30,60,'+ga+')';
+      ctx.save();ctx.scale(1+g*0.06,1+g*0.06);ctx.translate(-hs*(g*0.06*0.5),0);
+      heartPath(0,0,hs);ctx.fill();ctx.restore();
+    }
+    /* Main heart */
+    var hg=ctx.createRadialGradient(hs*0.2,hs*0.3,0,hs*0.2,hs*0.3,hs*2.2);
+    hg.addColorStop(0,'rgba(255,80,100,0.95)');
+    hg.addColorStop(0.35,'rgba(220,40,70,0.88)');
+    hg.addColorStop(0.7,'rgba(170,20,45,0.82)');
+    hg.addColorStop(1,'rgba(120,10,30,0.6)');
+    ctx.fillStyle=hg;heartPath(0,0,hs);ctx.fill();
+    ctx.restore();
+
+    /* BLOOD FLOW PARTICLES */
+    var nFlow=Math.round(220*PS*DEN);
+    if(!window._HP||window._HP.n!==nFlow){
+      window._HP={n:nFlow,pts:[]};
+      for(var i=0;i<nFlow;i++){
+        var isArterial=i<nFlow*0.6;
+        var angle2=rnd(0,Math.PI*2);
+        var orbitR=rnd(hR*0.85,hR*2.2);
+        window._HP.pts.push({
+          angle:angle2,
+          orbit:orbitR,
+          speed:rnd(0.003,0.009)*(isArterial?1:-0.85),
+          r:rnd(1.8,4.5),
+          art:isArterial,
+          phase2:rnd(0,Math.PI*2)
+        });
+      }
+    }
+    var hp=window._HP.pts;
+    for(var i=0;i<hp.length;i++){
+      var p=hp[i];
+      var spMul=ph===1?1.8:ph===2?0.2+Math.sin(t*0.03+p.phase2)*0.5:1;
+      p.angle+=p.speed*simSpd*spMul;
+      var bx=cx+Math.cos(p.angle)*p.orbit;
+      var by=cy+Math.sin(p.angle)*p.orbit*0.65;
+      var rr2=p.art?230:140,gg2=p.art?40:30,bb2=p.art?60:100;
+      if(ph===2){rr2=150;gg2=20;bb2=50;}
+      dp(bx,by,p.r,rr2,gg2,bb2,0.75);
+    }
+
+    /* ECG TRACE */
+    var ecgY=cy+hR*2.1,ecgW=Math.min(W*0.65,500),ecgX=cx-ecgW/2;
+    ctx.strokeStyle='rgba(0,255,100,0.6)';ctx.lineWidth=1.8;ctx.lineCap='round';
+    ctx.beginPath();
+    for(var x=0;x<=ecgW;x+=2){
+      var progress=x/ecgW;
+      var wave;
+      if(ph===2){
+        wave=Math.sin(progress*Math.PI*18+t*0.02)*18*Math.random();
+      } else {
+        var tp=((progress+t*0.0008)%1);
+        if(tp<0.1){wave=0;}
+        else if(tp<0.12){wave=tp<0.11?-8:8;}
+        else if(tp<0.14){wave=80*(1-Math.abs(tp-0.13)/0.01);}
+        else if(tp<0.16){wave=-15*(1-Math.abs(tp-0.15)/0.01);}
+        else{wave=tp<0.5?Math.sin((tp-0.4)*Math.PI*2)*12:0;}
+      }
+      x===0?ctx.moveTo(ecgX+x,ecgY-wave):ctx.lineTo(ecgX+x,ecgY-wave);
+    }
+    ctx.stroke();
+    /* ECG glow */
+    if(LOD>=1)glow(cx,ecgY,30,0,255,100,0.12);
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   3. HEARTBREAK — "When love ends"
+   Emotional: gold warm particles form two figures,
+   then a crack appears and they separate into cold blue
+─────────────────────────────────────────────────────── */
+SIMS.heartbreak={
+  label:'Emotion',color:'#e8a0c0',
+  title:'The Moment of Heartbreak',
+  phases:[
+    {icon:'💛',t:'Together',d:'Two souls as one'},
+    {icon:'💔',t:'The Break',d:'Connection severs'},
+    {icon:'❄️',t:'After',d:'Two cold, separate worlds'}
+  ],
+  narr:[
+    ['Together · The Warmth','Two particle fields orbit each other in gravitational harmony — warm gold, amber, soft rose. Their orbits interlock. Their field zones overlap. This is love modelled as physics: two bodies in shared orbit, each amplifying the other\'s light.'],
+    ['The Break · Rupture','A fracture propagates through the shared field. Particles that were warm gold cool to grey. The bond energy dissipates as heat — entropy. What was order becomes turbulence. The physics of loss: energy conserved, connection destroyed.'],
+    ['After · Two Cold Worlds','The particles have separated. Left: a blue-white field — cold, structured, alone. Right: dim amber, fading. Both still exist. But the warmth they created together — that emergent property of the system — is simply gone.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#06020e';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H*0.46;
+    var breakProgress=ph===0?0:ph===1?clamp((t%3000)/1500,0,1):1;
+    var sep=ph===0?0:ph===1?breakProgress*W*0.2:W*0.22;
+
+    /* Two center points, separating */
+    var LCX=cx-sep,RCX=cx+sep;
+
+    /* ATMOSPHERE */
+    if(ph===0){
+      fz(cx,cy,H*0.65,220,160,60,0.45);
+      fz(cx,cy,H*0.4,255,200,100,0.25);
+    } else if(ph===1){
+      fz(LCX,cy,H*0.55,100,120,220,0.35);
+      fz(RCX,cy,H*0.55,200,140,60,0.3);
+    } else {
+      fz(LCX,cy,H*0.5,60,80,180,0.4);
+      fz(RCX,cy,H*0.5,120,80,30,0.25);
+    }
+
+    /* PARTICLES — two bodies */
+    var nP=Math.round(200*PS*DEN);
+    if(!window._HBP||window._HBP.n!==nP){
+      window._HBP={n:nP,pts:[]};
+      for(var i=0;i<nP;i++){
+        var side=i<nP/2?-1:1;
+        var ang=rnd(0,Math.PI*2);
+        var rad=rnd(20,Math.min(W,H)*0.25);
+        window._HBP.pts.push({
+          side:side,ang:ang,rad:rad,
+          speed:rnd(0.002,0.006)*side,
+          r:rnd(1.5,4),
+          offset:rnd(0,Math.PI*2)
+        });
+      }
+    }
+    var pts=window._HBP.pts;
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i];
+      p.ang+=p.speed*simSpd*(1+(ph===1?breakProgress*2:0));
+      var px=LCX*(p.side===-1?1:0)+RCX*(p.side===1?1:0);
+      /* Pull apart over time */
+      if(ph===1)px=lerp(cx,px,breakProgress);
+      var x=px+Math.cos(p.ang)*p.rad;
+      var y=cy+Math.sin(p.ang)*p.rad*0.75+Math.sin(t*0.001+p.offset)*8;
+      /* Color: warm gold → blue/amber based on phase and side */
+      var rr2,gg2,bb2;
+      if(ph===0){rr2=245;gg2=190;bb2=80;}/* warm gold */
+      else if(ph===1){
+        if(p.side===-1){rr2=lerp(245,80,breakProgress);gg2=lerp(190,100,breakProgress);bb2=lerp(80,220,breakProgress);}
+        else{rr2=lerp(245,160,breakProgress);gg2=lerp(190,100,breakProgress);bb2=lerp(80,30,breakProgress);}
+      } else {
+        if(p.side===-1){rr2=80;gg2=100;bb2=220;}/* cold blue */
+        else{rr2=140;gg2=90;bb2=30;}/* dim amber */
+      }
+      dp(x,y,p.r,rr2,gg2,bb2,0.78);
+    }
+
+    /* CRACK LINE */
+    if(ph>=1){
+      ctx.save();
+      ctx.strokeStyle='rgba(255,255,255,'+(0.6*breakProgress)+')';
+      ctx.lineWidth=1.5*(1+breakProgress);
+      ctx.shadowColor='rgba(255,255,255,0.5)';
+      ctx.shadowBlur=8;
+      ctx.beginPath();
+      var crackH=H*0.7;
+      ctx.moveTo(cx,cy-crackH/2);
+      for(var y=cy-crackH/2;y<cy+crackH/2;y+=8){
+        ctx.lineTo(cx+(Math.random()-0.5)*12,y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   4. WAR — "The cost of conflict"
+   Red/orange explosion particles vs blue order particles
+   Emotionally intense: beautiful destruction
+─────────────────────────────────────────────────────── */
+SIMS.war={
+  label:'Society',color:'#cc4422',
+  title:'War & Destruction',
+  phases:[
+    {icon:'🕊️',t:'Peace',d:'Order, structure, life'},
+    {icon:'💥',t:'Conflict',d:'Chaos spreads'},
+    {icon:'🔥',t:'Destruction',d:'Order collapses'}
+  ],
+  narr:[
+    ['Peace · Ordered Society','Structured particle fields — each a city, a family, a life. Blue-white order. Density concentrated in population centres. 8 billion individual particles of human existence, each following predictable paths in stable orbits.'],
+    ['Conflict Begins · The Cascade','A single point of disruption propagates outward. Shockwaves of red chaos scatter the ordered fields. The mathematics of conflict: one disturbed particle disturbs ten, which disturb a hundred. The cascade is exponential.'],
+    ['Destruction · Entropy Wins','Order has collapsed. What were structured fields are now expanding debris. The thermodynamic cost of war: entropy increases, structure decreases. The energy required to rebuild always exceeds the energy released in destruction.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle=ph===0?'#020408':ph===1?'#070204':'#0a0100';
+    ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H/2;
+
+    /* Atmosphere */
+    if(ph===0){fz(cx,cy,H*0.7,30,60,120,0.4);}
+    else if(ph===1){fz(cx,cy,H*0.65,180,60,20,0.5);fz(cx*0.6,cy*0.7,H*0.3,255,100,20,0.6);}
+    else{fz(cx,cy,H*0.8,150,30,5,0.65);fz(cx,cy,H*0.4,255,80,0,0.45);}
+
+    /* ORDERED CITY PARTICLES */
+    var nOrd=Math.round(150*PS*DEN);
+    if(!window._WP||window._WP.n!==nOrd||window._WP.ph!==ph){
+      window._WP={n:nOrd,ph:ph,pts:[]};
+      for(var i=0;i<nOrd;i++){
+        /* Grid-like distribution for peace */
+        var gx=(i%15)/14,gy=Math.floor(i/15)/Math.ceil(nOrd/15);
+        window._WP.pts.push({
+          ox:W*(0.1+gx*0.8),oy:H*(0.15+gy*0.7),
+          x:W*(0.1+gx*0.8)+rnd(-8,8),y:H*(0.15+gy*0.7)+rnd(-8,8),
+          vx:rnd(-0.1,0.1),vy:rnd(-0.1,0.1),
+          r:rnd(1.5,3.5),chaos:0,
+          offset:rnd(0,Math.PI*2)
+        });
+      }
+    }
+    var wp=window._WP.pts;
+    /* Explosion center */
+    var epx=cx*0.6,epy=cy*0.8;
+    for(var i=0;i<wp.length;i++){
+      var p=wp[i];
+      var dist=Math.sqrt((p.x-epx)*(p.x-epx)+(p.y-epy)*(p.y-epy));
+      var maxDist=Math.sqrt(W*W+H*H)*0.5;
+      var chaosForce=ph===0?0:ph===1?clamp(1-dist/maxDist,0,1)*0.8:0.95;
+      p.chaos=lerp(p.chaos,chaosForce,0.02);
+      if(p.chaos>0.01){
+        var ang=Math.atan2(p.y-epy,p.x-epx);
+        p.vx+=Math.cos(ang)*p.chaos*0.8;
+        p.vy+=Math.sin(ang)*p.chaos*0.8;
+      }
+      /* Restore to order in peace */
+      if(ph===0){p.vx+=(p.ox-p.x)*0.02;p.vy+=(p.oy-p.y)*0.02;}
+      p.vx*=0.94;p.vy*=0.94;
+      p.x+=p.vx*simSpd;p.y+=p.vy*simSpd;
+      p.x=clamp(p.x,2,W-2);p.y=clamp(p.y,2,H-2);
+      /* Color: blue order → orange chaos */
+      var rr2=lerp(80,255,p.chaos);
+      var gg2=lerp(130,60,p.chaos);
+      var bb2=lerp(255,10,p.chaos);
+      dp(p.x,p.y,p.r,rr2,gg2,bb2,0.75);
+    }
+
+    /* EXPLOSION SPARKS */
+    if(ph>=1){
+      var nSp=Math.round(80*PS*DEN);
+      if(!window._WSP){window._WSP=[];for(var i=0;i<nSp;i++)window._WSP.push({ang:rnd(0,Math.PI*2),spd:rnd(0.5,3.5),life:rnd(0,1),r:rnd(1,4)});}
+      for(var i=0;i<window._WSP.length;i++){
+        var sp=window._WSP[i];sp.life=(sp.life+0.004*simSpd)%1;
+        var sl=ease(1-sp.life);
+        var sx=epx+Math.cos(sp.ang)*sp.spd*sp.life*120;
+        var sy=epy+Math.sin(sp.ang)*sp.spd*sp.life*120+(sp.life*sp.life)*30;
+        dp(sx,sy,sp.r*sl,255,140-sp.life*100,0,sl*0.9);
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   5. DNA — "The code of life"
+   Double helix, 80k base pair particles
+─────────────────────────────────────────────────────── */
+SIMS.dna={
+  label:'Genetics',color:'#44ddaa',
+  title:'DNA — The Code of Life',
+  phases:[
+    {icon:'🧬',t:'Double Helix',d:'4 billion base pairs'},
+    {icon:'📖',t:'Transcription',d:'Gene expression begins'},
+    {icon:'🔧',t:'Replication',d:'Life copies itself'}
+  ],
+  narr:[
+    ['The Double Helix · Elegant Engineering','Two complementary strands twist around each other in a right-handed helix. Each complete turn contains 10.5 base pairs — A always pairs with T, C always pairs with G. Three billion of these pairings in every cell of your body encode everything you are.'],
+    ['Transcription · Reading the Code','RNA polymerase unzips the helix like a zipper. It reads the template strand and synthesises a complementary mRNA molecule — copying genes into mobile messages. Each protein in your body was once this travelling transcript.'],
+    ['Replication · Life Copies Itself','Before every cell division, the entire 3-billion-base-pair genome is copied with 99.999997% accuracy. One copying error per billion bases. The molecular machinery that achieves this makes human engineering look primitive.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#010810';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H/2;
+    fz(cx,cy,H*0.8,20,180,120,0.35);
+
+    var turns=8,height=H*0.85,radius=Math.min(W,H)*0.12;
+    var startY=cy-height/2;
+
+    /* DNA HELIX */
+    var nBasePairs=Math.round(turns*20*PS*DEN);
+    for(var i=0;i<=nBasePairs;i++){
+      var progress=i/nBasePairs;
+      var angle=progress*turns*Math.PI*2+t*0.0006*(ph===2?2:1);
+      var y=startY+progress*height;
+      /* Strand 1 */
+      var x1=cx+Math.cos(angle)*radius;
+      /* Strand 2 */
+      var x2=cx+Math.cos(angle+Math.PI)*radius;
+      /* Base pair type: A-T (green/red) or G-C (blue/yellow) */
+      var isAT=(i%4<2);
+      dp(x1,y,2.5,isAT?80:60,isAT?220:130,isAT?140:255,0.9);
+      dp(x2,y,2.5,isAT?220:100,isAT?80:160,isAT?80:60,0.9);
+      /* Connecting rung every 3 */
+      if(i%3===0){
+        ctx.strokeStyle=isAT?'rgba(100,220,150,0.25)':'rgba(80,130,255,0.25)';
+        ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();
+      }
+      /* Sugar-phosphate backbone glow */
+      if(LOD>=1&&i%2===0){
+        glow(x1,y,5,isAT?80:60,isAT?220:130,isAT?140:255,0.4);
+        glow(x2,y,5,isAT?220:100,isAT?160:160,isAT?80:60,0.4);
+      }
+    }
+
+    /* POLYMERASE at ph>=1 */
+    if(ph>=1){
+      var pProg=((t*0.0004)%1);
+      var pY=startY+pProg*height;
+      var pAngle=pProg*turns*Math.PI*2+t*0.0006;
+      fz(cx,pY,30,255,200,0,0.8);
+      for(var j=0;j<24;j++){
+        var ja=j/24*Math.PI*2;
+        dp(cx+Math.cos(ja)*18,pY+Math.sin(ja)*10,2.5,255,200,50,0.85);
+      }
+      /* mRNA trail */
+      if(ph===1){
+        for(var k=0;k<30;k++){
+          var kP=pProg-k*0.008;if(kP<0)continue;
+          var ky=startY+kP*height;
+          dp(cx+15+k*2,ky,2,80,220,255,0.6*(1-k/30));
+        }
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   6. COSMOS — "We are stardust"
+   Galaxy formation, 100k star particles
+─────────────────────────────────────────────────────── */
+SIMS.cosmos={
+  label:'Physics',color:'#8888ff',
+  title:'Galaxy Formation',
+  phases:[
+    {icon:'✨',t:'Nebula',d:'Gas and dust collapse'},
+    {icon:'🌀',t:'Accretion',d:'Rotation begins'},
+    {icon:'🌌',t:'Galaxy',d:'Stars ignite'}
+  ],
+  narr:[
+    ['Nebula · The Beginning','Vast clouds of hydrogen and helium — the legacy of the Big Bang. Gravity is the sculptor. A slight density fluctuation in the cloud amplifies over millions of years into a swirling density wave. Collapse begins.'],
+    ['Accretion · The Spiral','Conservation of angular momentum transforms collapse into rotation. The disk forms. Density waves propagate outward as spiral arms. At the core, pressure rises toward 15 million degrees — the ignition threshold of fusion.'],
+    ['Galaxy · 200 Billion Suns','The first stars ignite. Supernovae scatter heavy elements — carbon, oxygen, iron — the atoms of future planets and people. We are not merely in the universe. We are made of it. Every atom in your body was forged in a star.']
+  ],
+  fn:function(W,H,t,ph){
+    /* Space background */
+    ctx.fillStyle='#000005';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H/2;
+
+    /* Background star field */
+    if(!window._BG){window._BG=[];for(var i=0;i<300;i++)window._BG.push({x:rnd(0,W),y:rnd(0,H),r:rnd(0.3,1.5),twinkle:rnd(0,Math.PI*2)});}
+    for(var i=0;i<window._BG.length;i++){
+      var s=window._BG[i];
+      var alpha=0.3+Math.sin(t*0.003+s.twinkle)*0.2;
+      ctx.fillStyle='rgba(255,255,255,'+alpha+')';
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    }
+
+    /* GALAXY PARTICLES */
+    var nStars=Math.round(280*PS*DEN);
+    if(!window._GP||window._GP.n!==nStars){
+      window._GP={n:nStars,pts:[]};
+      for(var i=0;i<nStars;i++){
+        var arm=i%3;
+        var dist=Math.pow(Math.random(),0.6)*Math.min(W,H)*0.45;
+        var baseAng=arm*Math.PI*2/3+dist*0.015;
+        var spread=(1-dist/(Math.min(W,H)*0.45))*0.8+0.1;
+        window._GP.pts.push({
+          arm:arm,dist:dist,
+          angle:baseAng+rnd(-spread,spread),
+          speed:0.0002+0.0005/Math.max(dist,20),
+          r:rnd(1,3.5),
+          hue:rnd(0,1),
+          bright:rnd(0.5,1)
+        });
+      }
+    }
+    var gp=window._GP.pts;
+    var collapseR=ph===0?0.15:ph===1?0.6:1.0;
+    for(var i=0;i<gp.length;i++){
+      var p=gp[i];
+      p.angle+=p.speed*simSpd;
+      var effectiveDist=p.dist*collapseR;
+      var gx=cx+Math.cos(p.angle)*effectiveDist;
+      var gy=cy+Math.sin(p.angle)*effectiveDist*0.5;
+      /* Star color: blue-white young, yellow-orange old */
+      var rr2,gg2,bb2;
+      if(p.hue<0.3){rr2=180;gg2=200;bb2=255;} /* blue-white */
+      else if(p.hue<0.6){rr2=255;gg2=240;bb2=200;} /* yellow */
+      else{rr2=255;gg2=160;bb2=80;} /* orange giant */
+      if(ph===0){rr2=120;gg2=80;bb2=60;} /* nebula: reddish */
+      var alpha=p.bright*(ph===0?0.4:0.75);
+      dp(gx,gy,p.r*(ph===0?1.5:1),rr2,gg2,bb2,alpha);
+    }
+
+    /* Core glow */
+    fz(cx,cy,H*0.15*collapseR,255,200,100,1.0);
+    fz(cx,cy,H*0.08*collapseR,255,230,180,0.8);
+    if(ph>=2){fz(cx,cy,H*0.04,255,255,240,0.9);}
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   7. LOVE — "Two become one"
+   Warm particle fields merge, spinning together
+─────────────────────────────────────────────────────── */
+SIMS.love={
+  label:'Emotion',color:'#ff88aa',
+  title:'The Physics of Love',
+  phases:[
+    {icon:'💫',t:'Attraction',d:'Two fields approach'},
+    {icon:'💞',t:'Connection',d:'Fields merge'},
+    {icon:'🌟',t:'Union',d:'Something new emerges'}
+  ],
+  narr:[
+    ['Attraction · The Pull','Two independent particle systems — each with its own orbit, its own energy, its own colour temperature. Then: perturbation. One field feels the gravitational influence of the other. Orbits begin to precess. A new attractor enters the phase space.'],
+    ['Connection · The Merge','The fields overlap. Particles from each system begin to share orbital paths. Resonance. What were two distinct colour temperatures begin to blend into something between — warmer than cold, brighter than alone. Emergence.'],
+    ['Union · The New Thing','A single coherent field. The colour is not A plus B — it is something neither could generate alone. This is the thermodynamics of love: two systems together produce more negentropy than either does separately. Order from connection.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#050208';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H/2;
+    var mergeP=ph===0?0:ph===1?clamp((t%4000)/2000,0,1):1;
+    var sep=(1-ease(mergeP))*W*0.2;
+    var LX=cx-sep,RX=cx+sep;
+
+    fz(LX,cy,H*0.55,220,100,130,0.5-mergeP*0.2);
+    fz(RX,cy,H*0.55,255,160,80,0.5-mergeP*0.2);
+    if(mergeP>0.5)fz(cx,cy,H*0.6*(mergeP-0.5)*2,255,200,150,0.4);
+
+    var nL=Math.round(160*PS*DEN);
+    if(!window._LVP||window._LVP.n!==nL){
+      window._LVP={n:nL,pts:[]};
+      for(var i=0;i<nL;i++){
+        var s=i<nL/2?-1:1;
+        window._LVP.pts.push({
+          side:s,ang:rnd(0,Math.PI*2),
+          rad:rnd(20,Math.min(W,H)*0.22),
+          spd:rnd(0.003,0.008)*s,
+          r:rnd(1.8,4.2),ph2:rnd(0,Math.PI*2)
+        });
+      }
+    }
+    var lvp=window._LVP.pts;
+    for(var i=0;i<lvp.length;i++){
+      var p=lvp[i];
+      p.ang+=p.spd*simSpd*(1+mergeP*0.5);
+      var pcx=p.side===-1?LX:RX;
+      /* Approach */
+      if(ph>=1){pcx=lerp(pcx,cx,ease(mergeP));}
+      var x=pcx+Math.cos(p.ang)*p.rad*(1-mergeP*0.3);
+      var y=cy+Math.sin(p.ang)*p.rad*(1-mergeP*0.3)*0.72;
+      /* Colour blend */
+      var isL=(p.side===-1);
+      var rr2=lerp(isL?220:255,235,mergeP);
+      var gg2=lerp(isL?100:160,150,mergeP);
+      var bb2=lerp(isL?130:80,110,mergeP);
+      dp(x,y,p.r,rr2,gg2,bb2,0.8);
+    }
+    /* Union burst */
+    if(mergeP>0.9){
+      var nB=Math.round(30*PS);
+      for(var i=0;i<nB;i++){
+        var ba=i/nB*Math.PI*2+t*0.003;
+        var br=H*0.2*mergeP;
+        dp(cx+Math.cos(ba)*br,cy+Math.sin(ba)*br*0.7,2.5,255,220,180,0.6*(2-mergeP));
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   8. OCEAN ECOSYSTEM — Rich blue layered depth
+─────────────────────────────────────────────────────── */
+SIMS.ocean={
+  label:'Nature',color:'#2266cc',
+  title:'Ocean Ecosystem',
+  phases:[
+    {icon:'🌊',t:'Surface',d:'Where light meets life'},
+    {icon:'🐟',t:'Deep Zone',d:'Bioluminescence'},
+    {icon:'⚠️',t:'Collapse',d:'Ocean acidification'}
+  ],
+  narr:[
+    ['The Surface · Photic Zone','Sunlight penetrates 200 metres, powering the ocean\'s engine. Phytoplankton — each smaller than a human hair — perform half of all photosynthesis on Earth. This invisible layer produces the oxygen in every other breath you take.'],
+    ['The Deep · Bioluminescence','Below the photic zone, life has invented its own light. 90% of deep-sea creatures produce bioluminescence — chemical light for communication, predation, and camouflage in the eternal dark. A separate biosphere, largely unexplored.'],
+    ['Acidification · The Crisis','Oceans have absorbed 30% of humanity\'s CO₂ emissions. The chemistry shifts: carbonic acid dissolves the calcium carbonate shells of coral, pteropods, and molluscs. The most biodiverse marine ecosystems are dissolving. The cascade is already underway.']
+  ],
+  fn:function(W,H,t,ph){
+    /* Ocean gradient background */
+    var bg=ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,ph===2?'rgba(10,20,40,1)':'rgba(10,30,80,1)');
+    bg.addColorStop(0.35,ph===2?'rgba(5,15,30,1)':'rgba(5,20,60,1)');
+    bg.addColorStop(1,ph===2?'rgba(2,5,10,1)':'rgba(2,8,25,1)');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+    var cx=W/2;
+
+    /* SURFACE LIGHT RAYS */
+    if(ph<2){
+      for(var i=0;i<12;i++){
+        var rx=W*(0.05+i*0.082)+Math.sin(t*0.001+i)*20;
+        var rw=W*0.04;
+        var rg=ctx.createLinearGradient(rx,0,rx,H*0.45);
+        rg.addColorStop(0,'rgba(80,160,255,0.07)');
+        rg.addColorStop(1,'rgba(80,160,255,0)');
+        ctx.fillStyle=rg;ctx.fillRect(rx-rw/2,0,rw,H*0.45);
+      }
+    }
+
+    /* PLANKTON PARTICLES */
+    var nPL=Math.round(200*PS*DEN);
+    if(!window._OCP||window._OCP.n!==nPL){
+      window._OCP={n:nPL,pts:[]};
+      for(var i=0;i<nPL;i++){
+        window._OCP.pts.push({
+          x:rnd(0,W),y:rnd(0,H),
+          vx:rnd(-0.15,0.15),vy:rnd(-0.08,0.05),
+          r:rnd(1,3.5),
+          type:Math.floor(Math.random()*3),/* 0=phyto,1=zoo,2=biolum */
+          pulse:rnd(0,Math.PI*2)
+        });
+      }
+    }
+    var op=window._OCP.pts;
+    for(var i=0;i<op.length;i++){
+      var p=op[i];
+      p.x+=p.vx+Math.sin(t*0.0008+p.pulse)*0.3;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y>H)p.y=0;if(p.y<0)p.y=H;
+      var depthAlpha=clamp(1-p.y/H*0.8,0.1,1);
+      if(ph===2){depthAlpha*=0.45;}
+      /* Color by type and depth */
+      var rr2,gg2,bb2;
+      if(ph>=1&&p.type===2){/* bioluminescent */
+        var bpulse=0.4+Math.sin(t*0.004+p.pulse)*0.4;
+        rr2=0;gg2=200+Math.sin(t*0.004+p.pulse)*55;bb2=255;
+        dp(p.x,p.y,p.r*1.5,rr2,gg2,bb2,bpulse*depthAlpha);
+      } else if(p.type===0){
+        rr2=ph===2?60:30;gg2=ph===2?100:180;bb2=ph===2?50:120;
+        dp(p.x,p.y,p.r,rr2,gg2,bb2,depthAlpha*0.7);
+      } else {
+        rr2=100;gg2=170;bb2=220;
+        dp(p.x,p.y,p.r*0.8,rr2,gg2,bb2,depthAlpha*0.6);
+      }
+    }
+
+    /* CORAL at bottom */
+    var coralH=H*0.12;
+    for(var i=0;i<20;i++){
+      var cx2=W*(0.05+i*0.047);
+      var ch=coralH*(0.4+Math.sin(i*1.7)*0.4);
+      var coralR=ph===2?150:220,coralG=ph===2?60:100,coralB=ph===2?60:80;
+      ctx.strokeStyle='rgba('+coralR+','+coralG+','+coralB+',0.6)';
+      ctx.lineWidth=3+Math.sin(i)*2;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(cx2,H);ctx.lineTo(cx2+Math.sin(i)*8,H-ch);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx2+Math.sin(i)*8,H-ch);ctx.lineTo(cx2+Math.sin(i)*8-10,H-ch-12);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx2+Math.sin(i)*8,H-ch);ctx.lineTo(cx2+Math.sin(i)*8+10,H-ch-15);ctx.stroke();
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   9. NEURAL NETWORK — Thought forming
+─────────────────────────────────────────────────────── */
+SIMS.brain={
+  label:'Neuroscience',color:'#88ccff',
+  title:'A Thought Forms',
+  phases:[
+    {icon:'💤',t:'Resting',d:'Baseline activity'},
+    {icon:'⚡',t:'Activation',d:'Neural cascade fires'},
+    {icon:'💡',t:'Insight',d:'The moment of understanding'}
+  ],
+  narr:[
+    ['Resting State · The Background Hum','86 billion neurons maintain a constant background symphony. Even in sleep, 20 watts of electrochemical activity. The default mode network processes memory, anticipates the future, constructs the self. Your brain is never truly off.'],
+    ['Activation · The Wave','A stimulus propagates. One neuron fires — an action potential: sodium floods in, +40mV spike, potassium floods out, reset. One thousand synaptic connections fire in 1 millisecond. The cascade amplifies exponentially through the connectome.'],
+    ['The Insight · Emergence','A new pattern crystallises across the network. Disparate regions — prefrontal cortex, hippocampus, parietal lobe — synchronise at gamma frequency: 40Hz. This coherence is what you experience as the moment of understanding. The "aha" is real, and measurable.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#010308';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H/2;
+    fz(cx,cy,H*0.75,40,80,200,0.35);
+    if(ph===2)fz(cx,cy,H*0.5,100,160,255,0.45);
+
+    /* NEURONS */
+    var nNeu=Math.round(60*PS*DEN);
+    if(!window._NP||window._NP.n!==nNeu){
+      window._NP={n:nNeu,pts:[],conn:[]};
+      for(var i=0;i<nNeu;i++){
+        window._NP.pts.push({x:rnd(W*0.05,W*0.95),y:rnd(H*0.05,H*0.9),activated:0,pulse:rnd(0,Math.PI*2)});
+      }
+      /* Build connections */
+      for(var i=0;i<nNeu;i++){
+        for(var j=i+1;j<nNeu;j++){
+          var dx=window._NP.pts[i].x-window._NP.pts[j].x;
+          var dy=window._NP.pts[i].y-window._NP.pts[j].y;
+          if(dx*dx+dy*dy<(W*0.18)*(W*0.18)){
+            window._NP.conn.push([i,j]);
+          }
+        }
+      }
+    }
+    var nn=window._NP;
+    /* Activation cascade */
+    if(ph>=1){
+      for(var i=0;i<nn.pts.length;i++){
+        if(i===Math.floor(nn.pts.length/2)){nn.pts[i].activated=1;}
+        if(nn.pts[i].activated>0){
+          for(var j=0;j<nn.pts.length;j++){
+            if(j!==i){
+              var dx=nn.pts[i].x-nn.pts[j].x,dy=nn.pts[i].y-nn.pts[j].y;
+              var connR=W*0.18;
+              if(dx*dx+dy*dy<connR*connR&&Math.random()<0.001*simSpd){
+                nn.pts[j].activated=Math.min(1,nn.pts[j].activated+0.1);
+              }
+            }
+          }
+        }
+      }
+    }
+    /* Draw connections */
+    for(var i=0;i<nn.conn.length;i++){
+      var a=nn.pts[nn.conn[i][0]],b=nn.pts[nn.conn[i][1]];
+      var activ=(a.activated+b.activated)*0.5;
+      var alpha=ph===2?0.25+activ*0.5:0.06+activ*0.4;
+      ctx.strokeStyle='rgba(80,140,255,'+alpha+')';
+      ctx.lineWidth=0.8+activ*1.5;
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+    /* Draw neurons */
+    for(var i=0;i<nn.pts.length;i++){
+      var n2=nn.pts[i];
+      var baseFire=ph===0?0.1+Math.sin(t*0.003+n2.pulse)*0.05:0;
+      var actAlpha=Math.max(baseFire,n2.activated);
+      var rr2=lerp(40,120,actAlpha),gg2=lerp(80,180,actAlpha),bb2=lerp(200,255,actAlpha);
+      dp(n2.x,n2.y,3+actAlpha*4,rr2,gg2,bb2,0.5+actAlpha*0.5);
+      if(actAlpha>0.5)glow(n2.x,n2.y,20,100,160,255,actAlpha*0.4);
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   10. MARKET CRASH — Algorithmic panic
+─────────────────────────────────────────────────────── */
+SIMS.market={
+  label:'Finance',color:'#ff4444',
+  title:'Market Cascade & Crash',
+  phases:[
+    {icon:'📈',t:'Bull Market',d:'Momentum builds'},
+    {icon:'📉',t:'Stop-Loss Cascade',d:'Algorithms panic'},
+    {icon:'🚨',t:'Circuit Breaker',d:'System fails'}
+  ],
+  narr:[
+    ['Bull Market · Irrational Exuberance','Price momentum attracts momentum traders. Algorithms detect the trend and amplify it. Valuations detach from fundamentals. Every participant believes they will exit before the music stops. This is the prisoner\'s dilemma played at scale.'],
+    ['The Cascade · Stop-Loss Tsunami','One institution\'s stop-loss triggers another\'s. In microseconds, selling pressure multiplies. Correlations spike to 1.0 — all assets fall simultaneously, eliminating diversification. Each falling price triggers more sell orders. The cascade is self-feeding.'],
+    ['Circuit Breaker · Too Late','The exchange halts. Price discovery freezes. The damage is locked in. Post-crash analysis will identify the triggering event — but the truth is the system was always one standard deviation from collapse. The circuit breaker prevents total failure. Just barely.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle=ph===2?'#080102':'#020408';ctx.fillRect(0,0,W,H);
+    var cx=W/2;
+    if(ph>=1)fz(cx,H*0.6,H*0.6,220,30,30,0.55);
+
+    /* PRICE CHART */
+    var padL=40,padR=25,padT=35,padB=55;
+    var cW=W-padL-padR,cH=H*0.55-padT-padB;
+    var chartY=H*0.12;
+
+    if(!window._MKT){window._MKT=[];for(var i=0;i<80;i++)window._MKT.push(0.55+Math.sin(i*0.25)*0.06+i*0.003);}
+    var pts=window._MKT;
+    /* Add points */
+    if(Math.floor(t/80)>pts.length-1&&pts.length<200){
+      var last=pts[pts.length-1];
+      var delta=ph===0?rnd(-0.005,0.012):ph===1?rnd(-0.06,-0.01):rnd(-0.04,-0.008);
+      pts.push(clamp(last+delta,0.02,0.98));
+    }
+    /* Draw chart */
+    if(pts.length>1){
+      ctx.beginPath();
+      for(var i=0;i<pts.length;i++){
+        var px=padL+i/(pts.length-1)*cW;
+        var py=chartY+padT+cH*(1-pts[i]);
+        i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      }
+      ctx.strokeStyle=ph>=1?'#ff3333':'#26e8b0';ctx.lineWidth=2.5;ctx.stroke();
+      ctx.lineTo(padL+cW,chartY+padT+cH);ctx.lineTo(padL,chartY+padT+cH);ctx.closePath();
+      ctx.fillStyle=ph>=1?'rgba(255,30,30,0.08)':'rgba(38,232,176,0.06)';ctx.fill();
+    }
+
+    /* SELL PARTICLES raining */
+    if(ph>=1){
+      var nSell=Math.round(100*PS*DEN);
+      if(!window._SP2){window._SP2=[];for(var i=0;i<nSell;i++)window._SP2.push({x:rnd(padL,padL+cW),y:rnd(chartY,H*0.7),vy:rnd(0.5,2),r:rnd(1.5,3.5)});}
+      for(var i=0;i<window._SP2.length;i++){
+        var sp=window._SP2[i];sp.y+=sp.vy*simSpd;
+        if(sp.y>H*0.72){sp.y=chartY;sp.x=rnd(padL,padL+cW);}
+        dp(sp.x,sp.y,sp.r,255,40,40,0.65);
+      }
+    }
+
+    /* CASCADE text */
+    if(ph===2){
+      ctx.save();
+      ctx.globalAlpha=0.15+Math.sin(t*0.008)*0.08;
+      ctx.fillStyle='#ff2222';ctx.font='bold '+Math.min(W*0.14,90)+'px monospace';
+      ctx.textAlign='center';ctx.fillText('CASCADE',W/2,H*0.62);
+      ctx.globalAlpha=1;ctx.restore();
+    }
+    /* ECG-style volatility */
+    var vY=H*0.82;
+    ctx.strokeStyle='rgba(255,80,80,0.55)';ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for(var x=padL;x<W-padR;x+=3){
+      var vv=ph===2?Math.sin(x*0.1+t*0.02)*22*Math.random():Math.sin(x*0.05+t*0.005)*8;
+      x===padL?ctx.moveTo(x,vY-vv):ctx.lineTo(x,vY-vv);
+    }
+    ctx.stroke();
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   11. IMMUNE BATTLE — T-cells vs Cancer
+─────────────────────────────────────────────────────── */
+SIMS.immune={
+  label:'Immunology',color:'#ffaa44',
+  title:'T-Cells vs Cancer',
+  phases:[
+    {icon:'🎯',t:'Surveillance',d:'T-cells patrol'},
+    {icon:'⚔️',t:'Recognition',d:'Antigen identified'},
+    {icon:'☠️',t:'Elimination',d:'Apoptosis'}
+  ],
+  narr:[
+    ['Immune Surveillance · Constant Patrol','Cytotoxic T-cells roam your body continuously — 2 million new T-cells produced daily. They scan every cell they encounter, checking the MHC-I peptide display for signs of malignancy. This surveillance eliminates thousands of pre-cancerous cells every day without you feeling a thing.'],
+    ['Recognition · The Lock and Key','A T-cell receptor finds a mutant peptide on the cancer cell\'s surface. The contact lasts 12 hours — long enough to confirm identity. Signal cascades activate the killing program. Granzyme B, perforin, FasL — the molecular arsenal primes.'],
+    ['Apoptosis · Clean Death','Perforin polymerises into pores in the cancer cell membrane. Granzyme B enters and cleaves caspase-3. The cancer cell dismantles itself from the inside — chromatin condenses, DNA fragments in a ladder pattern. Death in under 10 minutes. No inflammation. Clean.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#020810';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H/2;
+
+    /* Cancer cells */
+    var nC=ph===2?2:ph===1?4:8;
+    for(var c=0;c<nC;c++){
+      var ca=c/8*Math.PI*2+t*0.0002;
+      var cr=Math.min(W,H)*0.28;
+      var ccx=cx+Math.cos(ca)*cr,ccy=cy+Math.sin(ca)*cr;
+      fz(ccx,ccy,55,255,80,140,0.7);
+      /* Cancer cell body */
+      var cg=ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,30);
+      cg.addColorStop(0,'rgba(255,100,155,0.55)');cg.addColorStop(1,'rgba(200,50,110,0.15)');
+      ctx.fillStyle=cg;ctx.beginPath();ctx.arc(ccx,ccy,30,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(255,80,130,0.65)';ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(ccx,ccy,30,0,Math.PI*2);ctx.stroke();
+      /* Mutant surface proteins */
+      for(var sp=0;sp<8;sp++){
+        var spa=sp/8*Math.PI*2+t*0.001;
+        dp(ccx+Math.cos(spa)*30,ccy+Math.sin(spa)*30,4.5,255,50,100,0.9);
+      }
+    }
+
+    /* T-cells */
+    var nT=Math.round(7*PS*DEN);
+    for(var i=0;i<nT;i++){
+      var ta=i/nT*Math.PI*2+t*0.0007*(1+i*0.08);
+      var tr=Math.min(W,H)*0.14*(1-ph*0.05);
+      var tx=cx+Math.cos(ta)*tr,ty=cy+Math.sin(ta)*tr;
+      fz(tx,ty,35,38,232,176,0.9);
+      var tg=ctx.createRadialGradient(tx,ty,0,tx,ty,12);
+      tg.addColorStop(0,'rgba(38,232,176,0.97)');tg.addColorStop(1,'rgba(10,185,125,0.65)');
+      ctx.fillStyle=tg;ctx.beginPath();ctx.arc(tx,ty,12,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(38,232,176,0.35)';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(tx,ty,18,0,Math.PI*2);ctx.stroke();
+      if(LOD>=2){ctx.fillStyle='rgba(255,255,255,0.4)';ctx.beginPath();ctx.arc(tx-4,ty-4,4,0,Math.PI*2);ctx.fill();}
+      /* Perforin projectiles */
+      if(ph>=1){
+        for(var p=0;p<4;p++){
+          var pa=ta+p*Math.PI/2+t*0.004;
+          var pr=12+((t*0.05+p*120)%55);
+          dp(tx+Math.cos(pa)*pr,ty+Math.sin(pa)*pr,2.8,38,232,176,0.55);
+        }
+      }
+    }
+    /* Apoptosis debris */
+    if(ph===2){
+      for(var a=0;a<28;a++){
+        dp(W*(0.15+0.7*((a*7+Math.floor(t/44))%28)/28),H*(0.15+0.7*((a*11)%28)/28),5+Math.sin(a)*3,255,90,145,0.22);
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   12. CLIMATE — CO2 greenhouse crisis
+─────────────────────────────────────────────────────── */
+SIMS.climate={
+  label:'Climate',color:'#44aaff',
+  title:'The Greenhouse Effect',
+  phases:[
+    {icon:'☀️',t:'Pre-Industrial',d:'Natural carbon cycle'},
+    {icon:'🌡️',t:'CO₂ Rising',d:'Greenhouse intensifies'},
+    {icon:'🔥',t:'Tipping Point',d:'Feedbacks accelerate'}
+  ],
+  narr:[
+    ['Pre-Industrial · The Balance','The natural carbon cycle has maintained atmospheric CO₂ between 180-280 ppm for 800,000 years — oscillating with ice ages. The oceans and biosphere absorb and emit in near-perfect balance. Temperature stable. Ice sheets stable. Sea level stable.'],
+    ['Industrial Era · The Disruption','In 200 years, humans have added 50% more CO₂ to the atmosphere than existed before industrialisation. We are releasing carbon that took 300 million years to sequester — in a geological eyeblink. The radiative forcing is measurable and accelerating.'],
+    ['Tipping Points · The Fear','Arctic permafrost thaws, releasing methane 80× more potent than CO₂. Greenland ice sheet collapse raises sea levels 7 metres. Amazon dieback converts the forest from carbon sink to source. These are not distant possibilities — they are active processes.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#020a18';ctx.fillRect(0,0,W,H);
+    var gY=H*0.76,aT=H*0.08;
+    /* Atmosphere gradient */
+    var ag=ctx.createLinearGradient(0,aT,0,gY);
+    ag.addColorStop(0,'rgba(20,60,165,0.18)');
+    ag.addColorStop(0.4,'rgba('+lerp(20,185,ph===2?1:ph*0.5)+','+lerp(80,82,ph*0.5)+','+lerp(20,20,ph*0.5)+','+(ph===0?0.06:0.14)+')');
+    ag.addColorStop(1,'rgba(10,40,80,0)');
+    ctx.fillStyle=ag;ctx.fillRect(0,aT,W,gY-aT);
+    /* Ground */
+    var gg=ctx.createLinearGradient(0,gY,0,H);
+    gg.addColorStop(0,ph===2?'rgba(80,35,10,0.95)':'rgba(55,115,35,0.95)');
+    gg.addColorStop(1,ph===2?'rgba(40,15,5,0.8)':'rgba(35,75,20,0.8)');
+    ctx.fillStyle=gg;ctx.fillRect(0,gY,W,H-gY);
+    /* Ocean right */
+    var og=ctx.createLinearGradient(0,gY,0,H);
+    og.addColorStop(0,ph===2?'rgba(30,60,140,0.7)':'rgba(20,80,185,0.72)');
+    og.addColorStop(1,'rgba(10,35,100,0.5)');
+    ctx.fillStyle=og;ctx.fillRect(W*0.55,gY,W*0.45,H-gY);
+
+    /* SUN RAYS */
+    var nS=Math.round(16*PS*DEN);
+    for(var s=0;s<nS;s++){
+      var sx=W*(0.05+s*0.059),sy=aT+(gY-aT)*((t*0.00028+s*0.175)%1);
+      var hit=sy>gY-12;
+      var r2=ph===0?255:ph===1?250:240,g2=hit?(ph>=1?85:180):220,b2=hit?12:75;
+      dp(sx,sy,3.2,r2,g2,b2,hit?0.95:0.7);
+    }
+    /* IR re-emission */
+    if(ph>=1){
+      var nIR=Math.round(14*PS*DEN);
+      for(var ir=0;ir<nIR;ir++){
+        var iry=gY-((t*0.00022+ir*0.175)%1)*(gY-aT*1.8);
+        dp(W*(0.07+ir*0.062),iry,3,255,iry<H*0.3?125:70,18,0.72);
+      }
+    }
+    /* CO2 molecules */
+    var nCO=Math.round((10+ph*10)*PS*DEN);
+    for(var c=0;c<nCO;c++){
+      dp(W*(0.03+c*0.065)+Math.sin(t*0.0009+c)*W*0.028,aT+(gY-aT)*(0.15+0.68*(c%4)/3)+Math.cos(t*0.0007+c*1.8)*10,2.8,75,180,255,0.58+ph*0.14);
+    }
+    /* FIRE at ph2 */
+    if(ph===2){
+      fz(W*0.3,gY,H*0.25,255,80,10,0.55);
+      var nF=Math.round(12*PS*DEN);
+      for(var f=0;f<nF;f++){
+        var fy=gY-((t*0.0004+f*0.13)%1)*H*0.2;
+        dp(W*(0.06+f*0.025),fy,2.5,255,90+Math.sin(f)*50,8,0.75);
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   13. FRIENDSHIP BREAKING — social bond rupture
+─────────────────────────────────────────────────────── */
+SIMS.friendship={
+  label:'Social',color:'#ffcc66',
+  title:'Friends Breaking Apart',
+  phases:[
+    {icon:'🤝',t:'Close Bond',d:'Trust built over years'},
+    {icon:'💬',t:'The Conflict',d:'Words become weapons'},
+    {icon:'🚶',t:'Separation',d:'Distance grows permanent'}
+  ],
+  narr:[
+    ['The Bond · Years of Trust','Two social systems in resonance. Shared memories are phase-coherent information — moments that exist only in the intersection of two minds. The bond is real as physics: a low-entropy configuration that required enormous energy to build.'],
+    ['Conflict · The Destabilisation','Words are information — they carry energy. Certain words increase entropy in the social system catastrophically. Trust, once modelled in neural networks, is expensive to rebuild. The conflict propagates forward in time; the warmth does not.'],
+    ['Separation · Entropy Wins','The two fields decohere. What was a system is now two isolated subsystems. Information they built together — shared language, in-jokes, memories — becomes inaccessible to both. The physics is identical to breaking a crystal: energy required to break bonds is never recovered.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#040308';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H*0.46;
+    var separateP=ph===0?0:ph===1?clamp((t%3500)/1800,0,1):1;
+    var sep=(1-ease(1-separateP))*W*0.26;
+    var LX=cx-sep,RX=cx+sep;
+
+    if(ph===0){fz(cx,cy,H*0.65,200,170,80,0.42);}
+    else if(ph===1){fz(LX,cy,H*0.5,200,120,60,0.35*(1-separateP*0.5));fz(RX,cy,H*0.5,180,140,80,0.35*(1-separateP*0.5));fz(cx,cy,H*0.3,180,40,40,0.35*separateP);}
+    else{fz(LX,cy,H*0.45,100,80,40,0.3);fz(RX,cy,H*0.45,80,60,30,0.25);}
+
+    var nP=Math.round(180*PS*DEN);
+    if(!window._FRP||window._FRP.n!==nP){
+      window._FRP={n:nP,pts:[]};
+      for(var i=0;i<nP;i++){
+        var s=i<nP/2?-1:1;
+        window._FRP.pts.push({side:s,ang:rnd(0,Math.PI*2),rad:rnd(15,Math.min(W,H)*0.22),spd:rnd(0.003,0.007)*s,r:rnd(1.5,3.8),chaos:0,ph2:rnd(0,Math.PI*2)});
+      }
+    }
+    var frp=window._FRP.pts;
+    for(var i=0;i<frp.length;i++){
+      var p=frp[i];
+      p.chaos=lerp(p.chaos,separateP,0.01);
+      p.ang+=p.spd*simSpd*(1+p.chaos*Math.sin(t*0.003+p.ph2)*0.5);
+      var pcx=p.side===-1?LX:RX;
+      var x=pcx+Math.cos(p.ang)*p.rad+Math.sin(t*0.002+p.ph2)*p.chaos*15;
+      var y=cy+Math.sin(p.ang)*p.rad*0.72;
+      /* Color: warm gold → grey */
+      var rr2=lerp(220,120,p.chaos*p.chaos);
+      var gg2=lerp(180,110,p.chaos);
+      var bb2=lerp(80,100,p.chaos);
+      dp(x,y,p.r,rr2,gg2,bb2,0.75*(1-p.chaos*0.3));
+    }
+    /* Conflict sparks */
+    if(ph===1&&separateP>0.1&&separateP<0.9){
+      var nSp=Math.round(20*PS);
+      for(var i=0;i<nSp;i++){
+        var sa=i/nSp*Math.PI*2+t*0.008;
+        var sr=50*separateP;
+        dp(cx+Math.cos(sa)*sr,cy+Math.sin(sa)*sr*0.7,2,255,80,30,0.65*(1-separateP));
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   14. FOREST FIRE — beauty of destruction
+─────────────────────────────────────────────────────── */
+SIMS.fire={
+  label:'Nature',color:'#ff8800',
+  title:'Forest Fire',
+  phases:[
+    {icon:'🌲',t:'Forest',d:'Life in density'},
+    {icon:'🔥',t:'Fire Front',d:'Exponential spread'},
+    {icon:'🌱',t:'Regeneration',d:'Life returns'}
+  ],
+  narr:[
+    ['Forest · A Carbon Store','Dense boreal forest: 50 billion trees, 500 gigatons of carbon stored in wood and soil. The canopy intercepts light, cycles water, anchors the climate of a continent. This ecosystem required 10,000 years to assemble after the last ice age.'],
+    ['The Fire Front · Exponential Physics','One ignition point. Temperature rises exponentially — at 600°C, volatile compounds vapourise and ignite neighbouring trees. The fire front moves at 8 kilometres per hour. 100,000 hectares can burn before a firefighter reaches the perimeter.'],
+    ['Regeneration · The Paradox','Fire releases nitrogen, phosphorus, potassium — fertilisers. Serotinous pine cones only open in heat — some species literally require fire to reproduce. In the burned landscape, pioneer plants colonise. The forest will regenerate — in 150 years.']
+  ],
+  fn:function(W,H,t,ph){
+    var bgR=ph===0?2:ph===1?8:4;
+    ctx.fillStyle='rgba('+bgR+',4,1,1)';ctx.fillRect(0,0,W,H);
+    var gY=H*0.7;
+    /* Sky */
+    var skyG=ctx.createLinearGradient(0,0,0,gY);
+    skyG.addColorStop(0,ph===0?'rgba(20,35,80,0.9)':ph===1?'rgba(40,15,5,0.95)':'rgba(30,25,50,0.9)');
+    skyG.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=skyG;ctx.fillRect(0,0,W,gY);
+    /* Ground */
+    ctx.fillStyle=ph===1?'rgba(40,15,2,1)':ph===2?'rgba(20,20,12,1)':'rgba(25,40,15,1)';
+    ctx.fillRect(0,gY,W,H-gY);
+
+    /* TREES */
+    var nT=Math.round(25*PS*DEN);
+    for(var i=0;i<nT;i++){
+      var tx=W*(0.02+i*0.038);
+      var th=H*(0.12+Math.sin(i*2.1)*0.06);
+      var ty=gY;
+      var burned=ph===1&&tx<W*(0.2+((t*0.0001)%0.6));
+      var dead=ph===2;
+      var tr=burned?180:dead?80:30,tg2=burned?50:dead?50:120,tb=burned?5:dead?20:30;
+      /* Trunk */
+      ctx.strokeStyle='rgba('+(burned?60:40)+','+(burned?20:25)+',15,0.9)';
+      ctx.lineWidth=4;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx,ty-th*0.6);ctx.stroke();
+      /* Canopy */
+      if(!dead){
+        var cg2=ctx.createRadialGradient(tx,ty-th,0,tx,ty-th,th*0.42);
+        cg2.addColorStop(0,'rgba('+tr+','+tg2+','+tb+',0.88)');
+        cg2.addColorStop(1,'rgba('+(tr-20)+','+(tg2-20)+','+tb+',0)');
+        ctx.fillStyle=cg2;ctx.beginPath();ctx.arc(tx,ty-th,th*0.42,0,Math.PI*2);ctx.fill();
+      }
+    }
+
+    /* FIRE PARTICLES */
+    if(ph>=1){
+      var nF=Math.round(200*PS*DEN);
+      if(!window._FFP||window._FFP.n!==nF){
+        window._FFP={n:nF,pts:[]};
+        for(var i=0;i<nF;i++){
+          window._FFP.pts.push({
+            x:rnd(0,W*0.5),y:rnd(gY*0.8,gY),
+            vx:rnd(-0.3,0.8),vy:rnd(-1.5,-0.4),
+            life:rnd(0,1),r:rnd(2,6),
+            col:Math.floor(Math.random()*3)/* 0=red,1=orange,2=yellow */
+          });
+        }
+      }
+      for(var i=0;i<window._FFP.length;i++){
+        var fp=window._FFP[i];
+        fp.life+=0.005*simSpd;fp.x+=fp.vx;fp.y+=fp.vy;
+        if(fp.life>1){fp.life=0;fp.x=rnd(0,W*0.55);fp.y=gY;}
+        var fl=1-fp.life;
+        var fr2=fp.col===0?255:fp.col===1?255:255;
+        var fg=fp.col===0?30:fp.col===1?130:220;
+        var fb=fp.col===0?0:fp.col===1?0:0;
+        dp(fp.x,fp.y,fp.r*fl,fr2,fg,fb,fl*0.88);
+      }
+      /* Ember glow */
+      fz(W*0.25,gY,H*0.35,255,80,0,0.6);
+    }
+
+    /* REGENERATION shoots */
+    if(ph===2){
+      for(var s=0;s<30;s++){
+        var sx=rnd(0,W),sy=gY-rnd(5,25);
+        ctx.strokeStyle='rgba(80,180,60,0.6)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(sx,gY);ctx.lineTo(sx+Math.sin(s)*5,sy);ctx.stroke();
+        dp(sx+Math.sin(s)*5,sy-4,3,80,200,60,0.7);
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   15. TSUNAMI — physics of disaster
+─────────────────────────────────────────────────────── */
+SIMS.tsunami={
+  label:'Disaster',color:'#3388cc',
+  title:'Tsunami — Ocean in Motion',
+  phases:[
+    {icon:'🌊',t:'Seabed Uplift',d:'Earthquake triggers'},
+    {icon:'🌊🌊',t:'Wave Propagation',d:'800km/h across ocean'},
+    {icon:'💥',t:'Landfall',d:'Energy concentrates'}
+  ],
+  narr:[
+    ['Seabed Uplift · The Trigger','A subduction zone earthquake — magnitude 9.0 — displaces 1,000 km of seafloor by 15 metres vertically. The overlying water column, 4 kilometres deep, begins to move. The energy released equals 10,000 nuclear weapons.'],
+    ['Ocean Crossing · Invisible Speed','In deep water, the tsunami is barely visible — 30cm wave height, 200km wavelength, travelling at the speed of a jet aircraft. Aircraft passengers flying over the Pacific have seen tsunamis below them. The danger is invisible until it reaches the coast.'],
+    ['Landfall · Energy Concentrates','As water shallows, the wave slows. Energy concentrates. Height increases 100-fold. A 30cm ocean wave becomes a 30-metre wall of water carrying the kinetic energy of a moving mountain range. The seafloor geometry focuses the energy into coastal valleys.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#010810';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H*0.45;
+
+    /* OCEAN BODY */
+    var og2=ctx.createLinearGradient(0,H*0.15,0,H);
+    og2.addColorStop(0,'rgba(20,60,140,0.85)');
+    og2.addColorStop(0.5,'rgba(10,35,90,0.9)');
+    og2.addColorStop(1,'rgba(5,15,45,1)');
+    ctx.fillStyle=og2;ctx.fillRect(0,H*0.15,W,H-H*0.15);
+
+    /* WAVE PARTICLES */
+    var nW=Math.round(200*PS*DEN);
+    if(!window._TWP||window._TWP.n!==nW||window._TWP.ph!==ph){
+      window._TWP={n:nW,ph:ph,pts:[]};
+      for(var i=0;i<nW;i++){
+        window._TWP.pts.push({
+          x:rnd(0,W),y:rnd(H*0.2,H*0.85),
+          phase2:rnd(0,Math.PI*2),speed:rnd(0.003,0.012),layer:rnd(0,1)
+        });
+      }
+    }
+    var twp=window._TWP.pts;
+    var waveX=ph===0?W*0.5:ph===1?((t*0.0002)%1)*W:W*0.85;
+    for(var i=0;i<twp.length;i++){
+      var p=twp[i];
+      var wDist=Math.abs(p.x-waveX);
+      var wEffect=Math.exp(-wDist*wDist/(ph===1?8000:15000));
+      var wHeight=wEffect*(ph===0?20:ph===1?35:80);
+      var wy=p.y-wHeight;
+      var depth=(p.y-H*0.2)/(H*0.65);
+      var rr2=lerp(60,20,depth),gg2=lerp(140,50,depth),bb2=lerp(255,120,depth);
+      dp(p.x,wy,1.8+wEffect*3,rr2,gg2,bb2,0.5+wEffect*0.4);
+    }
+    /* Wave crest foam */
+    if(ph>=1){
+      var nFoam=Math.round(40*PS*DEN);
+      for(var f=0;f<nFoam;f++){
+        var fx=waveX+Math.sin(f*1.3+t*0.01)*(ph===2?30:80);
+        var fy=H*(0.2+f*0.012)-(ph===2?50:20)-Math.sin(f+t*0.005)*10;
+        dp(fx,fy,ph===2?4:2.5,220,235,255,0.7);
+      }
+      if(LOD>=1)glow(waveX,H*0.35,60,100,180,255,0.5);
+    }
+    /* Seabed */
+    ctx.fillStyle='rgba(60,45,30,0.85)';
+    var nbL=W/15;for(var b=0;b<nbL;b++){var bx=b*15,bh=25+Math.sin(b*0.8)*15;ctx.fillRect(bx,H-bh,14,bh);}
+    /* Uplift effect */
+    if(ph===0){
+      var upR=Math.sin(t*0.003)*15;
+      for(var u=0;u<20;u++){
+        var ux=cx-150+u*15,uy=H-40+upR;
+        dp(ux,uy,4,180,150,100,0.65);
+      }
+      if(LOD>=1)glow(cx,H-40,80,200,160,80,0.35);
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   16. RUMOUR / SOCIAL SPREAD — SIR with WOW
+─────────────────────────────────────────────────────── */
+SIMS.rumour={
+  label:'Social Dynamics',color:'#ffdd55',
+  title:'How Information Spreads',
+  phases:[
+    {icon:'💬',t:'Seed Event',d:'One person knows'},
+    {icon:'📱',t:'Viral Cascade',d:'Network saturation'},
+    {icon:'🔇',t:'Stifler Effect',d:'Truth corrects'}
+  ],
+  narr:[
+    ['Seed · Patient Zero of Information','One person knows a piece of information. In a connected network of 8 billion nodes, this person has on average 1,000 direct connections, 1 million second-degree connections, and 3 billion within three hops. The conditions for pandemic spread are always present.'],
+    ['Viral · The Mathematics of Contagion','Each infected node reaches susceptible neighbours with transmission probability β. When R₀ exceeds 1.0, the cascade is exponential. Social networks have hub nodes — influencers — where R₀ can reach 100,000. One tweet, one billion minds.'],
+    ['Recovery · The Counter-Signal','Information entropy increases: as a story spreads, details degrade, context strips away, nuance evaporates. Simultaneously, counter-information spreads through the stifler mechanism. Not because truth wins — but because people grow bored. Attention is the limiting resource.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='rgba(2,4,14,0.65)';ctx.fillRect(0,0,W,H);
+    if(!window._RMP||window._RMP.W!==W||window._RMP.ph!==ph){
+      window._RMP={W:W,ph:ph,pts:[]};
+      var n=Math.round(320*PS*DEN);
+      for(var i=0;i<n;i++)window._RMP.pts.push({x:rnd(10,W-10),y:rnd(10,H-10),vx:rnd(-0.4,0.4),vy:rnd(-0.4,0.4),state:i<6?1:0,pulse:rnd(0,Math.PI*2)});
+    }
+    var rmp=window._RMP.pts;
+    var beta=ph===0?0.004:ph===1?0.012:0.006;
+    var stifle=ph===2?0.004:0.0008;
+    var S=0,I=0,R=0;
+    for(var i=0;i<rmp.length;i++){
+      var p=rmp[i];p.x+=p.vx;p.y+=p.vy;
+      if(p.x<5||p.x>W-5)p.vx*=-1;if(p.y<5||p.y>H-5)p.vy*=-1;
+      if(p.state===1&&Math.random()<stifle)p.state=2;
+      if(p.state===1){
+        for(var j=0;j<rmp.length;j++){
+          if(rmp[j].state===0){var dx=rmp[j].x-p.x,dy=rmp[j].y-p.y;if(dx*dx+dy*dy<600&&Math.random()<beta)rmp[j].state=1;}
+        }
+      }
+      var rr2=p.state===0?60:p.state===1?240:200;
+      var gg2=p.state===0?120:p.state===1?200:60;
+      var bb2=p.state===0?240:p.state===1?40:60;
+      var sz=(p.state===1?5:3.5)+(p.state===1?Math.sin(t*0.005+p.pulse)*1:0);
+      if(LOD>=1&&p.state===1){glow(p.x,p.y,sz*4.5,rr2,gg2,bb2,0.28);}
+      dp(p.x,p.y,sz,rr2,gg2,bb2,0.88);
+      if(p.state===0)S++;else if(p.state===1)I++;else R++;
+    }
+    ctx.fillStyle='rgba(38,232,176,0.4)';ctx.font='10px monospace';
+    ctx.fillText('S:'+S+' · I:'+I+' · R:'+R,12,H-118);
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   17. ANGER — emotional particle explosion
+─────────────────────────────────────────────────────── */
+SIMS.anger={
+  label:'Emotion',color:'#ff3300',
+  title:'The Physics of Anger',
+  phases:[
+    {icon:'😤',t:'Frustration',d:'Pressure builds'},
+    {icon:'😡',t:'Rage Peak',d:'System destabilises'},
+    {icon:'😮‍💨',t:'Release',d:'Energy dissipates'}
+  ],
+  narr:[
+    ['Frustration · The Pressure','The amygdala fires before the prefrontal cortex can respond — 250ms before conscious awareness. Cortisol and adrenaline flood the bloodstream. Heart rate climbs. Muscle tension increases. The body is preparing for a threat that may exist only in the mind.'],
+    ['Rage · System Overload','At peak anger, the prefrontal cortex — the seat of reason and social regulation — is functionally offline. Decisions made in this state are made with 40% less grey matter available. This is the neurochemistry of why we say and do things we later cannot explain.'],
+    ['Release · Return to Baseline','The parasympathetic system gradually wins. Cortisol clears from the bloodstream in 20 minutes. But the neural pathways that fired have been reinforced — anger is self-reinforcing. The person who was calm before is slightly more likely to be angry next time.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle=ph===1?'#0c0100':'#050100';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H/2;
+    /* Core heat */
+    if(ph===0){fz(cx,cy,H*0.55,200,60,20,0.5);}
+    else if(ph===1){fz(cx,cy,H*0.7,255,30,0,0.7);fz(cx,cy,H*0.4,255,80,0,0.5);}
+    else{fz(cx,cy,H*0.55,180,80,20,0.35);}
+
+    var nP=Math.round(200*PS*DEN);
+    if(!window._ANG||window._ANG.n!==nP||window._ANG.ph!==ph){
+      window._ANG={n:nP,ph:ph,pts:[]};
+      for(var i=0;i<nP;i++){
+        var ang=rnd(0,Math.PI*2);
+        var spd=rnd(0.8,3)*(ph===1?2:1);
+        window._ANG.pts.push({
+          x:cx+Math.cos(ang)*rnd(10,20),y:cy+Math.sin(ang)*rnd(10,20),
+          vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,
+          r:rnd(2,5.5),life:rnd(0.2,1),decay:rnd(0.002,0.006),
+          col:Math.floor(Math.random()*3)
+        });
+      }
+    }
+    var ap=window._ANG.pts;
+    for(var i=0;i<ap.length;i++){
+      var p=ap[i];
+      var turbulence=ph===1?Math.sin(t*0.008+i)*0.5:0;
+      p.x+=p.vx*simSpd*(1+turbulence);p.y+=p.vy*simSpd*(1+turbulence);
+      p.vx*=ph===2?0.97:0.995;p.vy*=ph===2?0.97:0.995;
+      p.life-=p.decay*simSpd*(ph===1?1.5:1);
+      if(p.life<=0){
+        var na=rnd(0,Math.PI*2);var ns=rnd(0.5,2.5)*(ph===1?2:1);
+        p.x=cx;p.y=cy;p.vx=Math.cos(na)*ns;p.vy=Math.sin(na)*ns;p.life=1;
+      }
+      var rr2=p.col===0?255:p.col===1?255:220;
+      var gg2=p.col===0?20:p.col===1?100:40;
+      var bb2=p.col===0?0:p.col===1?0:0;
+      /* Cool off at ph2 */
+      if(ph===2){rr2=lerp(rr2,140,1-p.life);gg2=lerp(gg2,80,1-p.life);bb2=lerp(bb2,60,1-p.life);}
+      dp(p.x,p.y,p.r*p.life,rr2,gg2,bb2,p.life*0.88);
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   18. ANTIBIOTIC RESISTANCE — the silent crisis
+─────────────────────────────────────────────────────── */
+SIMS.amr={
+  label:'Medicine',color:'#88ff88',
+  title:'Antibiotic Resistance',
+  phases:[
+    {icon:'🦠',t:'Infection',d:'Colony established'},
+    {icon:'💊',t:'Treatment',d:'Antibiotic administered'},
+    {icon:'💀',t:'Resistance',d:'Survivors breed'}
+  ],
+  narr:[
+    ['Bacterial Colony · Life at Scale','A single bacterium, dividing every 20 minutes, produces one billion descendants in 10 hours. This population is not genetically identical — random mutation creates constant variation. Within this diversity, antibiotic resistance genes may already exist at low frequency.'],
+    ['Antibiotic Attack · The Filter','The antibiotic kills susceptible bacteria — 99.99% of the colony. This is not a cure. It is a filter. The 0.01% carrying resistance genes — through luck, not planning — survive. The drug has just killed their competition and given them exclusive access to the host.'],
+    ['Resistance · Evolution in Real Time','The survivors reproduce. Within 48 hours, the colony is re-established — composed entirely of resistant bacteria. The antibiotic is now useless. This is natural selection compressed into days. We are running out of antibiotics faster than we can develop new ones.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#010810';ctx.fillRect(0,0,W,H);
+    if(ph===0){fz(W/2,H/2,H*0.7,60,200,100,0.4);}
+    else if(ph===1){fz(W/2,H/2,H*0.6,200,80,200,0.5);}
+    else{fz(W/2,H*0.6,H*0.65,200,50,50,0.45);}
+
+    var nB=Math.round(22*PS*DEN);
+    var nA=Math.round(30*PS*DEN);
+    /* BACTERIA */
+    for(var i=0;i<nB;i++){
+      var bx=W*(0.08+0.84*(i%5)/4),by=H*(0.12+0.76*Math.floor(i/5)/3);
+      var alive=ph===0||(ph===1&&i%4!==0)||(ph===2&&i%8===0&&(i%4===0));/* resistant only */
+      var resistant=i%8===0;
+      if(!alive){/* death burst */
+        for(var d=0;d<6;d++){var da=d/6*Math.PI*2+t*0.003+i;dp(bx+Math.cos(da)*(16+Math.sin(t*0.004+d)*8),by+Math.sin(da)*(16+Math.sin(t*0.004+d)*8),2,80,200,80,0.3);}
+        continue;
+      }
+      ctx.save();ctx.translate(bx+Math.sin(t*0.002+i)*3.5,by);ctx.rotate(Math.sin(t*0.001+i)*0.3);
+      if(LOD>=1){
+        var bg3=ctx.createRadialGradient(0,0,0,0,0,28);
+        bg3.addColorStop(0,resistant&&ph>=1?'rgba(220,60,60,0.18)':'rgba(60,200,100,0.18)');bg3.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=bg3;ctx.beginPath();ctx.ellipse(0,0,34,17,0,0,Math.PI*2);ctx.fill();
+      }
+      ctx.fillStyle=resistant&&ph>=1?'rgba(230,70,70,0.9)':'rgba(55,210,110,0.9)';
+      ctx.beginPath();ctx.ellipse(0,0,22,11,0,0,Math.PI*2);ctx.fill();
+      if(LOD>=2){ctx.fillStyle='rgba(255,255,255,0.3)';ctx.beginPath();ctx.ellipse(-5,-4,7,3.5,0,0,Math.PI*2);ctx.fill();}
+      ctx.restore();
+    }
+    /* ANTIBIOTIC PARTICLES */
+    if(ph>=1){
+      for(var a=0;a<nA;a++){
+        dp(W*(Math.sin(a*2.3+t*0.0012)*0.44+0.5),H*(Math.cos(a*1.7+t*0.0009)*0.4+0.5),3.5,200,80,200,0.7);
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   19. GRIEF — the weight of loss
+─────────────────────────────────────────────────────── */
+SIMS.grief={
+  label:'Emotion',color:'#8899bb',
+  title:'The Neuroscience of Grief',
+  phases:[
+    {icon:'💔',t:'Loss',d:'The void appears'},
+    {icon:'🌊',t:'The Waves',d:'Grief arrives in surges'},
+    {icon:'🌱',t:'Integration',d:'A new pattern forms'}
+  ],
+  narr:[
+    ['Loss · The Void','The brain has built a predictive model of the world that includes the lost person — their voice, their patterns, their presence in future plans. Grief is the collision between this model and reality. Every moment where the prediction fails — silence where there should be a voice — reactivates the loss.'],
+    ['The Waves · Non-Linear Pain','Grief is not linear. It arrives as waves — triggered by music, by light, by ordinary objects suddenly freighted with unbearable meaning. The amygdala, which processes emotional salience, fires at stimuli that were once associated with the loved one. The brain cannot simply delete these connections.'],
+    ['Integration · Not Over, But Different','With time, the brain doesn\'t forget — it integrates. The neural model of the lost person becomes a memory rather than a prediction. The pain doesn\'t end; it changes character. Psychologists call this "continuing bonds" — a living relationship with someone who is gone.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#02050e';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H*0.45;
+
+    /* VOID — dark center */
+    if(ph===0){
+      fz(cx,cy,H*0.6,30,50,120,0.35);
+      /* Dense particle field with void in center */
+      var voidR=H*0.15;
+      fz(cx,cy,voidR,0,0,0,1.0);/* dark center */
+    } else if(ph===1){
+      fz(cx,cy,H*0.65,40,60,130,0.3);
+    } else {
+      fz(cx,cy,H*0.6,60,80,140,0.32);
+      fz(cx,cy,H*0.25,100,120,180,0.2);
+    }
+
+    var nP=Math.round(200*PS*DEN);
+    if(!window._GRP||window._GRP.n!==nP){
+      window._GRP={n:nP,pts:[]};
+      for(var i=0;i<nP;i++){
+        var ang=rnd(0,Math.PI*2),rad=rnd(30,Math.min(W,H)*0.45);
+        window._GRP.pts.push({
+          ang:ang,rad:rad,spd:rnd(0.0005,0.0025),
+          r:rnd(1.2,3.8),pulse:rnd(0,Math.PI*2),
+          waveOffset:rnd(0,Math.PI*2)
+        });
+      }
+    }
+    var grp=window._GRP.pts;
+    for(var i=0;i<grp.length;i++){
+      var p=grp[i];
+      p.ang+=p.spd*simSpd*(ph===1?0.4:1);
+      var waveR=ph===1?p.rad*(0.8+Math.sin(t*0.002+p.waveOffset)*0.4):p.rad;
+      var voidEffect=ph===0?Math.max(0,1-p.rad/(H*0.15)):0;
+      var x=cx+Math.cos(p.ang)*waveR*(1-voidEffect*0.9);
+      var y=cy+Math.sin(p.ang)*waveR*0.72*(1-voidEffect*0.9);
+      /* Color: blue-grey grief, slowly brightening at ph2 */
+      var rr2=ph===2?lerp(80,120,p.rad/Math.min(W,H)*2):80;
+      var gg2=ph===2?lerp(90,130,p.rad/Math.min(W,H)*2):90;
+      var bb2=ph===2?lerp(160,200,p.rad/Math.min(W,H)*2):160;
+      var alpha=0.55+Math.sin(t*0.002+p.pulse)*0.12;
+      if(ph===0&&p.rad<H*0.18)alpha*=0.3;/* dim near void */
+      dp(x,y,p.r,rr2,gg2,bb2,alpha);
+    }
+    /* New growth pattern at ph2 */
+    if(ph===2){
+      var nG=Math.round(40*PS);
+      for(var g=0;g<nG;g++){
+        var ga=g/nG*Math.PI*2+t*0.001;
+        var gr2=H*0.12*(0.5+0.5*Math.sin(t*0.0015+g));
+        dp(cx+Math.cos(ga)*gr2,cy+Math.sin(ga)*gr2*0.7,2.5,140,160,220,0.55);
+      }
+    }
+  }
+};
+
+/* ───────────────────────────────────────────────────────
+   20. UNIVERSE BIRTH — Big Bang
+─────────────────────────────────────────────────────── */
+SIMS.bigbang={
+  label:'Cosmology',color:'#ffeecc',
+  title:'The Big Bang',
+  phases:[
+    {icon:'⚡',t:'Singularity',d:'All energy, one point'},
+    {icon:'💥',t:'Inflation',d:'Space expands'},
+    {icon:'🌌',t:'First Light',d:'Matter forms'}
+  ],
+  narr:[
+    ['Singularity · T=0','Thirteen point eight billion years ago, all the matter, energy, space, and time that would become everything you have ever seen or will ever see was contained in a volume smaller than a proton, at a temperature of 10³² Kelvin. Then: it expanded.'],
+    ['Inflation · The First Second','In 10⁻³² seconds, the universe expanded by a factor of 10²⁶. Space itself stretched — not matter moving through space, but space expanding. The tiny quantum fluctuations of the singularity were stretched to cosmic scale, seeding the large-scale structure of the universe.'],
+    ['Recombination · First Light','380,000 years after the Big Bang, the universe cooled enough for electrons to bind to protons. The universe became transparent for the first time. Light escaped. That light is still travelling — we observe it today as the Cosmic Microwave Background: the afterglow of creation.']
+  ],
+  fn:function(W,H,t,ph){
+    ctx.fillStyle='#000000';ctx.fillRect(0,0,W,H);
+    var cx=W/2,cy=H/2;
+    var expansionR=ph===0?5:ph===1?Math.min(W,H)*(0.1+clamp(t*0.0003,0,0.5)):Math.min(W,H)*0.65;
+
+    /* BLACK BACKGROUND */
+    /* EXPANSION RING */
+    if(ph>=1){
+      ctx.strokeStyle='rgba(255,200,100,0.35)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(cx,cy,expansionR,0,Math.PI*2);ctx.stroke();
+      glow(cx,cy,expansionR,255,200,80,0.15);
+    }
+
+    /* EXPLOSION PARTICLES */
+    var nBB=Math.round(250*PS*DEN);
+    if(!window._BBP||window._BBP.n!==nBB||window._BBP.ph!==ph){
+      window._BBP={n:nBB,ph:ph,pts:[]};
+      for(var i=0;i<nBB;i++){
+        var ang=rnd(0,Math.PI*2),spd=rnd(0.002,0.006);
+        window._BBP.pts.push({ang:ang,dist:ph===0?rnd(0,5):rnd(0,expansionR*0.9),spd:spd,r:rnd(0.8,3.5),type:Math.floor(Math.random()*4),twinkle:rnd(0,Math.PI*2)});
+      }
+    }
+    var bbp=window._BBP.pts;
+    for(var i=0;i<bbp.length;i++){
+      var p=bbp[i];
+      p.dist+=p.spd*simSpd*(ph===0?0:ph===1?3:1);
+      p.dist=Math.min(p.dist,expansionR*1.1);
+      var px=cx+Math.cos(p.ang)*p.dist;
+      var py=cy+Math.sin(p.ang)*p.dist;
+      var normalDist=p.dist/Math.max(expansionR,1);
+      /* Color by type and distance from center */
+      var rr2,gg2,bb2;
+      if(p.type===0){rr2=255;gg2=200+normalDist*55;bb2=150;} /* hydrogen: warm */
+      else if(p.type===1){rr2=200;gg2=220;bb2=255;} /* helium: blue-white */
+      else if(p.type===2){rr2=255;gg2=255;bb2=200;} /* photon: yellow-white */
+      else{rr2=150;gg2=100;bb2=255;} /* plasma: purple */
+      var twinkleA=0.5+Math.sin(t*0.005+p.twinkle)*0.3;
+      if(ph===0){rr2=255;gg2=255;bb2=255;twinkleA=0.9;} /* singularity: pure white */
+      dp(px,py,p.r,rr2,gg2,bb2,twinkleA*(1-normalDist*0.5));
+    }
+
+    /* SINGULARITY */
+    if(ph===0){
+      fz(cx,cy,40,255,255,255,0.9);
+      fz(cx,cy,20,255,255,255,1.0);
+      ctx.fillStyle='rgba(255,255,255,0.95)';ctx.beginPath();ctx.arc(cx,cy,6,0,Math.PI*2);ctx.fill();
+    }
+    /* CMB ripple at ph2 */
+    if(ph===2){
+      for(var r2=0;r2<5;r2++){
+        var rr3=expansionR*(0.4+r2*0.12)+Math.sin(t*0.001+r2)*5;
+        ctx.strokeStyle='rgba(255,180,100,'+(0.06+r2*0.02)+')';ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(cx,cy,rr3,0,Math.PI*2);ctx.stroke();
+      }
+    }
+  }
+};
+
+/* ═══════════════════════════════════════════════════════
+   DOMAIN REGISTRY — ordered for UX impact
+═══════════════════════════════════════════════════════ */
+var DOMAIN_ORDER=['lungs','heart','dna','cosmos','brain','immune','climate','ocean','market','bigbang','heartbreak','love','grief','anger','war','friendship','fire','tsunami','amr','rumour'];
+
+/* ══ BUILD DOMAIN STRIP ══ */
+function buildStrip(){
+  var strip=document.getElementById('dstrip');
+  DOMAIN_ORDER.forEach(function(key){
+    var sim=SIMS[key];if(!sim)return;
+    var el=document.createElement('div');
+    el.className='dp';el.textContent=sim.label;
+    el.dataset.key=key;
+    el.onclick=function(){switchSim(key,el);};
+    strip.appendChild(el);
+  });
+  /* Activate first */
+  var first=strip.querySelector('.dp');
+  if(first){first.classList.add('on');first.style.background=SIMS.lungs.color;first.style.color='#02040e';}
+}
+
+/* ══ SWITCH SIM ══ */
+var curDomIdx=0;
+function switchSim(key,pill){
+  if(!SIMS[key])return;
+  simKey=key;simPh=0;simT=0;customFn=null;
+  /* State resets */
+  window._LP=null;window._HP=null;window._WP=null;window._NP=null;window._RMP=null;
+  window._GRP=null;window._BBP=null;window._FFP=null;window._TWP=null;window._ANG=null;
+  window._HBP=null;window._LVP=null;window._FRP=null;window._OCP=null;window._SP2=null;window._MKT=null;
+  curDomIdx=DOMAIN_ORDER.indexOf(key);
+  /* Update pills */
+  document.querySelectorAll('.dp').forEach(function(p){
+    p.classList.remove('on');p.style.background='rgba(2,4,14,0.7)';p.style.color='var(--dim)';
+  });
+  if(pill){
+    pill.classList.add('on');
+    pill.style.background=SIMS[key].color;
+    pill.style.color='#02040e';
+  }
+  updateNarr();buildCE();
+}
+
+/* ══ PHASE ══ */
+function setPhase(ph){
+  simPh=ph;simT=0;
+  updateNarr();
+  document.querySelectorAll('.ceb').forEach(function(b,i){b.classList.toggle('on',i===ph);});
+}
+
+/* ══ NARRATION ══ */
+function updateNarr(){
+  var sim=SIMS[simKey];if(!sim)return;
+  var ph=sim.narr[simPh]||sim.narr[0];
+  document.getElementById('narr-title').textContent=ph[0];
+  var nb=document.getElementById('narr-body');
+  nb.style.opacity='0';
+  setTimeout(function(){nb.textContent=ph[1];nb.style.opacity='1';},280);
+}
+
+/* ══ CE PANEL ══ */
+function buildCE(){
+  var sim=SIMS[simKey];if(!sim)return;
+  var c=document.getElementById('cebtns');c.innerHTML='';
+  sim.phases.forEach(function(ph,i){
+    var b=document.createElement('div');
+    b.className='ceb'+(i===simPh?' on':'');
+    b.innerHTML='<div class="ceb-i">'+ph.icon+'</div><div class="ceb-t">'+ph.t+'</div><div class="ceb-d">'+ph.d+'</div>';
+    b.onclick=function(){setPhase(i);};
+    c.appendChild(b);
+  });
+}
+
+/* ══ MAIN LOOP ══ */
+function mainLoop(){
+  RAF=requestAnimationFrame(mainLoop);
+  simT+=simSpd*16;
+  var fn=customFn||(SIMS[simKey]&&SIMS[simKey].fn)||SIMS.lungs.fn;
+  fn(C.width,C.height,simT,simPh);
+}
+
+/* ══ BOOT ══ */
+function boot(){
+  LOD=0;
+  SIMS.lungs.fn(C.width,C.height,0,0);
+  document.getElementById('lov').classList.add('gone');
+  mainLoop();
+  setTimeout(function(){LOD=1;},300);
+  setTimeout(function(){LOD=2;},900);
+  updateNarr();buildCE();
+}
+
+/* ══ CONTROLS ══ */
+document.getElementById('speedR').oninput=function(){simSpd=parseFloat(this.value);};
+document.getElementById('densR').oninput=function(){DEN=parseFloat(this.value);/* reset particle arrays */window._LP=null;window._HP=null;window._RMP=null;window._OCP=null;};
+
+/* ══ QUESTION INPUT ══ */
+document.getElementById('qin').addEventListener('keydown',function(e){if(e.key==='Enter')ask();});
+
+/* ══ QUESTION CHIPS ══ */
+var QCS=['How does smoke damage lungs?','How does the heart pump?','Show me DNA transcription','The Big Bang','How does anger feel?','How does grief feel?','Show me love','Friends breaking apart','War and destruction','Show me heartbreak','How does cancer spread?','Forest fire spreading','Ocean ecosystems','Brain forming a thought','Market crash cascade'];
+function buildChips(){
+  var c=document.getElementById('qcs');
+  QCS.forEach(function(q){
+    var ch=document.createElement('span');ch.className='qc';ch.textContent=q;
+    ch.onclick=function(){document.getElementById('qin').value=q;ask();};
+    c.appendChild(ch);
+  });
+}
+
+/* ══ SMART QUESTION ROUTER ══ */
+var QMAP=[
+  {re:/lung|smoke|breath|pulmon|airway|asthma|copd/,key:'lungs'},
+  {re:/heart|cardiac|blood pump|circulat|arrhythmia/,key:'heart'},
+  {re:/dna|gene|helix|genome|transcri|replica/,key:'dna'},
+  {re:/galaxy|cosmos|star form|nebula|universe.*form/,key:'cosmos'},
+  {re:/brain|neuron|thought|action potential|synap/,key:'brain'},
+  {re:/cancer|t.cell|immune.*fight|immunolog|tumor/,key:'immune'},
+  {re:/climate|co2|greenhouse|global warm|carbon/,key:'climate'},
+  {re:/ocean|marine|reef|coral|sea.*(life|system)|biolumi/,key:'ocean'},
+  {re:/market|crash|stock|cascade.*financ|circuit break/,key:'market'},
+  {re:/big bang|singularity|universe birth|cosmic/,key:'bigbang'},
+  {re:/heartbreak|breakup|relationship end|end.*love/,key:'heartbreak'},
+  {re:/love|romance|two.*souls|togeth.*love/,key:'love'},
+  {re:/grief|loss|mourning|sadness.*death|bereavement/,key:'grief'},
+  {re:/anger|rage|fury|frustrat/,key:'anger'},
+  {re:/war|conflict|destruct|battle/,key:'war'},
+  {re:/friend.*break|break.*friend|falling out|social bond/,key:'friendship'},
+  {re:/fire|forest.*burn|wildfire/,key:'fire'},
+  {re:/tsunami|wave.*disaster|earthquake.*ocean/,key:'tsunami'},
+  {re:/antibiot|resist|bacteria.*drug|amr|penicillin/,key:'amr'},
+  {re:/rumour|rumor|misinform|viral.*spread|gossip/,key:'rumour'}
+];
+function smartRoute(q){
+  var l=q.toLowerCase();
+  for(var i=0;i<QMAP.length;i++)if(QMAP[i].re.test(l))return QMAP[i].key;
+  return DOMAIN_ORDER[Math.floor(Math.random()*DOMAIN_ORDER.length)];
+}
+
+/* ══ ASK ══ */
+async function ask(){
+  var q=(document.getElementById('qin').value||'').trim();if(!q)return;
+  var btn=document.getElementById('qbtn');btn.classList.add('busy');btn.textContent='…';
+  document.getElementById('tkov').classList.add('on');
+  document.getElementById('tkt').textContent='Mapping: "'+q.slice(0,40)+'"';
+  /* Instant route */
+  var key=smartRoute(q);
+  var pill=document.querySelector('.dp[data-key="'+key+'"]');
+  switchSim(key,pill);
+  /* Try API for narration enrichment */
+  try{
+    var res=await fetch(API+'/v1/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,mode:'fast'})});
+    var data=await res.json();
+    if(data&&data.narration&&data.narration.length){
+      var narrs=data.narration.map(function(n){return n.text||n;});
+      var sim=SIMS[simKey];
+      if(sim){
+        var phases=['Phase 1 · '+sim.phases[0].t,'Phase 2 · '+sim.phases[1].t,'Phase 3 · '+sim.phases[2].t];
+        sim.narr=narrs.map(function(n,i){return[phases[i]||'Phase '+(i+1),n];});
+        updateNarr();
+      }
+    }
+  }catch(e){}
+  document.getElementById('tkov').classList.remove('on');
+  btn.classList.remove('busy');btn.textContent='Simulate ⚡';
+}
+
+/* ══ GESTURE: TOUCH SWIPE / MOUSE DRAG ══ */
+var tY=0,tX=0,swipedOnce=false;
+C.addEventListener('touchstart',function(e){tY=e.touches[0].clientY;tX=e.touches[0].clientX;},{passive:true});
+C.addEventListener('touchend',function(e){
+  var dy=tY-e.changedTouches[0].clientY,dx=tX-e.changedTouches[0].clientX;
+  if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)){
+    if(!swipedOnce){swipedOnce=true;document.getElementById('sh').classList.add('hide');}
+    curDomIdx=(curDomIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
+    var nd=DOMAIN_ORDER[curDomIdx];
+    var mp=document.querySelector('.dp[data-key="'+nd+'"]');
+    switchSim(nd,mp);
+  } else if(Math.abs(dy)<12&&Math.abs(dx)<12)ripple(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+},{passive:true});
+C.addEventListener('click',function(e){ripple(e.clientX,e.clientY);});
+var mD=false,mY2=0;
+C.addEventListener('mousedown',function(e){mD=true;mY2=e.clientY;});
+C.addEventListener('mouseup',function(e){
+  if(!mD)return;mD=false;
+  var dy=mY2-e.clientY;
+  if(Math.abs(dy)>75){
+    curDomIdx=(curDomIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
+    var nd=DOMAIN_ORDER[curDomIdx];
+    var mp=document.querySelector('.dp[data-key="'+nd+'"]');
+    switchSim(nd,mp);
+  }
+});
+function ripple(x,y){var r=document.createElement('div');r.className='rpl';r.style.left=x+'px';r.style.top=y+'px';document.body.appendChild(r);setTimeout(function(){r.remove();},680);}
+
+/* ══ KEYBOARD ══ */
+document.addEventListener('keydown',function(e){
+  var nd,mp;
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='Tab'){
+    e.preventDefault();
+    curDomIdx=(curDomIdx+1)%DOMAIN_ORDER.length;nd=DOMAIN_ORDER[curDomIdx];mp=document.querySelector('.dp[data-key="'+nd+'"]');switchSim(nd,mp);
+  }
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp'){
+    e.preventDefault();
+    curDomIdx=(curDomIdx-1+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;nd=DOMAIN_ORDER[curDomIdx];mp=document.querySelector('.dp[data-key="'+nd+'"]');switchSim(nd,mp);
+  }
+  if(e.key==='1')setPhase(0);if(e.key==='2')setPhase(1);if(e.key==='3')setPhase(2);
+  if(e.key==='Enter'&&document.activeElement.id==='qin')ask();
+});
+
+/* ══ AUTO-CYCLE NARRATION ══ */
+setInterval(function(){
+  var sim=SIMS[simKey];if(!sim)return;
+  setPhase((simPh+1)%sim.narr.length);
+},6000);
+
+/* ══ INIT ══ */
+buildStrip();buildChips();
+boot();
+</script>
+</body>
+</html>

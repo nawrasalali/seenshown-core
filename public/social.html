@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SeenShown Social — Create, Share & Explore Simulations</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#02040e;--surface:#070d1a;--card:#0a1020;--g:#26e8b0;--p:#7C4FD4;
+  --gold:#f0c040;--red:#e05c5c;--blue:#4a9eff;--w:#e8f0fe;--dim:#6b7280;
+  --border:rgba(38,232,176,0.12);--border2:rgba(255,255,255,0.07)
+}
+html,body{min-height:100%;background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(2,4,14,0.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--border2)}
+.nav-logo{font-size:1.05rem;font-weight:800;color:var(--g);text-decoration:none;letter-spacing:-.02em}
+.nav-logo span{color:rgba(255,255,255,.55);font-weight:400;font-size:.82rem;margin-left:6px}
+.nav-links{display:flex;gap:2px;align-items:center}
+.nl{padding:5px 11px;border-radius:6px;font-size:.75rem;font-weight:500;color:var(--dim);cursor:pointer;transition:all .18s;text-decoration:none;border:none;background:transparent}
+.nl:hover{color:var(--w);background:rgba(255,255,255,.06)}
+.nl.on{color:var(--g);background:rgba(38,232,176,.08)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.nav-btn{font-size:.72rem;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer;border:none;transition:all .18s}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--g)}
+.btn-outline:hover{background:rgba(38,232,176,.08)}
+.btn-solid{background:var(--g);color:#02040e}
+.btn-solid:hover{opacity:.88}
+.nav-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--g));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;cursor:pointer;color:#fff;flex-shrink:0}
+
+/* LAYOUT */
+#app{padding-top:54px;min-height:100vh;display:flex;flex-direction:column}
+
+/* TABS */
+#tabs{display:flex;border-bottom:1px solid var(--border2);background:rgba(2,4,14,.96);position:sticky;top:54px;z-index:100;padding:0 20px;overflow-x:auto;scrollbar-width:none}
+#tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:14px 18px;font-size:.78rem;font-weight:600;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--w)}
+.tab.on{color:var(--g);border-color:var(--g)}
+.tab-ico{font-size:1rem}
+
+/* PANELS */
+.panel{display:none;flex:1}
+.panel.on{display:block}
+
+/* ═══════════════ DISCOVER FEED ═══════════════ */
+#discover{padding:24px 20px;max-width:1200px;margin:0 auto;width:100%}
+.discover-hero{text-align:center;padding:40px 20px 32px;margin-bottom:32px}
+.discover-hero h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.03em;margin-bottom:10px}
+.discover-hero h1 span{color:var(--g)}
+.discover-hero p{color:var(--dim);font-size:.92rem;max-width:520px;margin:0 auto 22px;line-height:1.65}
+.search-bar{display:flex;gap:8px;max-width:540px;margin:0 auto}
+.search-input{flex:1;background:rgba(255,255,255,.07);border:1.5px solid var(--border);border-radius:10px;padding:11px 16px;color:var(--w);font-size:.88rem;outline:none}
+.search-input:focus{border-color:var(--g)}
+.search-input::placeholder{color:var(--dim)}
+.search-btn{background:var(--g);color:#02040e;border:none;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer;font-size:.85rem}
+
+/* FILTER PILLS */
+.filter-row{display:flex;gap:6px;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.filter-row::-webkit-scrollbar{display:none}
+.fpill{flex-shrink:0;padding:5px 12px;border-radius:16px;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--border2);color:var(--dim);cursor:pointer;transition:all .18s}
+.fpill:hover{border-color:rgba(255,255,255,.2);color:var(--w)}
+.fpill.on{background:var(--g);color:#02040e;border-color:var(--g)}
+
+/* SIM GRID */
+.sim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:40px}
+.sim-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.sim-card:hover{border-color:rgba(38,232,176,.3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.sim-canvas-preview{width:100%;height:140px;background:#000;display:block;position:relative}
+.sim-preview-badge{position:absolute;top:8px;left:8px;font-size:.58rem;font-weight:700;padding:3px 8px;border-radius:8px;letter-spacing:.06em;text-transform:uppercase}
+.sim-preview-live{background:rgba(224,92,92,.2);border:1px solid rgba(224,92,92,.5);color:#ff7070}
+.sim-preview-trending{background:rgba(240,192,64,.15);border:1px solid rgba(240,192,64,.4);color:var(--gold)}
+.sim-preview-new{background:rgba(38,232,176,.12);border:1px solid rgba(38,232,176,.3);color:var(--g)}
+.sim-body{padding:14px}
+.sim-domain{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--g);margin-bottom:5px}
+.sim-title{font-size:.92rem;font-weight:700;margin-bottom:6px;line-height:1.3}
+.sim-desc{font-size:.76rem;color:var(--dim);line-height:1.5;margin-bottom:12px}
+.sim-meta{display:flex;align-items:center;justify-content:space-between}
+.sim-author{display:flex;align-items:center;gap:7px}
+.sim-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#fff;flex-shrink:0}
+.sim-author-name{font-size:.7rem;color:var(--dim)}
+.sim-stats{display:flex;gap:10px;align-items:center}
+.sim-stat{font-size:.68rem;color:var(--dim);display:flex;align-items:center;gap:3px;cursor:pointer;transition:color .15s}
+.sim-stat:hover{color:var(--w)}
+.sim-stat.liked{color:var(--red)}
+.sim-stat-ico{font-size:.8rem}
+.sim-actions{display:flex;gap:6px;padding:10px 14px;border-top:1px solid var(--border2)}
+.sim-action-btn{flex:1;padding:7px;border-radius:8px;font-size:.7rem;font-weight:600;cursor:pointer;border:none;transition:all .18s;text-align:center}
+.sab-like{background:rgba(224,92,92,.1);color:var(--red)}
+.sab-like:hover{background:rgba(224,92,92,.2)}
+.sab-fund{background:rgba(240,192,64,.1);color:var(--gold)}
+.sab-fund:hover{background:rgba(240,192,64,.2)}
+.sab-open{background:rgba(38,232,176,.1);color:var(--g)}
+.sab-open:hover{background:rgba(38,232,176,.2)}
+
+/* TRENDING SECTION */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:1rem;font-weight:700}
+.section-more{font-size:.74rem;color:var(--g);cursor:pointer}
+
+/* ═══════════════ SIM BUILDER ═══════════════ */
+#builder{padding:24px 20px;max-width:900px;margin:0 auto;width:100%}
+.builder-header{margin-bottom:28px}
+.builder-header h2{font-size:1.4rem;font-weight:800;margin-bottom:6px}
+.builder-header p{color:var(--dim);font-size:.88rem;line-height:1.6}
+.builder-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.builder-left,.builder-right{display:flex;flex-direction:column;gap:16px}
+.builder-preview{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden}
+.bp-canvas{width:100%;height:240px;background:#000;display:block}
+.bp-controls{padding:14px;display:flex;gap:8px;flex-wrap:wrap}
+.bpc-btn{padding:6px 12px;border-radius:8px;font-size:.72rem;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--dim);transition:all .18s}
+.bpc-btn:hover{border-color:var(--g);color:var(--g)}
+.bpc-btn.on{background:rgba(38,232,176,.1);border-color:var(--g);color:var(--g)}
+
+/* AI BUILDER CHAT */
+.ai-chat{background:var(--card);border:1px solid var(--border2);border-radius:14px;display:flex;flex-direction:column;height:420px}
+.ai-chat-header{padding:14px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px}
+.ai-chat-icon{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--g));display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.ai-chat-title{font-size:.82rem;font-weight:700}
+.ai-chat-sub{font-size:.65rem;color:var(--dim)}
+.ai-status{width:8px;height:8px;border-radius:50%;background:var(--g);margin-left:auto;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.ai-msg{max-width:88%;display:flex;flex-direction:column;gap:3px}
+.ai-msg.ai{align-self:flex-start}
+.ai-msg.user{align-self:flex-end}
+.ai-bubble{padding:10px 13px;border-radius:12px;font-size:.8rem;line-height:1.55}
+.ai-msg.ai .ai-bubble{background:rgba(38,232,176,.08);border:1px solid rgba(38,232,176,.18);color:var(--w)}
+.ai-msg.user .ai-bubble{background:rgba(74,158,255,.12);border:1px solid rgba(74,158,255,.22);color:var(--w)}
+.ai-msg-time{font-size:.6rem;color:var(--dim)}
+.ai-options{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.ai-option{padding:8px 12px;border-radius:8px;background:rgba(38,232,176,.06);border:1px solid rgba(38,232,176,.2);font-size:.76rem;color:var(--g);cursor:pointer;transition:all .18s;text-align:left}
+.ai-option:hover{background:rgba(38,232,176,.14);border-color:var(--g)}
+.ai-input-row{padding:12px 14px;border-top:1px solid var(--border2);display:flex;gap:8px}
+.ai-input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--w);font-size:.8rem;outline:none}
+.ai-input:focus{border-color:var(--g)}
+.ai-input::placeholder{color:var(--dim)}
+.ai-send{background:var(--g);color:#02040e;border:none;border-radius:8px;padding:9px 14px;font-size:.8rem;font-weight:700;cursor:pointer}
+
+/* BUILDER FORM */
+.bform{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:18px}
+.bform h3{font-size:.9rem;font-weight:700;margin-bottom:14px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:.7rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--w);font-size:.82rem;outline:none;font-family:inherit;transition:border-color .18s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--g)}
+.form-textarea{resize:vertical;min-height:72px}
+.form-select option{background:var(--card)}
+.tags-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tag{padding:3px 9px;border-radius:12px;font-size:.65rem;font-weight:600;border:1px solid var(--border2);color:var(--dim);cursor:pointer;transition:all .18s}
+.tag.on{background:rgba(38,232,176,.1);border-color:var(--g);color:var(--g)}
+.publish-btn{width:100%;padding:12px;border-radius:10px;background:var(--g);color:#02040e;border:none;font-size:.88rem;font-weight:800;cursor:pointer;margin-top:8px;transition:opacity .18s}
+.publish-btn:hover{opacity:.88}
+
+/* STEPS PROGRESS */
+.steps{display:flex;gap:0;margin-bottom:20px}
+.step{flex:1;text-align:center;position:relative}
+.step::after{content:'';position:absolute;top:14px;left:50%;right:-50%;height:2px;background:var(--border2)}
+.step:last-child::after{display:none}
+.step-dot{width:28px;height:28px;border-radius:50%;background:var(--surface);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin:0 auto 6px;position:relative;z-index:1}
+.step.done .step-dot{background:var(--g);border-color:var(--g);color:#02040e}
+.step.active .step-dot{border-color:var(--g);color:var(--g)}
+.step-label{font-size:.6rem;color:var(--dim)}
+.step.active .step-label{color:var(--g)}
+
+/* ═══════════════ LIVE CO-CREATION ═══════════════ */
+#live{padding:24px 20px;max-width:1100px;margin:0 auto;width:100%}
+.live-layout{display:grid;grid-template-columns:1fr 340px;gap:20px}
+.live-main{display:flex;flex-direction:column;gap:16px}
+.live-sidebar{display:flex;flex-direction:column;gap:14px}
+
+/* LIVE STAGE */
+.live-stage{background:var(--card);border:1px solid var(--border2);border-radius:16px;overflow:hidden;position:relative}
+.live-badge{position:absolute;top:12px;left:12px;z-index:2;background:rgba(224,92,92,.9);color:#fff;font-size:.62rem;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:.06em;display:flex;align-items:center;gap:5px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.live-canvas{width:100%;height:320px;background:#000;display:block}
+.live-controls{padding:12px 16px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border2)}
+.live-ctl{padding:6px 14px;border-radius:8px;font-size:.72rem;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--dim);transition:all .18s}
+.live-ctl:hover{border-color:var(--g);color:var(--g)}
+.live-ctl.active{background:rgba(224,92,92,.15);border-color:var(--red);color:var(--red)}
+.live-viewers{margin-left:auto;font-size:.7rem;color:var(--dim)}
+
+/* VOTE PANEL */
+.vote-panel{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:16px}
+.vote-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.vote-title{font-size:.85rem;font-weight:700}
+.vote-timer{font-size:.72rem;color:var(--gold);font-variant-numeric:tabular-nums}
+.vote-question{font-size:.82rem;color:var(--dim);margin-bottom:12px;line-height:1.5}
+.vote-options{display:flex;flex-direction:column;gap:7px}
+.vote-option{padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--border2);font-size:.78rem;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.vote-option:hover{border-color:rgba(38,232,176,.4)}
+.vote-option.voted{border-color:var(--g);background:rgba(38,232,176,.08)}
+.vote-bar{position:absolute;left:0;top:0;bottom:0;background:rgba(38,232,176,.08);transition:width .5s ease}
+.vote-pct{font-size:.68rem;color:var(--g);font-weight:700;position:relative;z-index:1}
+.vote-label{position:relative;z-index:1}
+.vote-submit{width:100%;margin-top:10px;padding:9px;border-radius:8px;background:var(--g);color:#02040e;border:none;font-weight:700;cursor:pointer;font-size:.8rem}
+
+/* CHAT */
+.chat-box{background:var(--card);border:1px solid var(--border2);border-radius:14px;display:flex;flex-direction:column;height:280px}
+.chat-header{padding:12px 14px;border-bottom:1px solid var(--border2);font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.chat-count{font-size:.68rem;color:var(--dim)}
+.chat-messages{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.chat-msg{font-size:.75rem;line-height:1.4}
+.chat-name{font-weight:700;color:var(--g);margin-right:5px}
+.chat-text{color:var(--dim)}
+.chat-input-row{padding:10px 12px;border-top:1px solid var(--border2);display:flex;gap:7px}
+.chat-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:7px;padding:8px 11px;color:var(--w);font-size:.76rem;outline:none}
+.chat-input:focus{border-color:var(--g)}
+.chat-send{background:var(--g);color:#02040e;border:none;border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:.75rem}
+
+/* FUND PANEL */
+.fund-panel{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:16px}
+.fund-title{font-size:.85rem;font-weight:700;margin-bottom:4px}
+.fund-sub{font-size:.72rem;color:var(--dim);margin-bottom:14px;line-height:1.5}
+.fund-total{font-size:1.6rem;font-weight:900;color:var(--gold);margin-bottom:4px}
+.fund-progress-bar{height:6px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.fund-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--g));border-radius:6px;transition:width .5s}
+.fund-goal{font-size:.68rem;color:var(--dim);margin-bottom:14px}
+.fund-amounts{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.fund-amt{flex:1;min-width:60px;padding:8px;border-radius:8px;text-align:center;border:1px solid var(--border2);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .18s;color:var(--dim)}
+.fund-amt:hover,.fund-amt.on{border-color:var(--gold);color:var(--gold);background:rgba(240,192,64,.08)}
+.fund-btn{width:100%;padding:10px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#e8940a);color:#02040e;border:none;font-weight:800;cursor:pointer;font-size:.82rem}
+
+/* CREATOR INFO */
+.creator-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:16px}
+.creator-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.creator-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0}
+.creator-name{font-size:.9rem;font-weight:700}
+.creator-bio{font-size:.72rem;color:var(--dim);margin-top:2px;line-height:1.4}
+.follow-btn{width:100%;padding:8px;border-radius:8px;border:1px solid var(--g);background:transparent;color:var(--g);font-weight:700;font-size:.78rem;cursor:pointer;transition:all .18s;margin-top:8px}
+.follow-btn:hover,.follow-btn.following{background:rgba(38,232,176,.1)}
+
+/* AI GUIDE PANEL */
+.ai-guide{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:16px}
+.ai-guide-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ai-guide-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--p),var(--g));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.ai-guide-step{font-size:.82rem;font-weight:700}
+.ai-guide-label{font-size:.65rem;color:var(--dim)}
+.ai-suggestion{background:rgba(38,232,176,.05);border:1px solid rgba(38,232,176,.15);border-radius:10px;padding:12px;margin-bottom:8px;font-size:.78rem;color:var(--w);line-height:1.5}
+.ai-suggestion strong{color:var(--g)}
+.ai-next-btn{width:100%;padding:9px;border-radius:8px;background:rgba(38,232,176,.1);border:1px solid rgba(38,232,176,.25);color:var(--g);font-weight:700;font-size:.78rem;cursor:pointer;transition:all .18s}
+.ai-next-btn:hover{background:rgba(38,232,176,.2)}
+
+/* ═══════════════ PROFILE ═══════════════ */
+#profile-panel{padding:24px 20px;max-width:900px;margin:0 auto}
+.profile-header{display:flex;align-items:center;gap:20px;margin-bottom:28px;background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:24px}
+.profile-av{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:#fff;flex-shrink:0}
+.profile-name{font-size:1.2rem;font-weight:800;margin-bottom:4px}
+.profile-bio{font-size:.82rem;color:var(--dim);margin-bottom:12px}
+.profile-stats{display:flex;gap:20px}
+.profile-stat-val{font-size:1rem;font-weight:800;color:var(--g)}
+.profile-stat-lbl{font-size:.65rem;color:var(--dim)}
+.profile-actions{margin-left:auto;display:flex;flex-direction:column;gap:6px}
+
+/* NOTIFICATIONS */
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--red);position:absolute;top:2px;right:2px;border:2px solid var(--bg)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:16px;right:18px;background:none;border:none;color:var(--dim);font-size:1.2rem;cursor:pointer}
+.modal h2{font-size:1.1rem;font-weight:800;margin-bottom:6px}
+.modal-sub{font-size:.8rem;color:var(--dim);margin-bottom:20px;line-height:1.5}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-msg{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:.78rem;color:var(--g);animation:slideIn .3s ease;max-width:300px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* LOADING SPINNER */
+.spin{width:32px;height:32px;border:3px solid rgba(38,232,176,.15);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESPONSIVE */
+@media(max-width:768px){.builder-layout{grid-template-columns:1fr}.live-layout{grid-template-columns:1fr}.live-sidebar{display:none}}
+@media(max-width:480px){#nav .nav-links{display:none}.tab{padding:12px 12px;font-size:.72rem}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-logo" href="/">SeenShown <span>Social</span></a>
+  <div class="nav-links">
+    <a class="nl" href="/">Home</a>
+    <a class="nl" href="/home.html">Learn</a>
+    <a class="nl on" href="/social.html">Social</a>
+    <a class="nl" href="/investors.html">Investors</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn btn-outline" onclick="openPublish()">+ Publish Sim</button>
+    <div class="nav-avatar" style="position:relative" onclick="switchTab('profile')">NA
+      <div class="notif-dot"></div>
+    </div>
+  </div>
+</nav>
+
+<div id="app">
+  <!-- TABS -->
+  <div id="tabs">
+    <div class="tab on" onclick="switchTab('discover')"><span class="tab-ico">🔭</span> Discover</div>
+    <div class="tab" onclick="switchTab('builder')"><span class="tab-ico">🧪</span> Build</div>
+    <div class="tab" onclick="switchTab('live')"><span class="tab-ico">🔴</span> Live</div>
+    <div class="tab" onclick="switchTab('profile')"><span class="tab-ico">👤</span> Profile</div>
+  </div>
+
+  <!-- DISCOVER -->
+  <div id="discover-panel" class="panel on">
+    <div id="discover">
+      <div class="discover-hero">
+        <h1>Explore <span>Living Simulations</span></h1>
+        <p>Discover, share, and experience particle simulations created by scientists, educators, and curious minds worldwide.</p>
+        <div class="search-bar">
+          <input class="search-input" id="search-input" placeholder="Search simulations…" oninput="filterSims()">
+          <button class="search-btn" onclick="filterSims()">Search</button>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">🔥 Trending Now</div>
+        <div class="section-more" onclick="toast('Loading more trending simulations…')">See all →</div>
+      </div>
+      <div class="filter-row" id="filter-row">
+        <div class="fpill on" onclick="setFilter('all',this)">All</div>
+        <div class="fpill" onclick="setFilter('emotion',this)">Emotion</div>
+        <div class="fpill" onclick="setFilter('neuroscience',this)">Neuroscience</div>
+        <div class="fpill" onclick="setFilter('cosmos',this)">Cosmos</div>
+        <div class="fpill" onclick="setFilter('biology',this)">Biology</div>
+        <div class="fpill" onclick="setFilter('social',this)">Social</div>
+        <div class="fpill" onclick="setFilter('physics',this)">Physics</div>
+        <div class="fpill" onclick="setFilter('chemistry',this)">Chemistry</div>
+      </div>
+      <div class="sim-grid" id="sim-grid"></div>
+    </div>
+  </div>
+
+  <!-- BUILDER -->
+  <div id="builder-panel" class="panel">
+    <div id="builder">
+      <div class="builder-header">
+        <h2>🧪 AI-Assisted Simulation Builder</h2>
+        <p>Describe your idea and our AI co-creates the simulation with you — step by step, choice by choice.</p>
+      </div>
+
+      <!-- STEPS -->
+      <div class="steps" id="build-steps">
+        <div class="step active" id="step-0"><div class="step-dot">1</div><div class="step-label">Concept</div></div>
+        <div class="step" id="step-1"><div class="step-dot">2</div><div class="step-label">Parameters</div></div>
+        <div class="step" id="step-2"><div class="step-dot">3</div><div class="step-label">Visual</div></div>
+        <div class="step" id="step-3"><div class="step-dot">4</div><div class="step-label">Publish</div></div>
+      </div>
+
+      <div class="builder-layout">
+        <div class="builder-left">
+          <!-- AI CHAT -->
+          <div class="ai-chat">
+            <div class="ai-chat-header">
+              <div class="ai-chat-icon">🤖</div>
+              <div>
+                <div class="ai-chat-title">SIE Assistant</div>
+                <div class="ai-chat-sub">AI Co-Creator · Claude Sonnet</div>
+              </div>
+              <div class="ai-status"></div>
+            </div>
+            <div class="ai-messages" id="ai-messages">
+              <div class="ai-msg ai">
+                <div class="ai-bubble">Welcome! I'm your AI co-creator. I'll guide you through building a scientifically accurate, visually stunning simulation. What phenomenon do you want to explore?</div>
+                <div class="ai-msg-time">Just now</div>
+                <div class="ai-options" id="ai-init-opts">
+                  <div class="ai-option" onclick="selectConcept('How does love form between two people?')">💗 How does love form between two people?</div>
+                  <div class="ai-option" onclick="selectConcept('How does a virus infect a cell?')">🦠 How does a virus infect a cell?</div>
+                  <div class="ai-option" onclick="selectConcept('How does a black hole consume matter?')">🌀 How does a black hole consume matter?</div>
+                  <div class="ai-option" onclick="selectConcept('How does grief change the brain?')">🧠 How does grief change the brain?</div>
+                  <div class="ai-option" onclick="selectConcept('How does a supernova explode?')">💥 How does a supernova explode?</div>
+                </div>
+              </div>
+            </div>
+            <div class="ai-input-row">
+              <input class="ai-input" id="ai-input" placeholder="Or describe your own idea…" onkeydown="if(event.key==='Enter')sendToAI()">
+              <button class="ai-send" onclick="sendToAI()">→</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="builder-right">
+          <!-- PREVIEW -->
+          <div class="builder-preview">
+            <canvas class="bp-canvas" id="bp-canvas"></canvas>
+            <div class="bp-controls">
+              <button class="bpc-btn on" onclick="setBPMode('particles',this)">⚡ Particles</button>
+              <button class="bpc-btn" onclick="setBPMode('flow',this)">🌊 Flow</button>
+              <button class="bpc-btn" onclick="setBPMode('orbital',this)">🪐 Orbital</button>
+              <button class="bpc-btn" onclick="resetPreview()">↺ Reset</button>
+            </div>
+          </div>
+
+          <!-- PUBLISH FORM -->
+          <div class="bform" id="publish-form" style="opacity:.4;pointer-events:none">
+            <h3>📤 Publish Simulation</h3>
+            <div class="form-row">
+              <label class="form-label">Title</label>
+              <input class="form-input" id="sim-title" placeholder="Give your simulation a title…">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Domain</label>
+              <select class="form-select" id="sim-domain">
+                <option value="emotion">Emotion</option>
+                <option value="neuroscience">Neuroscience</option>
+                <option value="biology">Biology</option>
+                <option value="cosmos">Cosmos</option>
+                <option value="physics">Physics</option>
+                <option value="social">Social</option>
+                <option value="chemistry">Chemistry</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" id="sim-desc" placeholder="Describe what this simulation shows…"></textarea>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Tags</label>
+              <div class="tags-row" id="tags-row">
+                <div class="tag" onclick="toggleTag(this)">heartbreak</div>
+                <div class="tag" onclick="toggleTag(this)">love</div>
+                <div class="tag" onclick="toggleTag(this)">grief</div>
+                <div class="tag" onclick="toggleTag(this)">neuron</div>
+                <div class="tag" onclick="toggleTag(this)">cosmos</div>
+                <div class="tag" onclick="toggleTag(this)">education</div>
+                <div class="tag" onclick="toggleTag(this)">science</div>
+                <div class="tag" onclick="toggleTag(this)">viral</div>
+              </div>
+            </div>
+            <button class="publish-btn" onclick="publishSim()">🚀 Publish to Community</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE -->
+  <div id="live-panel" class="panel">
+    <div id="live">
+      <div class="live-layout">
+        <div class="live-main">
+          <!-- LIVE STAGE -->
+          <div class="live-stage">
+            <div class="live-badge">
+              <div class="live-dot"></div> LIVE
+            </div>
+            <canvas class="live-canvas" id="live-canvas"></canvas>
+            <div class="live-controls">
+              <button class="live-ctl active" id="live-toggle" onclick="toggleLive()">⏸ Pause</button>
+              <button class="live-ctl" onclick="toast('Sharing live session link…')">🔗 Share</button>
+              <button class="live-ctl" onclick="toast('Simulation cloned to your library')">📋 Clone</button>
+              <div class="live-viewers">👁 <span id="viewer-count">247</span> watching</div>
+            </div>
+          </div>
+
+          <!-- VOTE PANEL -->
+          <div class="vote-panel">
+            <div class="vote-header">
+              <div class="vote-title">🗳 Community Vote</div>
+              <div class="vote-timer" id="vote-timer">0:28</div>
+            </div>
+            <div class="vote-question" id="vote-question">What should happen to the particle field in the next phase?</div>
+            <div class="vote-options" id="vote-options"></div>
+            <button class="vote-submit" onclick="submitVote()">Cast Vote</button>
+          </div>
+
+          <!-- AI GUIDE PANEL -->
+          <div class="ai-guide">
+            <div class="ai-guide-header">
+              <div class="ai-guide-icon">🤖</div>
+              <div>
+                <div class="ai-guide-step" id="guide-step">Step 2 of 5 · Building Tension</div>
+                <div class="ai-guide-label">AI Co-Creation Guide</div>
+              </div>
+            </div>
+            <div class="ai-suggestion" id="ai-suggestion">
+              <strong>🧪 AI Suggestion:</strong> The particle field is showing strong cohesive bonding. Consider introducing a disruption force in the next phase — this will demonstrate the thermodynamic cost of separation. The audience can vote on the disruption intensity.
+            </div>
+            <button class="ai-next-btn" onclick="nextGuideStep()">Next AI Suggestion →</button>
+          </div>
+        </div>
+
+        <div class="live-sidebar">
+          <!-- CREATOR -->
+          <div class="creator-card">
+            <div class="creator-top">
+              <div class="creator-avatar" style="background:linear-gradient(135deg,#7C4FD4,#26e8b0)">🧬</div>
+              <div>
+                <div class="creator-name">Dr. Sarah Chen</div>
+                <div class="creator-bio">Computational physicist · MIT · Simulating the invisible since 2018</div>
+              </div>
+            </div>
+            <div style="font-size:.72rem;color:var(--dim);line-height:1.5">"Today we're exploring how emotional bonds form and break at the particle level — modelling love and heartbreak as thermodynamic phase transitions."</div>
+            <button class="follow-btn" id="follow-btn" onclick="toggleFollow()">+ Follow Creator</button>
+          </div>
+
+          <!-- FUND -->
+          <div class="fund-panel">
+            <div class="fund-title">💰 Fund This Session</div>
+            <div class="fund-sub">Support this creator's live simulation — 80% goes directly to them</div>
+            <div class="fund-total" id="fund-total">$1,247</div>
+            <div class="fund-progress-bar"><div class="fund-fill" id="fund-fill" style="width:62%"></div></div>
+            <div class="fund-goal">$2,000 session goal · 62% funded</div>
+            <div class="fund-amounts">
+              <div class="fund-amt" onclick="selectAmt(this,'5')">$5</div>
+              <div class="fund-amt on" onclick="selectAmt(this,'10')">$10</div>
+              <div class="fund-amt" onclick="selectAmt(this,'25')">$25</div>
+              <div class="fund-amt" onclick="selectAmt(this,'50')">$50</div>
+            </div>
+            <button class="fund-btn" onclick="fundSession()">💳 Fund $10</button>
+          </div>
+
+          <!-- CHAT -->
+          <div class="chat-box">
+            <div class="chat-header">
+              💬 Live Chat <span class="chat-count">247 watching</span>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-row">
+              <input class="chat-input" id="chat-input" placeholder="Say something…" onkeydown="if(event.key==='Enter')sendChat()">
+              <button class="chat-send" onclick="sendChat()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="profile-panel" class="panel">
+    <div class="profile-header">
+      <div class="profile-av" style="background:linear-gradient(135deg,var(--p),var(--g))">NA</div>
+      <div style="flex:1">
+        <div class="profile-name">Nawras Alali</div>
+        <div class="profile-bio">Founder, SeenShown · Building the visual layer for all human knowledge · Adelaide, AU</div>
+        <div class="profile-stats">
+          <div><div class="profile-stat-val" id="pub-count">0</div><div class="profile-stat-lbl">Published</div></div>
+          <div><div class="profile-stat-val">12</div><div class="profile-stat-lbl">Following</div></div>
+          <div><div class="profile-stat-val">89</div><div class="profile-stat-lbl">Followers</div></div>
+          <div><div class="profile-stat-val">3.2k</div><div class="profile-stat-lbl">Total Views</div></div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="nav-btn btn-outline" onclick="openPublish()">+ New Sim</button>
+        <button class="nav-btn btn-solid" onclick="toast('Profile settings coming soon')">Settings</button>
+      </div>
+    </div>
+    <div class="section-title" style="margin-bottom:16px">My Simulations</div>
+    <div class="sim-grid" id="my-sims-grid"></div>
+    <div id="no-sims" style="text-align:center;padding:40px;color:var(--dim);font-size:.88rem">
+      No simulations published yet.<br>
+      <span style="color:var(--g);cursor:pointer" onclick="switchTab('builder')">Build your first simulation →</span>
+    </div>
+  </div>
+</div>
+
+<!-- PUBLISH MODAL -->
+<div class="modal-bg" id="publish-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('publish-modal')">✕</button>
+    <h2>🚀 Publish Simulation</h2>
+    <div class="modal-sub">Share your simulation with the SeenShown community</div>
+    <div class="form-row">
+      <label class="form-label">Title</label>
+      <input class="form-input" id="modal-title" placeholder="Give your simulation a name…">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Domain</label>
+      <select class="form-select" id="modal-domain">
+        <option value="emotion">Emotion</option>
+        <option value="neuroscience">Neuroscience</option>
+        <option value="biology">Biology</option>
+        <option value="cosmos">Cosmos</option>
+        <option value="physics">Physics</option>
+        <option value="social">Social</option>
+        <option value="chemistry">Chemistry</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="modal-desc" placeholder="What does this simulation show? Why does it matter?"></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Visibility</label>
+      <select class="form-select" id="modal-vis">
+        <option value="public">Public — anyone can see</option>
+        <option value="community">Community — registered users only</option>
+        <option value="private">Private — only me</option>
+      </select>
+    </div>
+    <button class="publish-btn" onclick="publishFromModal()">🚀 Publish Now</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+var state = {
+  activeTab: 'discover',
+  filter: 'all',
+  liveRunning: true,
+  liveT: 0,
+  voted: false,
+  voteSelected: null,
+  fundAmt: 10,
+  followed: false,
+  voteCountdown: 30,
+  guideStep: 0,
+  buildStep: 0,
+  mySims: JSON.parse(localStorage.getItem('my_sims') || '[]'),
+  likes: JSON.parse(localStorage.getItem('likes') || '{}'),
+};
+
+/* ═══════════════════════════════════════════
+   SIMULATION DATA
+═══════════════════════════════════════════ */
+var SIMS_DATA = [
+  {id:'hb1',title:'The Physics of Heartbreak',domain:'emotion',tags:['heartbreak','love','physics'],desc:'Two particle fields in gravitational orbit — then the bond breaks. Watch warmth become entropy.',author:'Dr. Sarah Chen',authorColor:'#7C4FD4',likes:847,views:12400,comments:63,trending:true,col:'#e8a0c0'},
+  {id:'bb1',title:'Big Bang: 13.8 Billion Years',domain:'cosmos',tags:['bigbang','universe','cosmology'],desc:'From singularity to cosmic web — 13.8 billion years of expansion in 3 phases.',author:'Prof. James Liu',authorColor:'#f0c040',likes:1203,views:28900,comments:142,trending:true,col:'#ffeecc'},
+  {id:'nc1',title:'How a Neuron Fires',domain:'neuroscience',tags:['neuron','brain','action potential'],desc:'Voltage-gated Na⁺ channels, depolarisation, and synaptic release — visualised as particle dynamics.',author:'NeuroLab MIT',authorColor:'#60c0f0',likes:634,views:9200,comments:38,isNew:false,col:'#60c0f0'},
+  {id:'im1',title:'T-Cell Kills Cancer',domain:'biology',tags:['cancer','immune','t-cell'],desc:'Watch cytotoxic T-cells locate, dock, and initiate apoptosis in a cancer cell — clean, precise, lethal.',author:'Dr. Amara Osei',authorColor:'#ff8c42',likes:923,views:15600,comments:87,col:'#ff8c42'},
+  {id:'lv1',title:'The Emergence of Love',domain:'emotion',tags:['love','attraction','emergence'],desc:'Two independent particle systems develop gravitational awareness of each other. This is attraction, modelled.',author:'Maya Reeves',authorColor:'#ff88aa',likes:1847,views:41200,comments:312,trending:true,col:'#ff88aa'},
+  {id:'rm1',title:'Rumour Cascade Dynamics',domain:'social',tags:['rumour','social','network'],desc:'SIR model applied to information spread — watch a single infected node saturate an entire network.',author:'Social Physics Lab',authorColor:'#f0c040',likes:412,views:7100,comments:29,col:'#f0c040'},
+  {id:'bh1',title:'Black Hole Accretion',domain:'physics',tags:['black hole','spacetime','relativity'],desc:'Matter spirals into extreme curvature — accretion disk, photon sphere, and Einstein ring all rendered.',author:'Caltech Astro',authorColor:'#7C4FD4',likes:2104,views:52800,comments:198,trending:true,col:'#7C4FD4'},
+  {id:'gr1',title:'Grief: Neural Rewiring',domain:'neuroscience',tags:['grief','loss','neuroscience'],desc:'The brain\'s predictive model collides with absence. Watch the neural field restructure over three phases.',author:'Dr. Sarah Chen',authorColor:'#7C4FD4',likes:567,views:8900,comments:74,isNew:true,col:'#8899bb'},
+  {id:'amr1',title:'Antibiotic Resistance Evolution',domain:'biology',tags:['amr','bacteria','evolution'],desc:'A colony of 22 bacteria — the antibiotic kills 99.99%. The 0.01% survivors recolonise. Natural selection compressed.',author:'WHO ResearchLab',authorColor:'#26e8b0',likes:789,views:11400,comments:56,col:'#26e8b0'},
+  {id:'ch1',title:'Le Chatelier\'s Principle Live',domain:'chemistry',tags:['chemistry','equilibrium','reaction'],desc:'Reactants A and B collide under energy thresholds. Products form. Equilibrium establishes. Textbook made alive.',author:'ChemSim Academy',authorColor:'#40d0f0',likes:334,views:5600,comments:22,isNew:true,col:'#40d0f0'},
+  {id:'an1',title:'The Rage Cascade',domain:'emotion',tags:['anger','amygdala','cortisol'],desc:'The amygdala fires 250ms before consciousness. Prefrontal cortex goes offline. Watch the neurochemistry of rage.',author:'NeuroLab MIT',authorColor:'#ff3300',likes:1023,views:19800,comments:134,col:'#ff3300'},
+  {id:'uv1',title:'Universe at Every Scale',domain:'cosmos',tags:['universe','milky way','cosmic web'],desc:'Earth → Milky Way → Cosmic web. 93 billion light years in 3 clicks. The greatest zoom in history.',author:'Prof. James Liu',authorColor:'#4466ff',likes:1456,views:33200,comments:211,col:'#4466ff'}
+];
+
+var MINI_COLORS = {
+  emotion: '#e8a0c0', cosmos: '#ffeecc', neuroscience: '#60c0f0',
+  biology: '#26e8b0', physics: '#7C4FD4', social: '#f0c040', chemistry: '#40d0f0'
+};
+
+/* ═══════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════ */
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t,i) {
+    var names = ['discover','builder','live','profile'];
+    t.classList.toggle('on', names[i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('on'); });
+  var pid = tab === 'discover' ? 'discover-panel' : tab === 'builder' ? 'builder-panel' : tab === 'live' ? 'live-panel' : 'profile-panel';
+  document.getElementById(pid).classList.add('on');
+  if (tab === 'live') initLive();
+  if (tab === 'builder') initBuilder();
+  if (tab === 'profile') renderMySims();
+}
+
+/* ═══════════════════════════════════════════
+   DISCOVER / FEED
+═══════════════════════════════════════════ */
+function setFilter(f, el) {
+  state.filter = f;
+  document.querySelectorAll('.fpill').forEach(function(p) { p.classList.remove('on'); });
+  el.classList.add('on');
+  renderFeed();
+}
+
+function filterSims() {
+  renderFeed();
+}
+
+function renderFeed() {
+  var q = (document.getElementById('search-input').value || '').toLowerCase();
+  var f = state.filter;
+  var filtered = SIMS_DATA.filter(function(s) {
+    var matchFilter = f === 'all' || s.domain === f;
+    var matchSearch = !q || s.title.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q) || s.tags.some(function(t) { return t.includes(q); });
+    return matchFilter && matchSearch;
+  });
+  var grid = document.getElementById('sim-grid');
+  grid.innerHTML = '';
+  filtered.forEach(function(sim) { grid.appendChild(makeSimCard(sim)); });
+}
+
+function makeSimCard(sim) {
+  var card = document.createElement('div');
+  card.className = 'sim-card';
+  var liked = state.likes[sim.id];
+  var likeCnt = sim.likes + (liked ? 1 : 0);
+  card.innerHTML = `
+    <div style="position:relative">
+      <canvas class="sim-canvas-preview" id="prev-${sim.id}" width="300" height="140"></canvas>
+      ${sim.trending ? '<div class="sim-preview-badge sim-preview-trending">🔥 Trending</div>' : ''}
+      ${sim.isNew ? '<div class="sim-preview-badge sim-preview-new">✨ New</div>' : ''}
+    </div>
+    <div class="sim-body">
+      <div class="sim-domain">${sim.domain}</div>
+      <div class="sim-title">${sim.title}</div>
+      <div class="sim-desc">${sim.desc}</div>
+      <div class="sim-meta">
+        <div class="sim-author">
+          <div class="sim-avatar" style="background:${sim.authorColor}">${sim.author.charAt(0)}</div>
+          <div class="sim-author-name">${sim.author}</div>
+        </div>
+        <div class="sim-stats">
+          <div class="sim-stat ${liked?'liked':''}" onclick="likeSim(event,'${sim.id}',this)">
+            <span class="sim-stat-ico">❤️</span> <span id="lc-${sim.id}">${fmtNum(likeCnt)}</span>
+          </div>
+          <div class="sim-stat"><span class="sim-stat-ico">👁</span> ${fmtNum(sim.views)}</div>
+          <div class="sim-stat"><span class="sim-stat-ico">💬</span> ${sim.comments}</div>
+        </div>
+      </div>
+    </div>
+    <div class="sim-actions">
+      <button class="sim-action-btn sab-like" onclick="likeSim(event,'${sim.id}',null)">❤️ Like</button>
+      <button class="sim-action-btn sab-fund" onclick="openFundModal('${sim.id}','${sim.title}')">💰 Fund</button>
+      <button class="sim-action-btn sab-open" onclick="openSim('${sim.id}')">▶ Open</button>
+    </div>
+  `;
+  setTimeout(function() { drawMiniPreview(sim); }, 50);
+  return card;
+}
+
+function drawMiniPreview(sim) {
+  var canvas = document.getElementById('prev-' + sim.id);
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var col = sim.col || '#26e8b0';
+  var r = parseInt(col.slice(1,3),16), g2 = parseInt(col.slice(3,5),16), b = parseInt(col.slice(5,7),16);
+  ctx.fillStyle = '#000508'; ctx.fillRect(0,0,W,H);
+  // Ambient glow
+  var gr = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,H*0.6);
+  gr.addColorStop(0, `rgba(${r},${g2},${b},0.15)`);
+  gr.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gr; ctx.fillRect(0,0,W,H);
+  // Particles
+  var n = 28, t = Date.now()*0.001;
+  for (var i = 0; i < n; i++) {
+    var a = i/n*Math.PI*2 + t*(0.2+i*0.03);
+    var rd = H*(0.15 + 0.28*(i%3)/2);
+    var x = W/2 + Math.cos(a)*rd, y = H/2 + Math.sin(a)*rd*0.72;
+    var alpha = 0.55 + Math.sin(t+i)*0.25;
+    ctx.fillStyle = `rgba(${r},${g2},${b},${alpha})`;
+    ctx.beginPath(); ctx.arc(x,y,2.2,0,Math.PI*2); ctx.fill();
+  }
+  requestAnimationFrame(function() { if(document.getElementById('prev-'+sim.id)) drawMiniPreview(sim); });
+}
+
+function likeSim(evt, id, el) {
+  evt.stopPropagation();
+  state.likes[id] = !state.likes[id];
+  localStorage.setItem('likes', JSON.stringify(state.likes));
+  var cnt = document.getElementById('lc-' + id);
+  var sim = SIMS_DATA.find(function(s){return s.id===id;});
+  if (cnt && sim) cnt.textContent = fmtNum(sim.likes + (state.likes[id] ? 1 : 0));
+  document.querySelectorAll('[onclick*="\''+id+'\'"]').forEach(function(e) {
+    if (e.classList.contains('sim-stat')) e.classList.toggle('liked', !!state.likes[id]);
+  });
+  toast(state.likes[id] ? '❤️ Added to your liked simulations' : 'Removed from liked simulations');
+}
+
+function openSim(id) {
+  var sim = SIMS_DATA.find(function(s){return s.id===id;});
+  if (sim) {
+    // In production this opens the simulation fullscreen
+    // For now route to home with query
+    var q = sim.title.replace(/ /g,'+');
+    toast('Opening: ' + sim.title + ' → Routing to SeenShown SIE…');
+    setTimeout(function() { window.location.href = '/?q='+encodeURIComponent(sim.title); }, 1000);
+  }
+}
+
+function openFundModal(id, title) {
+  toast('💰 Opening funding panel for: ' + title);
+  switchTab('live');
+}
+
+/* ═══════════════════════════════════════════
+   BUILDER
+═══════════════════════════════════════════ */
+var bpAnim = null, bpMode = 'particles', bpT = 0, bpCtx = null;
+
+function initBuilder() {
+  var canvas = document.getElementById('bp-canvas');
+  if (!canvas) return;
+  bpCtx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth; canvas.height = 240;
+  if (bpAnim) cancelAnimationFrame(bpAnim);
+  drawBuilderPreview();
+}
+
+function drawBuilderPreview() {
+  if (!bpCtx) return;
+  var W = bpCtx.canvas.width, H = bpCtx.canvas.height;
+  bpT += 0.016;
+  bpCtx.fillStyle = '#000508'; bpCtx.fillRect(0,0,W,H);
+  var cx = W/2, cy = H/2;
+  if (bpMode === 'particles') {
+    var gr2 = bpCtx.createRadialGradient(cx,cy,0,cx,cy,H*0.65);
+    gr2.addColorStop(0,'rgba(38,232,176,0.18)'); gr2.addColorStop(1,'rgba(0,0,0,0)');
+    bpCtx.fillStyle=gr2; bpCtx.fillRect(0,0,W,H);
+    for(var i=0;i<40;i++){var a=i/40*Math.PI*2+bpT*(0.15+i*0.02),r=H*(0.1+0.3*(i%4)/3);var x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r*0.72;bpCtx.fillStyle=`rgba(38,232,176,${0.5+Math.sin(bpT+i)*0.3})`;bpCtx.beginPath();bpCtx.arc(x,y,2.5,0,Math.PI*2);bpCtx.fill();}
+  } else if (bpMode === 'flow') {
+    for(var i=0;i<6;i++){var wg=bpCtx.createLinearGradient(0,H*(0.1+i*0.15),W,H*(0.1+i*0.15));wg.addColorStop(0,'rgba(74,158,255,0)');wg.addColorStop(0.4+Math.sin(bpT+i)*0.15,'rgba(74,158,255,0.35)');wg.addColorStop(1,'rgba(74,158,255,0)');bpCtx.fillStyle=wg;bpCtx.fillRect(0,H*(0.08+i*0.15),W,14);}
+    for(var i=0;i<25;i++){var fx=((bpT*60+i*40)%W),fy=H*(0.08+i%6*0.15)+8;bpCtx.fillStyle='rgba(74,158,255,0.7)';bpCtx.beginPath();bpCtx.arc(fx,fy,2.2,0,Math.PI*2);bpCtx.fill();}
+  } else {
+    var n=5;for(var i=0;i<n;i++){var oa=i/n*Math.PI*2+bpT*(i%2===0?0.3:-0.2),or=H*(0.12+i*0.07);bpCtx.strokeStyle=`rgba(176,110,243,${0.15+i*0.04})`;bpCtx.lineWidth=1;bpCtx.beginPath();bpCtx.ellipse(cx,cy,or,or*0.45,0,0,Math.PI*2);bpCtx.stroke();var pr=4-i*0.5;bpCtx.fillStyle=`rgba(176,110,243,0.8)`;bpCtx.beginPath();bpCtx.arc(cx+Math.cos(oa)*or,cy+Math.sin(oa)*or*0.45,pr,0,Math.PI*2);bpCtx.fill();}
+    bpCtx.fillStyle='rgba(255,200,100,0.9)';bpCtx.beginPath();bpCtx.arc(cx,cy,8,0,Math.PI*2);bpCtx.fill();
+  }
+  bpAnim = requestAnimationFrame(drawBuilderPreview);
+}
+
+function setBPMode(mode, el) {
+  bpMode = mode;
+  document.querySelectorAll('.bpc-btn').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+}
+
+function resetPreview() { bpT = 0; toast('Preview reset'); }
+
+/* AI BUILDER */
+var buildConversation = [];
+var conceptSet = false;
+
+function selectConcept(concept) {
+  document.getElementById('ai-init-opts').style.display = 'none';
+  addUserMsg(concept);
+  conceptSet = true;
+  setTimeout(function() {
+    progressBuildStep(1);
+    addAIMsg('Great choice! "' + concept + '" is a rich topic. Now let\'s define the simulation parameters. Which phase should come first?', [
+      '⚡ Initial state — show the system at rest before the process begins',
+      '🌀 Mid-process — start in the middle of the action for immediate impact',
+      '💥 Climax — begin at peak intensity for maximum WOW',
+    ]);
+  }, 800);
+}
+
+function sendToAI() {
+  var input = document.getElementById('ai-input');
+  var msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  addUserMsg(msg);
+  document.getElementById('ai-init-opts').remove && null;
+  var existing = document.getElementById('ai-init-opts');
+  if (existing) existing.style.display = 'none';
+  setTimeout(function() {
+    callClaudeForBuilder(msg);
+  }, 400);
+}
+
+async function callClaudeForBuilder(msg) {
+  addAIMsg('Thinking…', null, true);
+  try {
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: 'You are the SeenShown SIE AI Co-Creator. Help users build particle simulations step by step. Always respond with: 1) A brief enthusiastic response (1-2 sentences), 2) Exactly 3 simulation parameter options as a JSON array in this format: {"response":"...", "options":["option1","option2","option3"]}. Make options specific and creative.',
+        messages: [{ role: 'user', content: 'User wants to build a simulation about: ' + msg + '. Give me the next step options as JSON.' }]
+      })
+    });
+    var data = await res.json();
+    var text = data.content && data.content[0] && data.content[0].text;
+    removeThinking();
+    if (text) {
+      try {
+        var clean = text.replace(/```json\n?|```\n?/g,'').trim();
+        var parsed = JSON.parse(clean);
+        progressBuildStep(state.buildStep + 1);
+        addAIMsg(parsed.response, parsed.options);
+        if (!conceptSet) { conceptSet = true; document.getElementById('publish-form').style.opacity = '1'; document.getElementById('publish-form').style.pointerEvents = 'auto'; }
+      } catch(e) {
+        addAIMsg(text.slice(0,300), ['⚡ Energetic particles with high velocity', '🌊 Slow flowing field with emergent clusters', '🪐 Orbital dynamics with central attractor']);
+      }
+    }
+  } catch(e) {
+    removeThinking();
+    addAIMsg('I\'m ready to guide you! Let\'s build something extraordinary.', ['⚡ High-energy particle collision field', '🌊 Slow diffusion with chemical bonding', '🪐 Gravitational orbital simulation']);
+  }
+}
+
+function addUserMsg(text) {
+  var msgs = document.getElementById('ai-messages');
+  var div = document.createElement('div');
+  div.className = 'ai-msg user';
+  div.innerHTML = '<div class="ai-bubble">' + text + '</div><div class="ai-msg-time">Just now</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addAIMsg(text, opts, isThinking) {
+  var msgs = document.getElementById('ai-messages');
+  var div = document.createElement('div');
+  div.className = 'ai-msg ai' + (isThinking ? ' thinking' : '');
+  var optsHTML = '';
+  if (opts && opts.length) {
+    optsHTML = '<div class="ai-options">' + opts.map(function(o) {
+      return '<div class="ai-option" onclick="chooseOption(\'' + o.replace(/'/g,"\\'") + '\')">' + o + '</div>';
+    }).join('') + '</div>';
+  }
+  div.innerHTML = '<div class="ai-bubble">' + text + '</div>' + optsHTML + '<div class="ai-msg-time">Just now</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeThinking() {
+  var t = document.querySelector('.thinking');
+  if (t) t.remove();
+}
+
+function chooseOption(opt) {
+  addUserMsg(opt);
+  setTimeout(function() {
+    var step = state.buildStep + 1;
+    progressBuildStep(Math.min(step, 3));
+    if (step >= 3) {
+      addAIMsg('Your simulation is ready to publish! 🎉 Fill in the details below and share it with the community.', null);
+      document.getElementById('publish-form').style.opacity = '1';
+      document.getElementById('publish-form').style.pointerEvents = 'auto';
+    } else {
+      addAIMsg('Excellent! Now let\'s refine the visual language of your simulation.', [
+        '🎨 Warm amber/rose palette — emotional, organic, human',
+        '💙 Cool blue-white palette — scientific, precise, structural',
+        '🌈 Multi-colour gradient — complex, layered, evolving'
+      ]);
+    }
+  }, 600);
+}
+
+function progressBuildStep(step) {
+  state.buildStep = step;
+  for (var i = 0; i <= 3; i++) {
+    var el = document.getElementById('step-' + i);
+    if (!el) continue;
+    el.classList.remove('active','done');
+    if (i < step) el.classList.add('done');
+    else if (i === step) el.classList.add('active');
+  }
+}
+
+function toggleTag(el) { el.classList.toggle('on'); }
+
+function publishSim() {
+  var title = document.getElementById('sim-title').value.trim();
+  var desc = document.getElementById('sim-desc').value.trim();
+  var domain = document.getElementById('sim-domain').value;
+  if (!title) { toast('Please enter a title for your simulation'); return; }
+  var newSim = {
+    id: 'user-' + Date.now(),
+    title: title,
+    domain: domain,
+    desc: desc || 'A user-created simulation.',
+    author: 'Nawras Alali',
+    authorColor: '#7C4FD4',
+    likes: 0, views: 0, comments: 0,
+    isNew: true,
+    col: MINI_COLORS[domain] || '#26e8b0',
+    tags: [domain],
+    createdAt: Date.now()
+  };
+  state.mySims.unshift(newSim);
+  SIMS_DATA.unshift(newSim);
+  localStorage.setItem('my_sims', JSON.stringify(state.mySims));
+  toast('🎉 Simulation published! Your sim is now live on SeenShown.');
+  progressBuildStep(4);
+  setTimeout(function() { switchTab('discover'); }, 1500);
+}
+
+function openPublish() { document.getElementById('publish-modal').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function publishFromModal() {
+  var title = document.getElementById('modal-title').value.trim();
+  if (!title) { toast('Please enter a title'); return; }
+  var domain = document.getElementById('modal-domain').value;
+  var desc = document.getElementById('modal-desc').value.trim();
+  var newSim = { id:'user-'+Date.now(), title:title, domain:domain, desc:desc||'A community simulation.', author:'Nawras Alali', authorColor:'#7C4FD4', likes:0, views:0, comments:0, isNew:true, col:MINI_COLORS[domain]||'#26e8b0', tags:[domain], createdAt:Date.now() };
+  state.mySims.unshift(newSim);
+  SIMS_DATA.unshift(newSim);
+  localStorage.setItem('my_sims', JSON.stringify(state.mySims));
+  closeModal('publish-modal');
+  toast('🚀 Published: ' + title);
+  renderFeed();
+}
+
+function renderMySims() {
+  var grid = document.getElementById('my-sims-grid');
+  var noSims = document.getElementById('no-sims');
+  var allMine = state.mySims;
+  document.getElementById('pub-count').textContent = allMine.length;
+  if (allMine.length === 0) {
+    grid.innerHTML = ''; noSims.style.display = 'block';
+  } else {
+    noSims.style.display = 'none';
+    grid.innerHTML = '';
+    allMine.forEach(function(s) { grid.appendChild(makeSimCard(s)); });
+  }
+}
+
+/* ═══════════════════════════════════════════
+   LIVE CO-CREATION
+═══════════════════════════════════════════ */
+var liveCtx = null, liveAnim = null, liveT = 0;
+var livePaused = false;
+
+function initLive() {
+  var canvas = document.getElementById('live-canvas');
+  if (!canvas || liveCtx) return;
+  liveCtx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth; canvas.height = 320;
+  drawLiveSim();
+  startVoteTimer();
+  startViewerCount();
+  startChatBots();
+  initVoteOptions();
+}
+
+function drawLiveSim() {
+  if (!liveCtx) return;
+  var W = liveCtx.canvas.width, H = liveCtx.canvas.height;
+  if (!livePaused) liveT += 0.016;
+  var t = liveT;
+  var cx = W/2, cy = H*0.44;
+  liveCtx.fillStyle = '#06020e'; liveCtx.fillRect(0,0,W,H);
+  // Two particle fields — heartbreak simulation
+  var sep = W * 0.18;
+  var LX = cx - sep, RX = cx + sep;
+  // Glows
+  var lg = liveCtx.createRadialGradient(LX,cy,0,LX,cy,H*0.5);
+  lg.addColorStop(0,'rgba(220,100,130,0.18)'); lg.addColorStop(1,'rgba(0,0,0,0)');
+  liveCtx.fillStyle=lg; liveCtx.fillRect(0,0,W,H);
+  var rg = liveCtx.createRadialGradient(RX,cy,0,RX,cy,H*0.5);
+  rg.addColorStop(0,'rgba(200,140,80,0.18)'); rg.addColorStop(1,'rgba(0,0,0,0)');
+  liveCtx.fillStyle=rg; liveCtx.fillRect(0,0,W,H);
+  // Particles
+  var n = 80;
+  for (var i = 0; i < n; i++) {
+    var side = i < n/2 ? -1 : 1;
+    var a = i/n*Math.PI*2 + t*(0.004+i*0.00005)*side;
+    var r = Math.min(W,H)*(0.1+0.18*(i%4)/3);
+    var x = (side===-1?LX:RX) + Math.cos(a)*r;
+    var y = cy + Math.sin(a)*r*0.72 + Math.sin(t*0.8+i)*4;
+    var rr = side===-1 ? 220 : 200;
+    var gg = side===-1 ? 100 : 140;
+    var bb = side===-1 ? 130 : 80;
+    var alpha = 0.5 + Math.sin(t*0.5+i)*0.2;
+    liveCtx.fillStyle = `rgba(${rr},${gg},${bb},${alpha})`;
+    liveCtx.beginPath(); liveCtx.arc(x,y,2.2,0,Math.PI*2); liveCtx.fill();
+  }
+  liveAnim = requestAnimationFrame(drawLiveSim);
+}
+
+function toggleLive() {
+  livePaused = !livePaused;
+  var btn = document.getElementById('live-toggle');
+  btn.textContent = livePaused ? '▶ Resume' : '⏸ Pause';
+  btn.classList.toggle('active', !livePaused);
+}
+
+/* VOTE */
+var voteOptions = [
+  ['Intensify the bond force — pull particles closer', '🔗'],
+  ['Apply disruption field — begin separation cascade', '💥'],
+  ['Slow down time — cinematic phase transition', '⏱'],
+  ['Add third particle field — complexity emerges', '🌀']
+];
+
+function initVoteOptions() {
+  var votes = [42, 31, 18, 9];
+  var total = votes.reduce(function(a,b){return a+b;},0);
+  var container = document.getElementById('vote-options');
+  container.innerHTML = '';
+  voteOptions.forEach(function(opt, i) {
+    var pct = Math.round(votes[i]/total*100);
+    var div = document.createElement('div');
+    div.className = 'vote-option';
+    div.id = 'vopt-' + i;
+    div.onclick = function() { selectVoteOption(i); };
+    div.innerHTML = `
+      <div class="vote-bar" style="width:${pct}%"></div>
+      <span class="vote-label">${opt[1]} ${opt[0]}</span>
+      <span class="vote-pct">${pct}%</span>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectVoteOption(i) {
+  state.voteSelected = i;
+  document.querySelectorAll('.vote-option').forEach(function(o,j) {
+    o.classList.toggle('voted', j===i);
+  });
+}
+
+function submitVote() {
+  if (state.voteSelected === null) { toast('Select an option first'); return; }
+  state.voted = true;
+  toast('✅ Vote cast! ' + voteOptions[state.voteSelected][1] + ' ' + voteOptions[state.voteSelected][0].split(' ').slice(0,3).join(' ') + '…');
+  // Animate vote percentages
+  var newVotes = [38, 45, 12, 5];
+  var total = 100;
+  document.querySelectorAll('.vote-option').forEach(function(o,i) {
+    o.querySelector('.vote-bar').style.width = newVotes[i] + '%';
+    o.querySelector('.vote-pct').textContent = newVotes[i] + '%';
+  });
+}
+
+function startVoteTimer() {
+  setInterval(function() {
+    state.voteCountdown = Math.max(0, state.voteCountdown - 1);
+    var el = document.getElementById('vote-timer');
+    if (el) el.textContent = '0:' + String(state.voteCountdown).padStart(2,'0');
+    if (state.voteCountdown === 0) {
+      state.voteCountdown = 30;
+      if (!state.voted) toast('⏰ Vote ended — community chose: 💥 Disruption field');
+    }
+  }, 1000);
+}
+
+function startViewerCount() {
+  setInterval(function() {
+    var delta = Math.floor(Math.random()*5) - 2;
+    var el = document.getElementById('viewer-count');
+    if (!el) return;
+    var current = parseInt(el.textContent) + delta;
+    el.textContent = Math.max(200, current);
+  }, 3000);
+}
+
+/* CHAT BOTS */
+var chatNames = ['Maya R.','Prof. Liu','Dr. Amara','Alex K.','Zara M.','Ben T.','Sofia P.','Kai N.'];
+var chatMessages = [
+  'This is incredible — the phase transition at the bond break is textbook thermodynamics 🤯',
+  'The particle separation velocity is so accurate compared to actual molecular dynamics',
+  'I use this in my physics class now — students understand entropy so much better',
+  'The amber/rose colour split is genius — warmth vs coldness, visually encoded',
+  'Can someone explain why the last particles to separate are at the extremities?',
+  'Because the core field collapses first — extremities have lower coupling strength',
+  'The sound of the bond breaking needs to be added with ElevenLabs 🎵',
+  'Dr. Chen this is your best work yet 🔬',
+  '247 watching this at 2am... only on SeenShown lol',
+  'What simulation is next? Grief? Please grief 🙏',
+  'The vote result shows 45% want disruption — good choice community',
+  'I funded $25, this deserves way more support 💰'
+];
+var chatIdx = 0;
+
+function startChatBots() {
+  setInterval(function() {
+    var msgs = document.getElementById('chat-messages');
+    if (!msgs) return;
+    var div = document.createElement('div');
+    div.className = 'chat-msg';
+    div.innerHTML = '<span class="chat-name">' + chatNames[Math.floor(Math.random()*chatNames.length)] + '</span><span class="chat-text">' + chatMessages[chatIdx % chatMessages.length] + '</span>';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    chatIdx++;
+    // Keep only last 20 messages
+    while (msgs.children.length > 20) msgs.removeChild(msgs.firstChild);
+  }, 2800);
+}
+
+function sendChat() {
+  var input = document.getElementById('chat-input');
+  var msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  var msgs = document.getElementById('chat-messages');
+  var div = document.createElement('div');
+  div.className = 'chat-msg';
+  div.innerHTML = '<span class="chat-name" style="color:var(--g)">You</span><span class="chat-text">' + msg + '</span>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+/* AI GUIDE STEPS */
+var guideSteps = [
+  { step: 'Step 1 of 5 · Initial State', text: '<strong>🎬 Scene Setting:</strong> The simulation opens with two particle fields in independent orbital equilibrium. Each field represents a complete emotional state — neither aware of the other yet. The colour temperature difference (amber vs rose) encodes their distinct energetic signatures.' },
+  { step: 'Step 2 of 5 · Building Tension', text: '<strong>🧪 AI Suggestion:</strong> The particle field is showing strong cohesive bonding. Consider introducing a disruption force in the next phase — this will demonstrate the thermodynamic cost of separation. The audience is voting on disruption intensity.' },
+  { step: 'Step 3 of 5 · Phase Transition', text: '<strong>⚡ Critical Moment:</strong> This is the phase transition — the bond energy is at maximum. The disruption force is about to exceed the coupling strength. This is the moment before the break. Slow the simulation for cinematic impact.' },
+  { step: 'Step 4 of 5 · Cascade', text: '<strong>💥 Entropy Wins:</strong> The bond has broken. Particles are repelling along the axis of separation. Watch the colour temperature collapse — warm amber and rose are becoming cold blue-grey. This is grief, modelled thermodynamically.' },
+  { step: 'Step 5 of 5 · Resolution', text: '<strong>❄️ Final State:</strong> Two cold, separate fields. Every particle is accounted for — both systems are intact. But the shared warmth that existed in their overlap is gone. This is the scientific accuracy of emotional loss: nothing is destroyed, only reorganised.' }
+];
+
+function nextGuideStep() {
+  state.guideStep = (state.guideStep + 1) % guideSteps.length;
+  var s = guideSteps[state.guideStep];
+  document.getElementById('guide-step').textContent = s.step;
+  document.getElementById('ai-suggestion').innerHTML = s.text;
+}
+
+/* FUND */
+function selectAmt(el, amt) {
+  state.fundAmt = parseInt(amt);
+  document.querySelectorAll('.fund-amt').forEach(function(a){a.classList.remove('on');});
+  el.classList.add('on');
+  document.querySelector('.fund-btn').textContent = '💳 Fund $' + amt;
+}
+
+function fundSession() {
+  var funded = parseInt(document.getElementById('fund-total').textContent.replace(/[^0-9]/g,'')) + state.fundAmt;
+  document.getElementById('fund-total').textContent = '$' + fmtNum(funded);
+  var pct = Math.min(100, Math.round(funded/2000*100));
+  document.getElementById('fund-fill').style.width = pct + '%';
+  toast('💰 Thank you! $' + state.fundAmt + ' sent to Dr. Sarah Chen');
+}
+
+function toggleFollow() {
+  state.followed = !state.followed;
+  var btn = document.getElementById('follow-btn');
+  btn.textContent = state.followed ? '✓ Following' : '+ Follow Creator';
+  btn.classList.toggle('following', state.followed);
+  toast(state.followed ? '✅ Following Dr. Sarah Chen' : 'Unfollowed');
+}
+
+/* ═══════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════ */
+function fmtNum(n) {
+  if (n >= 1000) return (n/1000).toFixed(1) + 'k';
+  return String(n);
+}
+
+function toast(msg) {
+  var container = document.getElementById('toast');
+  var div = document.createElement('div');
+  div.className = 'toast-msg';
+  div.textContent = msg;
+  container.appendChild(div);
+  setTimeout(function() {
+    div.style.opacity = '0';
+    div.style.transform = 'translateX(120%)';
+    div.style.transition = 'all .3s ease';
+    setTimeout(function() { div.remove(); }, 350);
+  }, 3200);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+renderFeed();
+</script>
+</body>
+</html>

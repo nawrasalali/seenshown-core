@@ -117,6 +117,46 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-f
 
 @media(max-width:640px){#cePanel{display:none}#swipeHint{right:8px}}
 @media(max-height:580px){#narrText{font-size:.78rem}}
+
+/* SOCIAL POSTS PANEL */
+#socialPanel{position:fixed;right:0;top:50px;bottom:0;width:300px;background:rgba(2,4,14,0.97);border-left:1px solid rgba(255,255,255,0.07);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)}
+#socialPanel.open{transform:translateX(0)}
+#socialToggle{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:151;background:rgba(38,232,176,0.12);border:1px solid rgba(38,232,176,0.3);border-right:none;border-radius:10px 0 0 10px;padding:14px 7px;cursor:pointer;writing-mode:vertical-rl;font-size:.62rem;font-weight:700;color:var(--g);letter-spacing:.1em;transition:all .2s}
+#socialToggle:hover{background:rgba(38,232,176,0.2)}
+#socialPanel.open~#socialToggle{right:300px}
+.sp-header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sp-title{font-size:.85rem;font-weight:800;color:var(--w);display:flex;align-items:center;gap:7px}
+.sp-live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:spblink 1s infinite}
+@keyframes spblink{0%,100%{opacity:1}50%{opacity:.3}}
+.sp-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:1.1rem;padding:2px 6px}
+.sp-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.sp-tab{flex:1;padding:9px;text-align:center;font-size:.68rem;font-weight:600;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s}
+.sp-tab.on{color:var(--g);border-color:var(--g)}
+.sp-feed{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.sp-post{border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 16px;transition:background .15s}
+.sp-post:hover{background:rgba(255,255,255,0.025)}
+.sp-post-header{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.sp-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0}
+.sp-author{font-size:.76rem;font-weight:700;color:var(--w)}
+.sp-handle{font-size:.65rem;color:var(--dim)}
+.sp-time{font-size:.62rem;color:var(--dim);margin-left:auto}
+.sp-domain-tag{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.sp-text{font-size:.78rem;line-height:1.58;color:rgba(255,255,255,.82);margin-bottom:10px}
+.sp-text strong{color:var(--g)}
+.sp-sim-preview{background:#000;border-radius:8px;overflow:hidden;margin-bottom:10px;position:relative;cursor:pointer}
+.sp-sim-canvas{width:100%;height:88px;display:block}
+.sp-sim-label{position:absolute;bottom:0;left:0;right:0;padding:6px 10px;background:linear-gradient(0deg,rgba(2,4,14,0.9) 0%,transparent 100%);font-size:.65rem;font-weight:600;color:var(--g)}
+.sp-actions{display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.06);margin:-14px -16px;margin-top:10px}
+.sp-action{flex:1;padding:8px 6px;text-align:center;font-size:.68rem;color:var(--dim);cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:4px}
+.sp-action:hover{color:var(--w);background:rgba(255,255,255,0.04)}
+.sp-action.liked{color:var(--red)}
+.sp-action.funded{color:var(--gold)}
+.sp-compose{padding:12px 14px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.sp-compose-row{display:flex;gap:7px}
+.sp-compose-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:8px 11px;color:var(--w);font-size:.76rem;outline:none}
+.sp-compose-input:focus{border-color:var(--g)}
+.sp-compose-btn{background:var(--g);color:#02040e;border:none;border-radius:8px;padding:8px 12px;font-weight:700;font-size:.75rem;cursor:pointer}
+@media(max-width:640px){#socialPanel{width:100%}#socialToggle{top:auto;bottom:80px;transform:none;writing-mode:horizontal-tb;border-radius:10px 0 0 10px}}
 </style>
 </head>
 <body>
@@ -125,7 +165,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-f
   <a class="nav-logo" href="/">SeenShown</a>
   <div class="nav-tabs">
     <span class="ntab active">Home</span>
-    <a class="ntab" href="/home.html">Learn</a>
+    <a class="ntab" href="/social.html">Social</a>
     <a class="ntab" href="/community.html">Community</a>
     <a class="ntab" href="/investors.html">Investors</a>
   </div>
@@ -188,6 +228,29 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-f
 <div id="lodOv"><div style="text-align:center"><div class="lring"></div><div class="ltxt">Initialising particle engine…</div></div></div>
 <div id="aiBadge">✦ AI-generated simulation</div>
 <div id="voiceBadge"><div class="vwave"><span></span><span></span><span></span><span></span><span></span></div> Speaking…</div>
+
+<!-- SOCIAL TOGGLE -->
+<button id="socialToggle" onclick="toggleSocial()" title="Community Feed">SOCIAL</button>
+
+<!-- SOCIAL PANEL -->
+<div id="socialPanel">
+  <div class="sp-header">
+    <div class="sp-title"><div class="sp-live-dot"></div> Community Feed</div>
+    <button class="sp-close" onclick="toggleSocial()">✕</button>
+  </div>
+  <div class="sp-tabs">
+    <div class="sp-tab on" onclick="setSPTab('trending',this)">🔥 Trending</div>
+    <div class="sp-tab" onclick="setSPTab('new',this)">✨ New</div>
+    <div class="sp-tab" onclick="setSPTab('following',this)">👥 Following</div>
+  </div>
+  <div class="sp-feed" id="sp-feed"></div>
+  <div class="sp-compose">
+    <div class="sp-compose-row">
+      <input class="sp-compose-input" id="sp-compose-input" placeholder="Share a simulation or thought…" onkeydown="if(event.key==='Enter')spPost()">
+      <button class="sp-compose-btn" onclick="spPost()">Post</button>
+    </div>
+  </div>
+</div>
 
 <script>
 'use strict';
@@ -953,13 +1016,193 @@ document.addEventListener('keydown',function(e){
   var nd,mp;
   if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='Tab'){e.preventDefault();domIdx=(domIdx+1)%DOMAIN_ORDER.length;nd=DOMAIN_ORDER[domIdx];mp=document.querySelector('.dpill[data-key="'+nd+'"]');switchDomain(nd,mp);}
   if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();domIdx=(domIdx-1+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;nd=DOMAIN_ORDER[domIdx];mp=document.querySelector('.dpill[data-key="'+nd+'"]');switchDomain(nd,mp);}
-  if(e.key===' '){e.preventDefault();togglePause();}
+  if(e.key===' '){var ae=document.activeElement;var inInput=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA');if(!inInput){e.preventDefault();togglePause();}}
   if(e.key==='1')setPhase(0);if(e.key==='2')setPhase(1);if(e.key==='3')setPhase(2);
   if(e.key==='Enter'&&document.activeElement!==document.getElementById('mainQ'))askQuestion();
   if(e.key==='v'||e.key==='V')toggleVoice();
 });
 
 boot();
+
+/* ═══════════════════════════════════════════════════════
+   SOCIAL PANEL
+═══════════════════════════════════════════════════════ */
+var socialOpen=false;
+var spLikes=JSON.parse(localStorage.getItem('sp_likes')||'{}');
+var spFunds=JSON.parse(localStorage.getItem('sp_funds')||'{}');
+var spActiveTab='trending';
+
+var SP_POSTS={
+  trending:[
+    {id:'p1',author:'Dr. Sarah Chen',handle:'@sarah_chen_phys',avatar:'🧬',avatarBg:'#7C4FD4',time:'2h ago',domain:'Emotion',domainCol:'#e8a0c0',
+     text:'Just published my heartbreak simulation — modelling emotional separation as a <strong>thermodynamic phase transition</strong>. Two particle fields in gravitational orbit. When the bond breaks, the shared colour collapses to cold. Watch the last particles: always at the fingertips. 💔',
+     sim:{label:'Heartbreak · Phase 2 · The Break',col:'#e8a0c0',key:'heartbreak'},
+     likes:847,comments:63,funded:120},
+    {id:'p2',author:'Prof. James Liu',handle:'@jliu_cosmology',avatar:'🌌',avatarBg:'#ffb347',time:'4h ago',domain:'Cosmos',domainCol:'#ffeecc',
+     text:'The Big Bang in 3 phases is now live. Phase 1 is pure singularity — all matter, energy, space, time compressed into a volume smaller than a proton. <strong>10³² Kelvin.</strong> Then — for no known reason — it expanded. The simulation begins exactly there. 🌌💥',
+     sim:{label:'Big Bang · Phase 1 · Singularity',col:'#ffeecc',key:'bigbang'},
+     likes:1203,comments:142,funded:380},
+    {id:'p3',author:'NeuroLab MIT',handle:'@neurolab_mit',avatar:'⚡',avatarBg:'#60c0f0',time:'6h ago',domain:'Neuroscience',domainCol:'#60c0f0',
+     text:'Action potential propagation at 120 m/s — jumping between nodes of Ranvier. We\'ve rendered the myelin sheath segments as semi-transparent blocks. The golden wave is your thought, travelling right now as you read this. <strong>86 billion neurons. Each capable of 1,000 fires/sec.</strong>',
+     sim:{label:'Neuron · Phase 2 · Propagation',col:'#60c0f0',key:'neuron'},
+     likes:634,comments:38,funded:95},
+    {id:'p4',author:'Dr. Amara Osei',handle:'@amara_immuno',avatar:'🎯',avatarBg:'#ff8c42',time:'8h ago',domain:'Immunology',domainCol:'#ff8c42',
+     text:'T-cell killing cancer — <strong>10 minutes from recognition to apoptosis.</strong> The green cell is a cytotoxic T-cell. The pink clusters are cancer cells. Watch it dock, deliver perforin pores, and trigger caspase-3. No inflammation. No bystander damage. Evolution\'s surgical precision. 🩺',
+     sim:{label:'Immunology · Phase 2 · Perforin Delivery',col:'#ff8c42',key:'immune'},
+     likes:923,comments:87,funded:215}
+  ],
+  new:[
+    {id:'p5',author:'Maya Reeves',handle:'@maya_particle',avatar:'💗',avatarBg:'#ff88aa',time:'45m ago',domain:'Emotion',domainCol:'#ff88aa',
+     text:'Love as emergence — two independent particle systems developing gravitational awareness of each other. The first sign of attraction is always a <strong>slight deviation from the original orbit.</strong> Something has changed the phase space. 💫',
+     sim:{label:'Love · Phase 1 · Attraction',col:'#ff88aa',key:'love'},
+     likes:12,comments:3,funded:0},
+    {id:'p6',author:'WHO ResearchLab',handle:'@who_research',avatar:'💊',avatarBg:'#26e8b0',time:'1h ago',domain:'Biology',domainCol:'#26e8b0',
+     text:'Antibiotic resistance compressed into seconds. The antibiotic kills <strong>99.99%</strong> of the colony. But the 0.01% carrying resistance genes survive. Within 48h the entire colony is reconstituted — composed only of resistant bacteria. We are running out faster than we can build replacements.',
+     sim:{label:'Antibiotic · Phase 3 · Resistance',col:'#26e8b0',key:'amr'},
+     likes:78,comments:14,funded:40},
+    {id:'p7',author:'Caltech Astro',handle:'@caltech_astro',avatar:'🌀',avatarBg:'#7C4FD4',time:'3h ago',domain:'Physics',domainCol:'#7C4FD4',
+     text:'Einstein Ring rendered for the first time in particle simulation. When a massive object precisely aligns between observer and background star, light bends completely around it — creating a <strong>perfect luminous ring.</strong> Predicted 1915. Photographed 2019. Now simulated. 🔭',
+     sim:{label:'Black Hole · Phase 3 · Einstein Ring',col:'#7C4FD4',key:'bh'},
+     likes:156,comments:29,funded:88}
+  ],
+  following:[
+    {id:'p8',author:'Dr. Sarah Chen',handle:'@sarah_chen_phys',avatar:'🧬',avatarBg:'#7C4FD4',time:'1d ago',domain:'Emotion',domainCol:'#8899bb',
+     text:'Working on grief next. The brain\'s predictive model includes the lost person — their voice, their patterns. <strong>Grief is the collision between this model and reality.</strong> Every moment where the prediction fails reactivates the loss. The simulation will show this as a void that pulls particles inward.',
+     sim:{label:'Grief · Phase 1 · The Void',col:'#8899bb',key:'grief'},
+     likes:432,comments:51,funded:60},
+    {id:'p9',author:'Prof. James Liu',handle:'@jliu_cosmology',avatar:'🌌',avatarBg:'#4466ff',time:'2d ago',domain:'Cosmos',domainCol:'#4466ff',
+     text:'Universe at every scale is complete. Earth → Milky Way → Cosmic web. <strong>93 billion light years rendered in Canvas 2D.</strong> Phase 3 shows 800 galaxies with cosmic web filaments. The observable universe is a sphere — but what lies beyond is unknowable. The simulation ends at the edge of observation.',
+     sim:{label:'Universe · Phase 3 · Observable Universe',col:'#4466ff',key:'universe'},
+     likes:892,comments:103,funded:220}
+  ]
+};
+
+/* Mini-canvas renderers for social posts */
+var spCanvasAnimations={};
+function drawSPCanvas(canvasId,col,key,t){
+  var canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  var ctx2=canvas.getContext('2d');
+  var W=canvas.width,H=canvas.height;
+  var r=parseInt(col.slice(1,3)||'26',16);
+  var g2=parseInt(col.slice(3,5)||'e8',16);
+  var b=parseInt(col.slice(5,7)||'b0',16);
+  ctx2.fillStyle='#000508';ctx2.fillRect(0,0,W,H);
+  var gr=ctx2.createRadialGradient(W/2,H/2,0,W/2,H/2,H*0.7);
+  gr.addColorStop(0,'rgba('+r+','+g2+','+b+',0.2)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  ctx2.fillStyle=gr;ctx2.fillRect(0,0,W,H);
+  var n=22;
+  for(var i=0;i<n;i++){
+    var side=i<n/2?-1:1;
+    var a=i/n*Math.PI*2+t*(0.004+i*0.00006)*side;
+    var rd=H*(0.15+0.28*(i%3)/2);
+    var cx=W/2+(key==='heartbreak'||key==='love'?side*W*0.15:0);
+    var x=cx+Math.cos(a)*rd,y=H/2+Math.sin(a)*rd*0.72;
+    ctx2.fillStyle='rgba('+r+','+g2+','+b+','+(0.5+Math.sin(t*0.5+i)*0.25)+')';
+    ctx2.beginPath();ctx2.arc(x,y,2,0,Math.PI*2);ctx2.fill();
+  }
+  spCanvasAnimations[canvasId]=requestAnimationFrame(function(ts){drawSPCanvas(canvasId,col,key,(ts||0)*0.001);});
+}
+
+function renderSPFeed(tab){
+  var feed=document.getElementById('sp-feed');
+  if(!feed)return;
+  // Cancel old animations
+  Object.keys(spCanvasAnimations).forEach(function(id){cancelAnimationFrame(spCanvasAnimations[id]);delete spCanvasAnimations[id];});
+  feed.innerHTML='';
+  var posts=SP_POSTS[tab]||SP_POSTS.trending;
+  posts.forEach(function(post){
+    var liked=!!spLikes[post.id];
+    var funded=!!spFunds[post.id];
+    var canvasId='spc-'+post.id;
+    var div=document.createElement('div');
+    div.className='sp-post';
+    div.innerHTML=
+      '<div class="sp-post-header">'+
+        '<div class="sp-avatar" style="background:'+post.avatarBg+'">'+post.avatar+'</div>'+
+        '<div><div class="sp-author">'+post.author+'</div><div class="sp-handle">'+post.handle+'</div></div>'+
+        '<div class="sp-time">'+post.time+'</div>'+
+      '</div>'+
+      '<div class="sp-domain-tag" style="color:'+post.domainCol+'">'+post.domain+'</div>'+
+      '<div class="sp-text">'+post.text+'</div>'+
+      '<div class="sp-sim-preview" onclick="openSimFromPost(\''+post.sim.key+'\')">'+
+        '<canvas class="sp-sim-canvas" id="'+canvasId+'" width="268" height="88"></canvas>'+
+        '<div class="sp-sim-label">▶ '+post.sim.label+'</div>'+
+      '</div>'+
+      '<div class="sp-actions">'+
+        '<div class="sp-action'+(liked?' liked':'')+'" id="spa-like-'+post.id+'" onclick="spLike(\''+post.id+'\',this)">'+
+          '<span>'+(liked?'❤️':'🤍')+'</span> <span id="spn-'+post.id+'">'+(post.likes+(liked?1:0))+'</span>'+
+        '</div>'+
+        '<div class="sp-action" onclick="spComment(\''+post.id+'\')"><span>💬</span> '+post.comments+'</div>'+
+        '<div class="sp-action'+(funded?' funded':'')+'" id="spa-fund-'+post.id+'" onclick="spFund(\''+post.id+'\',this)">'+
+          '<span>'+(funded?'💰':'🪙')+'</span> '+(funded?'Funded':'Fund')+'</div>'+
+        '<div class="sp-action" onclick="spOpenFull(\''+post.id+'\')"><span>↗</span> Share</div>'+
+      '</div>';
+    feed.appendChild(div);
+    // Start canvas animation after DOM insertion
+    setTimeout(function(){drawSPCanvas(canvasId,post.sim.col,post.sim.key,0);},60);
+  });
+}
+
+function spLike(id,el){
+  spLikes[id]=!spLikes[id];
+  localStorage.setItem('sp_likes',JSON.stringify(spLikes));
+  var post=null;
+  Object.values(SP_POSTS).forEach(function(arr){arr.forEach(function(p){if(p.id===id)post=p;});});
+  if(!post)return;
+  var liked=spLikes[id];
+  el.classList.toggle('liked',liked);
+  el.innerHTML='<span>'+(liked?'❤️':'🤍')+'</span> <span id="spn-'+id+'">'+(post.likes+(liked?1:0))+'</span>';
+}
+
+function spFund(id,el){
+  spFunds[id]=true;
+  localStorage.setItem('sp_funds',JSON.stringify(spFunds));
+  el.classList.add('funded');
+  el.innerHTML='<span>💰</span> Funded';
+}
+
+function spComment(id){
+  var input=document.getElementById('sp-compose-input');
+  if(input){input.focus();input.placeholder='Replying to post…';}
+}
+
+function spOpenFull(id){
+  var text='Check out this simulation on SeenShown: seenshown.com/social.html';
+  if(navigator.share){navigator.share({title:'SeenShown Simulation',text:text,url:'https://seenshown.com/social.html'});}
+  else{navigator.clipboard&&navigator.clipboard.writeText('https://seenshown.com/social.html');}
+}
+
+function openSimFromPost(key){
+  toggleSocial();
+  var pill=document.querySelector('.dpill[data-key="'+key+'"]');
+  switchDomain(key,pill);
+}
+
+function spPost(){
+  var input=document.getElementById('sp-compose-input');
+  var txt=input.value.trim();
+  if(!txt)return;
+  var newPost={id:'usr-'+Date.now(),author:'Nawras Alali',handle:'@nawras',avatar:'NA',avatarBg:'#7C4FD4',time:'Just now',domain:'Community',domainCol:'var(--g)',
+    text:txt,sim:{label:DOMAIN_LABELS[simDraw]||simDraw,col:DC[simDraw]||'#26e8b0',key:simDraw},likes:0,comments:0,funded:false};
+  SP_POSTS.trending.unshift(newPost);
+  SP_POSTS.new.unshift(newPost);
+  input.value='';input.placeholder='Share a simulation or thought…';
+  if(spActiveTab==='trending'||spActiveTab==='new')renderSPFeed(spActiveTab);
+}
+
+function setSPTab(tab,el){
+  spActiveTab=tab;
+  document.querySelectorAll('.sp-tab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  renderSPFeed(tab);
+}
+
+function toggleSocial(){
+  socialOpen=!socialOpen;
+  document.getElementById('socialPanel').classList.toggle('open',socialOpen);
+  if(socialOpen&&document.getElementById('sp-feed').children.length===0)renderSPFeed('trending');
+}
 </script>
 </body>
 </html>

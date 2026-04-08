@@ -1,2 +1,917 @@
-// Run this to load the file content and inject it
-fetch('https://raw.githubusercontent.com/nawrasalali/seenshown-core/main/public/home.html').then(r=>r.text()).then(t=>console.log('current len:',t.length))
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SeenShown — Language becomes motion instantly</title>
+<meta name="description" content="SeenShown turns any question into a real-time particle simulation. Watch biology, physics, economics and social dynamics unfold in under 1.5 seconds.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--card:#080d1a;--border:rgba(38,232,176,0.12)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,14,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-logo{font-size:1.1rem;font-weight:700;letter-spacing:-.02em;color:var(--g)}
+.nav-badge{font-size:.65rem;background:rgba(124,79,212,0.18);border:1px solid rgba(124,79,212,0.4);color:#b48ef0;padding:2px 8px;border-radius:20px;margin-left:.6rem}
+.nav-right{display:flex;gap:1.2rem;align-items:center;font-size:.85rem}
+.nav-right a{color:var(--dim);transition:color .2s}
+.nav-right a:hover{color:var(--g)}
+.nav-cta{background:var(--g);color:#02040e!important;padding:6px 14px;border-radius:6px;font-weight:600;font-size:.8rem!important}
+
+/* HERO */
+#hero{position:relative;height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding-top:56px}
+#hbg{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.hero-content{position:relative;z-index:2;text-align:center;padding:0 1rem;max-width:760px}
+.hero-label{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--g);opacity:.8;margin-bottom:1rem}
+h1{font-size:clamp(2rem,5.5vw,3.8rem);font-weight:800;line-height:1.08;letter-spacing:-.03em;margin-bottom:1.2rem}
+h1 span{color:var(--g)}
+.hero-sub{font-size:1rem;color:var(--dim);max-width:480px;margin:0 auto 2rem;line-height:1.6}
+.hero-input-row{display:flex;gap:.5rem;max-width:520px;margin:0 auto 1rem}
+#hi{flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--w);font-size:.95rem;outline:none;transition:border-color .2s}
+#hi:focus{border-color:var(--g)}
+#hi::placeholder{color:var(--dim)}
+.btn-hero{background:var(--g);color:#02040e;border:none;border-radius:8px;padding:12px 22px;font-weight:700;font-size:.9rem;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+.btn-hero:hover{opacity:.88}
+.hero-hint{font-size:.72rem;color:var(--dim);opacity:.6}
+
+/* MAIN SIM */
+#sim-wrap{position:relative;z-index:2;margin-top:2rem;width:min(700px,92vw)}
+#sim-hdr{display:flex;align-items:center;justify-content:space-between;padding:.5rem .2rem;opacity:0;transition:opacity .6s}
+#sim-hdr.vis{opacity:1}
+.sim-domain{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--g);opacity:.7}
+#snarr{font-size:.78rem;color:var(--dim);max-width:320px;text-align:right;line-height:1.4}
+#simC{width:100%;border-radius:12px;border:1px solid var(--border);background:#000;display:block}
+.lod-overlay{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;background:rgba(2,4,14,0.65);display:flex;align-items:center;justify-content:center;transition:opacity .7s;pointer-events:none}
+.lod-overlay.gone{opacity:0}
+.lod-spinner{width:32px;height:32px;border:2px solid rgba(38,232,176,0.2);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#sim-ftr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;padding:.5rem .2rem;opacity:0;transition:opacity .6s}
+#sim-ftr.vis{opacity:1}
+.phase-btns{display:flex;gap:.4rem}
+.pbtn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--dim);border-radius:6px;padding:4px 12px;font-size:.72rem;cursor:pointer;transition:all .2s}
+.pbtn.active,.pbtn:hover{background:rgba(38,232,176,0.12);border-color:var(--g);color:var(--g)}
+#slider-wrap{display:flex;align-items:center;gap:.6rem;opacity:0;transition:opacity .5s}
+#slider-wrap.show{opacity:1}
+#tslider{width:120px;accent-color:var(--g);cursor:pointer}
+.legend-row{display:flex;gap:.8rem;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:.3rem;font-size:.65rem;color:var(--dim)}
+.leg-dot{width:7px;height:7px;border-radius:50%}
+
+/* ASK SECTION */
+#ask{padding:5rem 1.5rem 4rem;max-width:900px;margin:0 auto}
+.section-label{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--g);opacity:.7;margin-bottom:.8rem}
+#ask h2{font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:700;margin-bottom:.5rem}
+.ask-sub{color:var(--dim);font-size:.9rem;margin-bottom:1.8rem}
+.ask-row{display:flex;gap:.5rem;margin-bottom:1rem}
+#qi{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:13px 16px;color:var(--w);font-size:.95rem;outline:none;transition:border-color .2s}
+#qi:focus{border-color:var(--g)}
+#qi::placeholder{color:var(--dim)}
+.btn-fast{background:var(--g);color:#02040e;border:none;border-radius:8px;padding:13px 20px;font-weight:700;font-size:.85rem;cursor:pointer;transition:opacity .2s}
+.btn-fast:hover{opacity:.85}
+.btn-gen{background:rgba(124,79,212,0.18);color:#b48ef0;border:1px solid rgba(124,79,212,0.4);border-radius:8px;padding:13px 16px;font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s}
+.btn-gen:hover{background:rgba(124,79,212,0.28)}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.chip{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.72rem;color:var(--dim);cursor:pointer;transition:all .2s}
+.chip:hover{border-color:var(--g);color:var(--g)}
+
+/* THINK BAR */
+#think-bar{display:none;align-items:center;gap:.8rem;padding:1rem 1.2rem;background:rgba(38,232,176,0.05);border:1px solid rgba(38,232,176,0.15);border-radius:8px;margin-bottom:1rem}
+#think-bar.show{display:flex}
+.think-spin{width:18px;height:18px;border:2px solid rgba(38,232,176,0.2);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.think-txt{font-size:.82rem;color:var(--g)}
+.think-sub{font-size:.72rem;color:var(--dim);margin-left:auto}
+
+/* Q RESULT */
+#qresult{display:none}
+#qresult.show{display:block}
+.qr-inner{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:.5rem}
+@media(max-width:640px){.qr-inner{grid-template-columns:1fr}}
+#qcanvas{width:100%;border-radius:10px;border:1px solid var(--border);background:#000;aspect-ratio:16/9;display:block}
+.qr-right{display:flex;flex-direction:column;gap:.8rem}
+.qr-label{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--g);opacity:.6}
+.qr-narr{font-size:.82rem;color:var(--dim);line-height:1.6}
+.qr-explain{font-size:.82rem;color:var(--w);line-height:1.6}
+.kps{display:flex;flex-direction:column;gap:.5rem}
+.kp{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:7px;padding:.6rem .8rem}
+.kp-top{display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem}
+.kp-icon{font-size:.9rem}
+.kp-title{font-size:.75rem;font-weight:600;color:var(--w)}
+.kp-detail{font-size:.7rem;color:var(--dim)}
+.try-next{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem}
+.try-chip{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:.68rem;color:var(--dim);cursor:pointer;transition:all .2s}
+.try-chip:hover{border-color:var(--g);color:var(--g)}
+
+/* STATS BAR */
+#stats{background:rgba(38,232,176,0.04);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem;display:flex;justify-content:center;gap:3rem;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-val{font-size:1.6rem;font-weight:800;color:var(--g);line-height:1}
+.stat-lab{font-size:.68rem;color:var(--dim);margin-top:.3rem;letter-spacing:.06em}
+
+/* DOMAINS GRID */
+#domains{padding:5rem 1.5rem;max-width:1100px;margin:0 auto}
+#domains h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:700;margin-bottom:.5rem}
+.dom-sub{color:var(--dim);font-size:.9rem;margin-bottom:2.5rem}
+.dom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1rem}
+.dom-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s}
+.dom-card:hover{border-color:rgba(38,232,176,0.35);transform:translateY(-2px)}
+.dom-canvas{width:100%;height:140px;display:block;background:#000}
+.dom-body{padding:.9rem 1rem}
+.dom-badge{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-bottom:.4rem;display:inline-block}
+.dom-title{font-size:.9rem;font-weight:600;margin-bottom:.25rem}
+.dom-desc{font-size:.72rem;color:var(--dim);line-height:1.5}
+.dom-tag{font-size:.65rem;color:var(--g);margin-top:.4rem;opacity:.7}
+
+/* HOW IT WORKS */
+#how{padding:5rem 1.5rem;max-width:800px;margin:0 auto}
+#how h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:700;margin-bottom:.5rem}
+.how-sub{color:var(--dim);font-size:.9rem;margin-bottom:2.5rem}
+.steps{display:flex;flex-direction:column;gap:1.2rem}
+.step{display:flex;gap:1rem;align-items:flex-start}
+.step-num{width:32px;height:32px;border-radius:50%;background:rgba(38,232,176,0.12);border:1px solid rgba(38,232,176,0.3);color:var(--g);font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body h4{font-size:.9rem;font-weight:600;margin-bottom:.2rem}
+.step-body p{font-size:.8rem;color:var(--dim);line-height:1.5}
+
+/* INVESTOR */
+#invest{padding:5rem 1.5rem;max-width:900px;margin:0 auto;text-align:center}
+#invest h2{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;margin-bottom:.5rem}
+.inv-sub{color:var(--dim);font-size:.9rem;margin-bottom:2rem}
+.inv-stats{display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.inv-stat-val{font-size:2rem;font-weight:800;color:var(--g)}
+.inv-stat-lab{font-size:.72rem;color:var(--dim);margin-top:.25rem}
+.inv-btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.btn-inv{background:var(--g);color:#02040e;border:none;border-radius:8px;padding:13px 28px;font-weight:700;font-size:.9rem;cursor:pointer;transition:opacity .2s;text-decoration:none;display:inline-block}
+.btn-inv:hover{opacity:.85}
+.btn-inv-o{background:transparent;color:var(--g);border:1px solid var(--g);border-radius:8px;padding:13px 28px;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block}
+.btn-inv-o:hover{background:rgba(38,232,176,0.08)}
+.inv-note{font-size:.72rem;color:var(--dim);margin-top:1.2rem;opacity:.7}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:1.5rem;text-align:center;font-size:.72rem;color:var(--dim);line-height:2}
+footer a{color:var(--g);opacity:.7}
+footer a:hover{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div style="display:flex;align-items:center">
+    <span class="nav-logo">SeenShown</span>
+    <span class="nav-badge">Patent Pending AU 2026903218</span>
+  </div>
+  <div class="nav-right">
+    <a href="#domains">Simulations</a>
+    <a href="#how">How it works</a>
+    <a href="/investors.html" class="nav-cta">Investors</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hbg"></canvas>
+  <div class="hero-content">
+    <div class="hero-label">Particle Field Biology™ · Real-time causal simulation</div>
+    <h1>Language becomes<br><span>motion instantly</span></h1>
+    <p class="hero-sub">Type any question. Watch it become a particle simulation in under 1.5 seconds. No video. No animation. Pure causality.</p>
+    <div class="hero-input-row">
+      <input id="hi" type="text" placeholder="How does a virus infect a cell?" maxlength="200">
+      <button class="btn-hero" onclick="heroGo()">Watch it →</button>
+    </div>
+    <p class="hero-hint">No signup · Runs in your browser · <1.5 seconds</p>
+  </div>
+
+  <!-- MAIN SIM -->
+  <div id="sim-wrap" style="position:relative">
+    <div id="sim-hdr">
+      <span class="sim-domain">SARS-CoV-2 · Biology</span>
+      <span id="snarr"></span>
+    </div>
+    <canvas id="simC" height="360"></canvas>
+    <div class="lod-overlay" id="lod-overlay">
+      <div class="lod-spinner"></div>
+    </div>
+    <div id="sim-ftr">
+      <div class="phase-btns">
+        <button class="pbtn active" onclick="setPhase(0)">Binding</button>
+        <button class="pbtn" onclick="setPhase(1)">Entry</button>
+        <button class="pbtn" onclick="setPhase(2)">Replication</button>
+      </div>
+      <div id="slider-wrap">
+        <span style="font-size:.65rem;color:var(--dim)">Speed</span>
+        <input id="tslider" type="range" min="0.2" max="3" step="0.1" value="1">
+      </div>
+      <div class="legend-row">
+        <div class="leg"><div class="leg-dot" style="background:#26e8b0"></div>ACE2</div>
+        <div class="leg"><div class="leg-dot" style="background:#e05c5c"></div>Spike</div>
+        <div class="leg"><div class="leg-dot" style="background:#7C4FD4"></div>Lipid</div>
+        <div class="leg"><div class="leg-dot" style="background:#f0c040"></div>RNA</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ASK SECTION -->
+<section id="ask">
+  <div class="section-label">Ask anything</div>
+  <h2>See any concept in motion</h2>
+  <p class="ask-sub">From cell biology to market crashes — SeenShown renders the causal engine behind it.</p>
+  <div class="ask-row">
+    <input id="qi" type="text" placeholder="e.g. How does antibiotic resistance spread?" maxlength="300">
+    <button class="btn-fast" onclick="runQ('fast')">Fast ⚡</button>
+    <button class="btn-gen" onclick="runQ('custom')">Generate ✦</button>
+  </div>
+  <div class="chips">
+    <span class="chip" onclick="chipQ(0)">Virus cell entry</span>
+    <span class="chip" onclick="chipQ(1)">Antibiotic resistance</span>
+    <span class="chip" onclick="chipQ(2)">Black hole gravity</span>
+    <span class="chip" onclick="chipQ(3)">Rumour spreading</span>
+    <span class="chip" onclick="chipQ(4)">Neural signal</span>
+    <span class="chip" onclick="chipQ(5)">Market crash cascade</span>
+    <span class="chip" onclick="chipQ(6)">T-cell vs cancer</span>
+  </div>
+  <div id="think-bar">
+    <div class="think-spin"></div>
+    <span class="think-txt" id="think-txt">Loading simulation…</span>
+    <span class="think-sub" id="think-sub">Motion starts in under 1.5s</span>
+  </div>
+  <div id="qresult">
+    <div class="qr-inner">
+      <div style="position:relative">
+        <canvas id="qcanvas"></canvas>
+      </div>
+      <div class="qr-right">
+        <div>
+          <div class="qr-label">Narration</div>
+          <p class="qr-narr" id="qr-narr"></p>
+        </div>
+        <div>
+          <div class="qr-label">Explanation</div>
+          <p class="qr-explain" id="qr-explain"></p>
+        </div>
+        <div class="kps" id="kps"></div>
+        <div>
+          <div class="qr-label">Try next</div>
+          <div class="try-next" id="try-next"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div id="stats">
+  <div class="stat"><div class="stat-val">&lt;1.5s</div><div class="stat-lab">First motion</div></div>
+  <div class="stat"><div class="stat-val">60fps</div><div class="stat-lab">Rendering speed</div></div>
+  <div class="stat"><div class="stat-val">30+</div><div class="stat-lab">Simulation domains</div></div>
+  <div class="stat"><div class="stat-val">68%</div><div class="stat-lab">Retention vs video</div></div>
+  <div class="stat"><div class="stat-val">$0</div><div class="stat-lab">To run a simulation</div></div>
+</div>
+
+<!-- DOMAINS GRID -->
+<section id="domains">
+  <div class="section-label">Simulation domains</div>
+  <h2>30+ domains. One engine.</h2>
+  <p class="dom-sub">Every card is a live particle simulation — not a video, not a GIF.</p>
+  <div class="dom-grid" id="dom-grid"></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label">How it works</div>
+  <h2>Five steps from question to simulation</h2>
+  <p class="how-sub">The fastest path from curiosity to comprehension.</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Type your question</h4><p>Natural language — no special syntax required. Ask exactly what you'd ask a teacher.</p></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><h4>AI maps to causal engine</h4><p>Our model selects the matching simulation domain and injects the correct physical rules.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Particles self-organise</h4><p>Thousands of entities follow field equations derived from real science — no pre-rendered frames.</p></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Motion begins in &lt;1.5s</h4><p>Canvas 2D renders at 60fps in your browser. Nothing to download. Works on any device.</p></div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Narration guides understanding</h4><p>Three-phase narration walks through binding, mechanism, and outcome — synced to the simulation.</p></div></div>
+  </div>
+</section>
+
+<!-- INVESTOR SECTION -->
+<section id="invest">
+  <div class="section-label">Investor opportunity</div>
+  <h2>Raising $2M Seed</h2>
+  <p class="inv-sub">YC SAFE · $8M post-money cap · 20% Series A discount</p>
+  <div class="inv-stats">
+    <div><div class="inv-stat-val">$10T</div><div class="inv-stat-lab">Global education market</div></div>
+    <div><div class="inv-stat-val">68%</div><div class="inv-stat-lab">Higher retention vs video</div></div>
+    <div><div class="inv-stat-val">30+</div><div class="inv-stat-lab">Simulation domains live</div></div>
+  </div>
+  <div class="inv-btns">
+    <a href="/investors.html" class="btn-inv">View investor deck →</a>
+    <a href="mailto:info@seenshown.com" class="btn-inv-o">Email us</a>
+  </div>
+  <p class="inv-note">Tiers: $100K · $500K · $1M+ · Referral commission: 25% for 12 months</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div><a href="https://seenshown.com">seenshown.com</a> · <a href="https://seenshown.ai">seenshown.ai</a></div>
+  <div>Patent Pending AU 2026903218 · © 2026 SeenShown · Raising $2M Seed</div>
+  <div style="margin-top:.4rem"><a href="mailto:info@seenshown.com">info@seenshown.com</a></div>
+</footer>
+
+<script>
+'use strict';
+
+/* ─── CONSTANTS ─── */
+var API = 'https://seenshown-api-production.up.railway.app';
+
+/* ─── PERFORMANCE TIER ─── */
+var P_SCALE = (function(){
+  var t0=performance.now(),n=0;
+  while(performance.now()-t0<8){n++}
+  return n>18000?1:n>9000?0.65:0.35;
+})();
+
+/* ─── UTILS ─── */
+function rnd(a,b){return a+(b-a)*Math.random()}
+function rndInt(a,b){return Math.floor(rnd(a,b+1))}
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function hsl(h,s,l){return 'hsl('+h+','+s+'%,'+l+'%)'}
+
+/* ─── BEHAVIOR PRIMITIVES ─── */
+var BEHAVIOR = {
+  damage: function(p,s){p.vx+=(Math.random()-.5)*s;p.vy+=(Math.random()-.5)*s},
+  flow: function(p,tx,ty,sp){p.vx+=(tx-p.vx)*sp;p.vy+=(ty-p.vy)*sp},
+  blockage: function(p,f){p.vx*=f;p.vy*=f},
+  growth: function(arr,tpl){
+    if(arr.length<Math.round(3000*P_SCALE))
+      arr.push(Object.assign({},tpl,{x:tpl.x+rnd(-.02,.02),y:tpl.y+rnd(-.02,.02)}));
+  },
+  decay: function(arr,i){if(arr.length>1)arr.splice(i,1)},
+  inflame: function(ctx,x,y,r){
+    var g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,'rgba(255,80,0,0.3)');
+    g.addColorStop(1,'rgba(255,80,0,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+};
+
+/* ─── SIMULATION DATA ─── */
+var QUESTIONS = [
+  {
+    q:'How does a virus infect a cell?',domain:'Biology',
+    narrs:['SARS-CoV-2 spike proteins dock onto ACE2 receptors on the cell surface, initiating contact.','Membrane fusion pulls the viral payload inside. The lipid envelope merges with the host membrane.','Viral RNA hijacks ribosomes and replicates — new virions bud off and spread to neighboring cells.'],
+    explain:'The spike protein is the key — it binds ACE2 with high affinity, triggering endocytosis. Once inside, the virus uses host machinery to copy itself thousands of times.',
+    keypoints:[{i:'🦠',t:'Spike-ACE2 binding',d:'High-affinity lock-and-key mechanism triggers membrane fusion'},{i:'💉',t:'Membrane fusion',d:'Viral lipid envelope merges with host cell to inject RNA'},{i:'🔬',t:'RNA replication',d:'Host ribosomes hijacked to produce thousands of new virions'}],
+    draw:'covid'
+  },
+  {
+    q:'How do antibiotics kill bacteria?',domain:'Biology',
+    narrs:['Amoxicillin binds to penicillin-binding proteins, blocking cell wall synthesis in dividing bacteria.','Without structural integrity, osmotic pressure ruptures the bacterial membrane — lysis begins.','Resistant strains carrying beta-lactamase genes survive, cleaving the antibiotic ring before it acts.'],
+    explain:'Beta-lactam antibiotics mimic the D-Ala-D-Ala substrate that bacteria use to cross-link peptidoglycan. Without this cross-linking, the cell wall weakens and the bacterium explodes from internal pressure.',
+    keypoints:[{i:'💊',t:'PBP inhibition',d:'Amoxicillin locks onto penicillin-binding proteins permanently'},{i:'💥',t:'Osmotic lysis',d:'Wall failure lets water rush in — bacterial membrane ruptures'},{i:'🧬',t:'Resistance',d:'Beta-lactamase enzyme cleaves the antibiotic before it binds'}],
+    draw:'bact'
+  },
+  {
+    q:'How does a black hole warp spacetime?',domain:'Physics',
+    narrs:['Extreme mass curves the spacetime metric — light and matter follow geodesics toward the singularity.','The accretion disk heats to millions of Kelvin, emitting X-rays as infalling matter accelerates.','At the photon sphere, light orbits the black hole. The Einstein ring forms from lensed background stars.'],
+    explain:'General relativity says mass tells spacetime how to curve, and curvature tells matter how to move. Near a black hole, this curvature becomes so extreme that escape velocity exceeds c — nothing, not even light, can leave.',
+    keypoints:[{i:'⚫',t:'Event horizon',d:'Boundary where escape velocity equals c — point of no return'},{i:'💫',t:'Accretion disk',d:'Infalling matter forms a disk, heating to X-ray temperatures'},{i:'🌌',t:'Gravitational lensing',d:'Light bends around the mass, creating Einstein rings'}],
+    draw:'bh'
+  },
+  {
+    q:'How does a rumour spread through a population?',domain:'Social dynamics',
+    narrs:['Susceptible individuals (blue) encounter infected carriers and adopt the rumour with probability β.','Spreaders (yellow) transmit to their social network. Density and connectivity govern spread rate.','Stiflers (red) have heard the rumour but stopped spreading — saturation collapses the cascade.'],
+    explain:'The SIR model treats rumour spread identically to epidemic dynamics. The basic reproduction number R₀ determines whether a rumour dies out or reaches epidemic proportion — social network topology is the key variable.',
+    keypoints:[{i:'📢',t:'Transmission rate β',d:'Probability of spread per susceptible-infected contact event'},{i:'🔴',t:'Stifler transition',d:'Saturation flips spreaders to stiflers — rumour burns out'},{i:'🕸️',t:'Network topology',d:'Hub nodes accelerate spread; isolated clusters contain it'}],
+    draw:'rumour'
+  },
+  {
+    q:'How does a neuron fire an action potential?',domain:'Neuroscience',
+    narrs:['Sodium channels open at the axon hillock — Na⁺ rushes in, depolarising the membrane to +40mV.','The action potential propagates along the axon via successive channel openings. Myelin speeds conduction.','At the synapse, vesicles fuse and release neurotransmitters across the cleft to the next neuron.'],
+    explain:'The action potential is an all-or-nothing event. Once threshold is crossed (-55mV), voltage-gated Na⁺ channels cascade open, creating a self-propagating wave that travels at up to 120 m/s in myelinated axons.',
+    keypoints:[{i:'⚡',t:'Depolarisation',d:'Na⁺ influx flips membrane potential from -70mV to +40mV'},{i:'🏃',t:'Propagation',d:'Successive channel openings drive the wave along the axon'},{i:'🔗',t:'Synaptic release',d:'Vesicles fuse at terminus, releasing neurotransmitter across cleft'}],
+    draw:'neuron'
+  },
+  {
+    q:'How does a market crash cascade?',domain:'Finance',
+    narrs:['A trigger event drops prices. Algorithmic stop-losses fire, amplifying the initial sell-off.','Margin calls force liquidation — correlated assets fall together as hedges fail simultaneously.','Volatility spikes trigger circuit breakers. The CASCADE state reflects structural market failure.'],
+    explain:'Modern markets are tightly coupled via derivatives and algorithmic trading. When correlations spike toward 1.0, diversification provides no protection — every asset falls together, amplifying losses non-linearly.',
+    keypoints:[{i:'📉',t:'Stop-loss cascade',d:'Algorithmic triggers amplify initial drops into full crashes'},{i:'🔗',t:'Correlation spike',d:'Asset correlations approach 1.0 — diversification fails'},{i:'⚠️',t:'Circuit breaker',d:'Exchange halts prevent total collapse but lock in losses'}],
+    draw:'market'
+  },
+  {
+    q:'How does a T-cell destroy a cancer cell?',domain:'Immunology',
+    narrs:['Cytotoxic T-cells (green) scan cells via TCR-MHC recognition. Cancer cells (pink) display mutant antigens.','Perforin molecules punch pores in the cancer cell membrane — granzymes enter and trigger apoptosis.','The cancer cell fragments into apoptotic bodies. Macrophages clean up the debris without inflammation.'],
+    explain:'T-cell cytotoxicity is a precision strike: TCR recognition ensures only target cells die. Perforin creates a pore, granzyme B cleaves caspase-3, triggering programmed death. It takes under 10 minutes per kill.',
+    keypoints:[{i:'🎯',t:'TCR recognition',d:'T-cell receptor identifies mutant peptide on MHC-I complex'},{i:'💣',t:'Perforin pores',d:'Perforin polymerises into membrane pores, enabling granzyme entry'},{i:'☠️',t:'Apoptosis',d:'Granzyme B activates caspase cascade — cell dies cleanly'}],
+    draw:'immune'
+  }
+];
+
+var SIMS = [
+  {badge:'Biology',badgeCol:'#26e8b0',title:'SARS-CoV-2 Infection',desc:'Spike proteins dock onto ACE2 receptors. Watch membrane fusion and viral RNA release.',tag:'virus_infecting_cell',qi:'How does a virus infect a cell?',draw:'covid'},
+  {badge:'Biology',badgeCol:'#26e8b0',title:'Antibiotic Lysis',desc:'Amoxicillin blocks cell wall synthesis. Bacteria rupture from osmotic pressure.',tag:'antibiotic_killing_bacteria',qi:'How do antibiotics kill bacteria?',draw:'bact'},
+  {badge:'Physics',badgeCol:'#7C4FD4',title:'Black Hole Gravity',desc:'Accretion disk, photon sphere and Einstein ring form around a stellar-mass singularity.',tag:'black_hole',qi:'How does a black hole warp spacetime?',draw:'bh'},
+  {badge:'Social',badgeCol:'#f0c040',title:'Rumour Cascade',desc:'SIR dynamics govern information spread. Watch susceptible → spreader → stifler transitions.',tag:'rumour_school',qi:'How does a rumour spread?',draw:'rumour'},
+  {badge:'Neuroscience',badgeCol:'#60c0f0',title:'Action Potential',desc:'Voltage-gated Na⁺ channels fire in sequence. The signal propagates at 120 m/s.',tag:'neural_signal',qi:'How does a neuron fire?',draw:'neuron'},
+  {badge:'Finance',badgeCol:'#e05c5c',title:'Market Crash',desc:'Algorithmic stop-losses cascade. Correlations spike to 1.0. The circuit breaker fires.',tag:'market_crash',qi:'How does a market crash cascade?',draw:'market'},
+  {badge:'Immunology',badgeCol:'#ff8c42',title:'T-Cell vs Cancer',desc:'Cytotoxic T-cells identify mutant antigens and deploy perforin. Apoptosis in under 10 min.',tag:'immune_response',qi:'How does a T-cell destroy cancer?',draw:'immune'}
+];
+/* ─── DRAW FUNCTIONS ─── */
+function qDrawCovid(ctx,W,H,t,ph){
+  var bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#02040e');bg.addColorStop(1,'#050810');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  var cx=W/2,cy=H/2;
+  var virusR=Math.min(W,H)*0.13;
+  ctx.save();
+  var cellG=ctx.createRadialGradient(cx,cy,virusR*1.5,cx,cy,virusR*3.5);
+  cellG.addColorStop(0,'rgba(38,100,180,0.18)');
+  cellG.addColorStop(1,'rgba(38,100,180,0.03)');
+  ctx.fillStyle=cellG;ctx.beginPath();ctx.arc(cx,cy,virusR*3.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(80,160,255,0.25)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(cx,cy,virusR*3.5,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+  var nRec=12;
+  for(var i=0;i<nRec;i++){
+    var angle=i/nRec*Math.PI*2+t*0.0003;
+    var rx=cx+Math.cos(angle)*(virusR*3.5);
+    var ry=cy+Math.sin(angle)*(virusR*3.5);
+    ctx.strokeStyle='#26e8b0';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(rx,ry);
+    ctx.lineTo(rx+Math.cos(angle)*10,ry+Math.sin(angle)*10);ctx.stroke();
+    ctx.fillStyle='#26e8b0';ctx.beginPath();ctx.arc(rx+Math.cos(angle)*10,ry+Math.sin(angle)*10,3,0,Math.PI*2);ctx.fill();
+  }
+  var vx,vy;
+  if(ph===0){vx=cx+Math.cos(t*0.0008)*W*0.25;vy=cy+Math.sin(t*0.0006)*H*0.18;}
+  else if(ph===1){var prog=clamp((t%2000)/1000,0,1);vx=lerp(cx+W*0.2,cx,prog);vy=cy;}
+  else{vx=cx;vy=cy;}
+  ctx.save();
+  var envG=ctx.createRadialGradient(vx,vy,0,vx,vy,virusR);
+  envG.addColorStop(0,'rgba(124,79,212,0.9)');
+  envG.addColorStop(0.7,'rgba(80,40,160,0.8)');
+  envG.addColorStop(1,'rgba(60,20,120,0.6)');
+  ctx.fillStyle=envG;ctx.beginPath();ctx.arc(vx,vy,virusR,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  var nSpike=14;
+  for(var s=0;s<nSpike;s++){
+    var sa=s/nSpike*Math.PI*2+t*0.0005;
+    var sx1=vx+Math.cos(sa)*virusR,sy1=vy+Math.sin(sa)*virusR;
+    var sx2=vx+Math.cos(sa)*(virusR+14),sy2=vy+Math.sin(sa)*(virusR+14);
+    ctx.strokeStyle='#e05c5c';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(sx1,sy1);ctx.lineTo(sx2,sy2);ctx.stroke();
+    ctx.fillStyle='#ff8080';ctx.beginPath();ctx.arc(sx2,sy2,4,0,Math.PI*2);ctx.fill();
+  }
+  if(ph===2){
+    var nRNA=Math.round(20*P_SCALE);
+    for(var r=0;r<nRNA;r++){
+      var ra=r/nRNA*Math.PI*2+t*0.002;
+      var rr=virusR*2+Math.sin(t*0.003+r)*virusR;
+      var rx2=cx+Math.cos(ra)*rr*0.4,ry2=cy+Math.sin(ra)*rr*0.4;
+      ctx.fillStyle='rgba(240,192,64,0.7)';
+      ctx.beginPath();ctx.arc(rx2,ry2,2.5,0,Math.PI*2);ctx.fill();
+    }
+  }
+  var phaseLabels=['Phase 1: Spike-ACE2 Binding','Phase 2: Membrane Fusion','Phase 3: RNA Replication'];
+  ctx.fillStyle='rgba(38,232,176,0.6)';ctx.font='11px monospace';
+  ctx.fillText(phaseLabels[ph],12,22);
+}
+
+function qDrawBact(ctx,W,H,t,ph){
+  var bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#020810');bg.addColorStop(1,'#050510');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  var nBact=Math.round(18*P_SCALE);
+  for(var i=0;i<nBact;i++){
+    var bx=W*(0.1+0.8*(i%6)/5),by=H*(0.2+0.6*Math.floor(i/6)/2);
+    var wobble=Math.sin(t*0.002+i)*3;
+    var alive=ph===0||(ph===1&&i%3!==0)||(ph===2&&i%5===0);
+    if(!alive){
+      for(var d=0;d<5;d++){
+        var da=d/5*Math.PI*2+t*0.003+i,dr=12+Math.sin(t*0.004+d)*8;
+        ctx.fillStyle='rgba(100,200,100,0.3)';
+        ctx.beginPath();ctx.arc(bx+Math.cos(da)*dr,by+Math.sin(da)*dr,2,0,Math.PI*2);ctx.fill();
+      }
+      continue;
+    }
+    ctx.save();ctx.translate(bx+wobble,by);ctx.rotate(Math.sin(t*0.001+i)*0.3);
+    ctx.fillStyle=ph===2?'rgba(200,80,80,0.8)':'rgba(80,200,120,0.8)';
+    ctx.beginPath();ctx.ellipse(0,0,18,9,0,0,Math.PI*2);ctx.fill();
+    if(ph===1){ctx.strokeStyle='rgba(255,80,80,0.4)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(10,0);ctx.stroke();}
+    ctx.restore();
+  }
+  if(ph>=1){
+    var nAb=Math.round(30*P_SCALE);
+    for(var a=0;a<nAb;a++){
+      var ax=W*(Math.sin(a*2.3+t*0.001)*0.4+0.5),ay=H*(Math.cos(a*1.7+t*0.0008)*0.4+0.5);
+      ctx.fillStyle='rgba(240,192,64,0.6)';
+      ctx.beginPath();ctx.arc(ax,ay,3,0,Math.PI*2);ctx.fill();
+    }
+  }
+  var labels=['Healthy bacteria colony','Amoxicillin binding — PBPs blocked','Osmotic lysis cascade'];
+  ctx.fillStyle='rgba(38,232,176,0.6)';ctx.font='11px monospace';
+  ctx.fillText(labels[ph],12,22);
+}
+
+function qDrawBH(ctx,W,H,t,ph){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  var cx=W/2,cy=H/2,bhR=Math.min(W,H)*0.1;
+  var nRings=8;
+  for(var r=0;r<nRings;r++){
+    var rr=bhR*(2.2+r*0.8),alpha=0.6-r*0.07,hue=30+r*8;
+    ctx.save();ctx.translate(cx,cy);ctx.scale(1,0.35);
+    var discG=ctx.createLinearGradient(-rr,0,rr,0);
+    discG.addColorStop(0,'rgba(255,120,20,0)');
+    discG.addColorStop(0.35,'hsla('+hue+',90%,60%,'+alpha+')');
+    discG.addColorStop(0.5,'hsla('+hue+',90%,70%,'+(alpha+0.1)+')');
+    discG.addColorStop(0.65,'hsla('+hue+',90%,60%,'+alpha+')');
+    discG.addColorStop(1,'rgba(255,120,20,0)');
+    ctx.fillStyle=discG;ctx.beginPath();ctx.ellipse(0,0,rr,rr*0.18,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  if(ph>=1){
+    var nPh=Math.round(60*P_SCALE);
+    for(var p=0;p<nPh;p++){
+      var pa=p/nPh*Math.PI*2+t*0.001*(1+p%3*0.1),pr=bhR*1.5;
+      var px=cx+Math.cos(pa)*pr,py=cy+Math.sin(pa)*pr*0.4;
+      ctx.fillStyle='rgba(255,255,200,0.5)';
+      ctx.beginPath();ctx.arc(px,py,1.5,0,Math.PI*2);ctx.fill();
+    }
+  }
+  var ehG=ctx.createRadialGradient(cx,cy,0,cx,cy,bhR);
+  ehG.addColorStop(0,'#000');ehG.addColorStop(0.85,'#000');ehG.addColorStop(1,'rgba(0,0,0,0.6)');
+  ctx.fillStyle=ehG;ctx.beginPath();ctx.arc(cx,cy,bhR,0,Math.PI*2);ctx.fill();
+  if(ph===2){
+    ctx.strokeStyle='rgba(255,255,180,0.4)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(cx,cy,bhR*2.8,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,180,0.15)';ctx.lineWidth=4;
+    ctx.beginPath();ctx.arc(cx,cy,bhR*2.8,0,Math.PI*2);ctx.stroke();
+  }
+  var ifAngle=t*0.0015,ifR=bhR*(3.5-((t%3000)/3000)*2.5);
+  if(ifR>bhR){
+    var ifx=cx+Math.cos(ifAngle)*ifR,ify=cy+Math.sin(ifAngle)*ifR*0.5;
+    ctx.fillStyle='rgba(255,200,100,0.8)';
+    ctx.beginPath();ctx.arc(ifx,ify,3,0,Math.PI*2);ctx.fill();
+  }
+  var labels=['Spacetime curvature','Photon sphere & lensing','Einstein ring formed'];
+  ctx.fillStyle='rgba(38,232,176,0.6)';ctx.font='11px monospace';
+  ctx.fillText(labels[ph],12,22);
+}
+
+function qDrawRumour(ctx,W,H,t,ph){
+  ctx.fillStyle='#02040e';ctx.fillRect(0,0,W,H);
+  if(!window._rumP){
+    window._rumP=[];
+    var n=Math.round(200*P_SCALE);
+    for(var i=0;i<n;i++)window._rumP.push({x:rnd(20,W-20),y:rnd(20,H-20),vx:rnd(-0.4,0.4),vy:rnd(-0.4,0.4),state:i<3?1:0});
+  }
+  var ps=window._rumP;
+  var beta=ph===0?0.003:ph===1?0.008:0.004;
+  var stifleRate=ph===2?0.002:0.0005;
+  for(var i=0;i<ps.length;i++){
+    var p=ps[i];
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<5||p.x>W-5)p.vx*=-1;
+    if(p.y<5||p.y>H-5)p.vy*=-1;
+    if(p.state===1&&Math.random()<stifleRate)p.state=2;
+    if(p.state===1){
+      for(var j=0;j<ps.length;j++){
+        if(ps[j].state===0){
+          var dx=ps[j].x-p.x,dy=ps[j].y-p.y;
+          if(dx*dx+dy*dy<400&&Math.random()<beta)ps[j].state=1;
+        }
+      }
+    }
+    ctx.fillStyle=p.state===0?'rgba(100,150,255,0.7)':p.state===1?'rgba(240,200,40,0.9)':'rgba(220,60,60,0.7)';
+    ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();
+  }
+  var s=ps.filter(function(p){return p.state===0}).length;
+  var sp=ps.filter(function(p){return p.state===1}).length;
+  var st=ps.filter(function(p){return p.state===2}).length;
+  ctx.fillStyle='rgba(38,232,176,0.6)';ctx.font='11px monospace';
+  ctx.fillText('S:'+s+' I:'+sp+' R:'+st,12,22);
+}
+
+function qDrawNeuron(ctx,W,H,t,ph){
+  ctx.fillStyle='#02040e';ctx.fillRect(0,0,W,H);
+  var cx=W/2,cy=H/2;
+  ctx.strokeStyle='rgba(100,180,255,0.4)';ctx.lineWidth=12;
+  ctx.beginPath();ctx.moveTo(W*0.05,cy);ctx.lineTo(W*0.88,cy);ctx.stroke();
+  for(var m=0;m<6;m++){ctx.fillStyle='rgba(200,220,255,0.15)';ctx.fillRect(W*(0.1+m*0.13),cy-8,W*0.08,16);}
+  var waveProg=(t*0.0004*P_SCALE)%1,waveX=W*0.05+waveProg*(W*0.83);
+  var wg=ctx.createRadialGradient(waveX,cy,0,waveX,cy,40);
+  wg.addColorStop(0,'rgba(255,200,80,0.6)');wg.addColorStop(1,'rgba(255,200,80,0)');
+  ctx.fillStyle=wg;ctx.fillRect(waveX-40,cy-40,80,80);
+  var nIons=Math.round(15*P_SCALE);
+  for(var i=0;i<nIons;i++){
+    ctx.fillStyle='rgba(255,180,50,0.8)';
+    ctx.beginPath();ctx.arc(waveX+(i-nIons/2)*4,cy+Math.sin(i+t*0.01)*12,3,0,Math.PI*2);ctx.fill();
+  }
+  for(var d=0;d<4;d++){
+    var da=Math.PI*(0.7+d*0.15);
+    ctx.strokeStyle='rgba(100,180,255,0.35)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(W*0.05,cy);ctx.lineTo(W*0.05+Math.cos(da)*50,cy+Math.sin(da)*40);ctx.stroke();
+  }
+  if(ph>=1){
+    var nVes=Math.round(12*P_SCALE);
+    for(var v=0;v<nVes;v++){
+      var va=v/nVes*Math.PI*2,vr=18+Math.sin(t*0.005+v)*5;
+      ctx.fillStyle='rgba(124,79,212,0.7)';
+      ctx.beginPath();ctx.arc(W*0.9+Math.cos(va)*vr,cy+Math.sin(va)*vr,4,0,Math.PI*2);ctx.fill();
+    }
+    if(ph===2){for(var n=0;n<8;n++){ctx.fillStyle='rgba(38,232,176,0.5)';ctx.beginPath();ctx.arc(W*0.92+Math.sin(t*0.008+n)*20,cy+(n-4)*8+Math.cos(t*0.006+n)*10,2.5,0,Math.PI*2);ctx.fill();}}
+  }
+  var labels=['Na⁺ channel opening — depolarisation','Action potential propagating','Synaptic vesicle release'];
+  ctx.fillStyle='rgba(38,232,176,0.6)';ctx.font='11px monospace';
+  ctx.fillText(labels[ph],12,22);
+}
+
+function qDrawMarket(ctx,W,H,t,ph){
+  ctx.fillStyle='#02040e';ctx.fillRect(0,0,W,H);
+  if(!window._mktPts){window._mktPts=[];for(var i=0;i<60;i++)window._mktPts.push(0.5+Math.sin(i*0.3)*0.05);}
+  var pts=window._mktPts,crashStart=20;
+  if(Math.floor(t/100)>pts.length-1&&pts.length<120){
+    var last=pts[pts.length-1],delta;
+    if(pts.length<crashStart){delta=rnd(-0.01,0.015);}
+    else if(ph===0){delta=rnd(-0.02,0.005);}
+    else if(ph===1){delta=rnd(-0.05,-0.01);}
+    else{delta=rnd(-0.03,-0.005);}
+    pts.push(clamp(last+delta,0.02,0.98));
+  }
+  var padL=30,padR=20,padT=30,padB=40,chartW=W-padL-padR,chartH=H-padT-padB;
+  ctx.beginPath();
+  for(var i=0;i<pts.length;i++){var px=padL+i/119*chartW,py=padT+chartH*(1-pts[i]);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}
+  ctx.strokeStyle=ph>=1?'#e05c5c':'#26e8b0';ctx.lineWidth=2;ctx.stroke();
+  ctx.lineTo(padL+(pts.length-1)/119*chartW,padT+chartH);ctx.lineTo(padL,padT+chartH);ctx.closePath();
+  ctx.fillStyle=ph>=1?'rgba(220,60,60,0.08)':'rgba(38,232,176,0.06)';ctx.fill();
+  if(ph===2){ctx.fillStyle='rgba(220,60,60,0.15)';ctx.font='bold 48px monospace';ctx.fillText('CASCADE',W*0.15,H*0.6);}
+  if(ph>=1){var nSell=Math.round(20*P_SCALE);for(var s=0;s<nSell;s++){ctx.fillStyle='rgba(220,60,60,0.5)';ctx.beginPath();ctx.arc(padL+(Math.sin(s*1.3+t*0.003)*0.4+0.5)*chartW,padT+(Math.cos(s*1.7+t*0.004)*0.3+0.7)*chartH,2.5,0,Math.PI*2);ctx.fill();}}
+  var labels=['Normal trading — algorithmic baseline','Stop-losses firing — margin calls','Full cascade — circuit breaker active'];
+  ctx.fillStyle='rgba(38,232,176,0.6)';ctx.font='11px monospace';
+  ctx.fillText(labels[ph],12,22);
+}
+
+function qDrawImmune(ctx,W,H,t,ph){
+  ctx.fillStyle='#02040e';ctx.fillRect(0,0,W,H);
+  var nCancer=ph===2?2:ph===1?4:7;
+  for(var c=0;c<nCancer;c++){
+    var ca=c/7*Math.PI*2+t*0.0002,cr=Math.min(W,H)*0.28;
+    var ccx=W/2+Math.cos(ca)*cr,ccy=H/2+Math.sin(ca)*cr;
+    ctx.fillStyle='rgba(255,100,160,0.35)';ctx.beginPath();ctx.arc(ccx,ccy,24,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(255,100,160,0.6)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(ccx,ccy,24,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(255,60,100,0.8)';ctx.beginPath();ctx.arc(ccx,ccy-24,4,0,Math.PI*2);ctx.fill();
+  }
+  var nT=Math.round(5*P_SCALE);
+  for(var i=0;i<nT;i++){
+    var ta=i/nT*Math.PI*2+t*0.0005*(1+i*0.1),tr=Math.min(W,H)*0.15;
+    var tx2=W/2+Math.cos(ta)*tr,ty2=H/2+Math.sin(ta)*tr;
+    ctx.fillStyle='rgba(38,232,176,0.8)';ctx.beginPath();ctx.arc(tx2,ty2,10,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(38,232,176,0.4)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(tx2,ty2,14,0,Math.PI*2);ctx.stroke();
+    if(ph>=1){for(var p=0;p<3;p++){var pa=ta+p*Math.PI*2/3+t*0.003,pr=10+((t*0.05+p*100)%50);ctx.fillStyle='rgba(38,232,176,0.4)';ctx.beginPath();ctx.arc(tx2+Math.cos(pa)*pr,ty2+Math.sin(pa)*pr,2,0,Math.PI*2);ctx.fill();}}
+  }
+  if(ph===2){
+    for(var a=0;a<20;a++){ctx.fillStyle='rgba(255,100,160,0.2)';ctx.beginPath();ctx.arc(W*(0.2+0.6*((a*7+Math.floor(t/50))%20)/20),H*(0.2+0.6*((a*13)%20)/20),5+Math.sin(a)*3,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle='rgba(38,232,176,0.6)';ctx.font='11px monospace';
+    ctx.fillText('Apoptosis complete — debris cleared',12,H-12);
+  }
+  var labels=['TCR scanning — identifying mutant antigens','Perforin pores — granzyme delivery','Apoptotic cascade — clean cell death'];
+  ctx.fillStyle='rgba(38,232,176,0.6)';ctx.font='11px monospace';
+  ctx.fillText(labels[ph],12,22);
+}
+
+var DRAW_FNS={covid:qDrawCovid,bact:qDrawBact,bh:qDrawBH,rumour:qDrawRumour,neuron:qDrawNeuron,market:qDrawMarket,immune:qDrawImmune};
+/* ─── MAIN SIM STATE ─── */
+var mainLOD=0,mainPhase=0,mainSpeed=1,mainT=0,mainRAF=null;
+var NARRS=['SARS-CoV-2 spike proteins approach ACE2 receptors on the host cell surface.','Spike-ACE2 binding triggers conformational change — membrane fusion begins.','Viral RNA enters cytoplasm. Ribosomes hijacked. New virions assembling.'];
+
+function bootMainSim(){
+  var canvas=document.getElementById('simC');
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth||700;
+  canvas.height=360;
+  mainLOD=0;
+  mainLoop();
+  setTimeout(function(){
+    mainLOD=1;
+    var ov=document.getElementById('lod-overlay');
+    if(ov)ov.classList.add('gone');
+    var sn=document.getElementById('snarr');
+    if(sn)sn.textContent=NARRS[0];
+    setTimeout(function(){
+      var hdr=document.getElementById('sim-hdr'),ftr=document.getElementById('sim-ftr');
+      if(hdr)hdr.classList.add('vis');
+      if(ftr)ftr.classList.add('vis');
+    },100);
+    setTimeout(function(){
+      mainLOD=2;
+      setTimeout(function(){var sw=document.getElementById('slider-wrap');if(sw)sw.classList.add('show');},800);
+    },700);
+  },650);
+}
+
+function mainLoop(){
+  mainRAF=requestAnimationFrame(mainLoop);
+  var canvas=document.getElementById('simC');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  mainT+=mainSpeed*16;
+  qDrawCovid(ctx,canvas.width,canvas.height,mainT,mainPhase);
+}
+
+function setPhase(ph){
+  mainPhase=ph;
+  document.querySelectorAll('.pbtn').forEach(function(b,i){b.classList.toggle('active',i===ph)});
+  var sn=document.getElementById('snarr');
+  if(sn)sn.textContent=NARRS[ph];
+}
+
+document.getElementById('tslider').addEventListener('input',function(){mainSpeed=parseFloat(this.value);});
+
+/* ─── HERO BG ─── */
+function initHeroBg(){
+  var canvas=document.getElementById('hbg');
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;
+  var W=canvas.width,H=canvas.height,pts=[],n=Math.round(80*P_SCALE);
+  for(var i=0;i<n;i++)pts.push({x:rnd(0,W),y:rnd(0,H),vx:rnd(-0.15,0.15),vy:rnd(-0.15,0.15),r:rnd(1,2.5)});
+  var ctx=canvas.getContext('2d');
+  function drawBg(){
+    requestAnimationFrame(drawBg);
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='rgba(2,4,14,0.4)';ctx.fillRect(0,0,W,H);
+    for(var i=0;i<pts.length;i++){
+      pts[i].x+=pts[i].vx;pts[i].y+=pts[i].vy;
+      pts[i].x=(pts[i].x+W)%W;pts[i].y=(pts[i].y+H)%H;
+      ctx.fillStyle='rgba(38,232,176,0.3)';
+      ctx.beginPath();ctx.arc(pts[i].x,pts[i].y,pts[i].r,0,Math.PI*2);ctx.fill();
+    }
+  }
+  drawBg();
+}
+
+/* ─── HERO INPUT ─── */
+function heroGo(){
+  var val=document.getElementById('hi').value.trim();
+  if(!val)return;
+  document.getElementById('qi').value=val;
+  document.getElementById('ask').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){runQ('fast')},300);
+}
+document.getElementById('hi').addEventListener('keydown',function(e){if(e.key==='Enter')heroGo()});
+document.getElementById('qi').addEventListener('keydown',function(e){if(e.key==='Enter')runQ('fast')});
+
+var CHIP_QS=['How does a virus infect a cell?','How do antibiotics kill bacteria?','How does a black hole warp spacetime?','How does a rumour spread through a population?','How does a neuron fire an action potential?','How does a market crash cascade?','How does a T-cell destroy a cancer cell?'];
+function chipQ(idx){document.getElementById('qi').value=CHIP_QS[idx];runQ('fast');}
+
+function showThink(txt,sub){
+  var tb=document.getElementById('think-bar');
+  if(tb){tb.classList.add('show');document.getElementById('think-txt').textContent=txt||'Loading simulation…';document.getElementById('think-sub').textContent=sub||'';}
+  document.getElementById('qresult').classList.remove('show');
+}
+function hideThink(){var tb=document.getElementById('think-bar');if(tb)tb.classList.remove('show');}
+
+function bestFallback(q){
+  var lower=q.toLowerCase();
+  if(lower.indexOf('virus')>=0||lower.indexOf('cell')>=0||lower.indexOf('covid')>=0)return 0;
+  if(lower.indexOf('antibiot')>=0||lower.indexOf('bacteri')>=0)return 1;
+  if(lower.indexOf('black hole')>=0||lower.indexOf('grav')>=0)return 2;
+  if(lower.indexOf('rumour')>=0||lower.indexOf('rumor')>=0||lower.indexOf('spread')>=0)return 3;
+  if(lower.indexOf('neuron')>=0||lower.indexOf('action potential')>=0)return 4;
+  if(lower.indexOf('market')>=0||lower.indexOf('crash')>=0||lower.indexOf('stock')>=0)return 5;
+  if(lower.indexOf('t-cell')>=0||lower.indexOf('cancer')>=0||lower.indexOf('immune')>=0)return 6;
+  return Math.floor(Math.random()*7);
+}
+
+var qRAF=null,qT=0,qPhase=0,qDrawKey='covid',qSpeed=1;
+function startQCanvas(drawKey){
+  if(qRAF)cancelAnimationFrame(qRAF);
+  qT=0;qDrawKey=drawKey;
+  var canvas=document.getElementById('qcanvas');
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth||400;
+  canvas.height=Math.round(canvas.offsetWidth*(9/16))||225;
+  function qLoop(){
+    qRAF=requestAnimationFrame(qLoop);
+    var ctx=canvas.getContext('2d');
+    qT+=qSpeed*16;
+    var fn=DRAW_FNS[qDrawKey]||qDrawCovid;
+    fn(ctx,canvas.width,canvas.height,qT,qPhase);
+  }
+  qLoop();
+}
+
+function renderQResult(data,question,isCustom,fbIdx){
+  hideThink();
+  var idx=fbIdx!==undefined?fbIdx:bestFallback(question);
+  var local=QUESTIONS[idx];
+  var narrs=data&&data.narration?data.narration.map(function(n){return n.text||n}):local.narrs;
+  var explain=data&&data.explanation?data.explanation:local.explain;
+  var keypoints=data&&data.keypoints&&data.keypoints.length?data.keypoints:local.keypoints;
+  var drawKey=SIMS.find(function(s){return data&&s.tag===data.templateId})?SIMS.find(function(s){return s.tag===data.templateId}).draw:local.draw;
+  qPhase=0;
+  startQCanvas(drawKey);
+  document.getElementById('qresult').classList.add('show');
+  document.getElementById('qr-narr').textContent=narrs[0]||'';
+  document.getElementById('qr-explain').textContent=explain||'';
+  var kpsEl=document.getElementById('kps');
+  kpsEl.innerHTML='';
+  (keypoints||[]).forEach(function(kp){
+    var icon=kp.icon||kp.i||'🔬',title=kp.title||kp.t||'',detail=kp.detail||kp.d||'';
+    kpsEl.innerHTML+='<div class="kp"><div class="kp-top"><span class="kp-icon">'+icon+'</span><span class="kp-title">'+title+'</span></div><div class="kp-detail">'+detail+'</div></div>';
+  });
+  var tryEl=document.getElementById('try-next');
+  tryEl.innerHTML='';
+  QUESTIONS.filter(function(q){return q.draw!==drawKey}).slice(0,4).forEach(function(o){
+    var chip=document.createElement('span');
+    chip.className='try-chip';chip.textContent=o.q;
+    chip.onclick=function(){document.getElementById('qi').value=o.q;runQ('fast');};
+    tryEl.appendChild(chip);
+  });
+  var narIdx=0;
+  if(window._narTimer)clearInterval(window._narTimer);
+  window._narTimer=setInterval(function(){
+    narIdx=(narIdx+1)%narrs.length;
+    var el=document.getElementById('qr-narr');
+    if(el)el.textContent=narrs[narIdx]||'';
+  },4000);
+}
+
+function runQ(mode){
+  var q=(document.getElementById('qi').value||'').trim();
+  if(!q){document.getElementById('qi').focus();return;}
+  showThink('Loading simulation…','Motion starts in under 1.5s');
+  if(mode==='fast'){runFast(q);}else{runCustom(q);}
+}
+
+function runFast(q){
+  setTimeout(function(){
+    fetch(API+'/v1/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,mode:'fast'})})
+    .then(function(r){return r.json()})
+    .then(function(data){renderQResult(data,q,false)})
+    .catch(function(){renderQResult(null,q,false,bestFallback(q));});
+  },120);
+}
+
+function runCustom(q){
+  showThink('Generating custom simulation…','Usually 10–15 seconds');
+  fetch(API+'/v1/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,mode:'custom'})})
+  .then(function(r){return r.json()})
+  .then(function(data){if(data.jobId){pollJob(data.jobId,q);}else{renderQResult(data,q,true);}})
+  .catch(function(){renderQResult(null,q,false,bestFallback(q));});
+}
+
+function pollJob(jobId,q){
+  var attempts=0;
+  var iv=setInterval(function(){
+    attempts++;
+    fetch(API+'/v1/query/job/'+jobId)
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d.status==='done'){clearInterval(iv);renderQResult(d.result,q,true);}
+      else if(d.status==='error'||attempts>30){clearInterval(iv);renderQResult(null,q,false,bestFallback(q));}
+    })
+    .catch(function(){if(attempts>5){clearInterval(iv);renderQResult(null,q,false,bestFallback(q));}});
+  },1500);
+}
+
+function buildGrid(){
+  var grid=document.getElementById('dom-grid');
+  if(!grid)return;
+  SIMS.forEach(function(sim,idx){
+    var card=document.createElement('div');
+    card.className='dom-card';
+    card.innerHTML='<canvas class="dom-canvas" data-idx="'+idx+'"></canvas><div class="dom-body"><span class="dom-badge" style="background:'+sim.badgeCol+'22;color:'+sim.badgeCol+'">'+sim.badge+'</span><div class="dom-title">'+sim.title+'</div><div class="dom-desc">'+sim.desc+'</div><div class="dom-tag">'+sim.qi+'</div></div>';
+    card.onclick=function(){document.getElementById('qi').value=sim.qi;document.getElementById('ask').scrollIntoView({behavior:'smooth'});setTimeout(function(){runQ('fast');},200);};
+    grid.appendChild(card);
+  });
+  var animTimers={};
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var canvas=entry.target,idx=parseInt(canvas.dataset.idx);
+      if(entry.isIntersecting){
+        if(!animTimers[idx]){
+          canvas.width=canvas.offsetWidth||270;canvas.height=140;
+          var t=0;
+          animTimers[idx]=setInterval(function(){
+            t+=16;
+            var ctx=canvas.getContext('2d'),fn=DRAW_FNS[SIMS[idx].draw]||qDrawCovid;
+            fn(ctx,canvas.width,canvas.height,t,0);
+          },1000/30);
+        }
+      }else{
+        if(animTimers[idx]){clearInterval(animTimers[idx]);delete animTimers[idx];}
+      }
+    });
+  },{threshold:0.2});
+  document.querySelectorAll('.dom-canvas').forEach(function(c){obs.observe(c);});
+}
+
+window.addEventListener('DOMContentLoaded',function(){initHeroBg();bootMainSim();buildGrid();});
+window.addEventListener('resize',function(){
+  var hbg=document.getElementById('hbg');
+  if(hbg){hbg.width=hbg.offsetWidth;hbg.height=hbg.offsetHeight;}
+  var sc=document.getElementById('simC');
+  if(sc){sc.width=sc.offsetWidth||700;}
+});
+</script>
+</body>
+</html>

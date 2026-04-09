@@ -9,7 +9,8 @@
 :root{--bg:#02040e;--surface:#070d1a;--card:#0b1425;--green:#26e8b0;--blue:#4a9eff;--purple:#b06ef3;--gold:#f0c040;--red:#ff5e7d;--text:#e8f0fe;--muted:#8899aa;--border:#1a2a3a}
 html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden}
 nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(2,4,14,0.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);height:60px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 24px}
-.nav-links{display:flex;gap:2px;align-items:center;justify-content:center}
+.nav-logo{font-size:1.05rem;font-weight:800;color:#fff;text-decoration:none;letter-spacing:-.02em;white-space:nowrap}
+.nav-logo span{color:var(--green)}.nav-links{display:flex;gap:2px;align-items:center;justify-content:center}
 .nav-right{display:flex;justify-content:flex-end;align-items:center}
 .nav-badge{background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);color:var(--green);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}#hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
 #heroCanvas{position:absolute;inset:0;z-index:0}

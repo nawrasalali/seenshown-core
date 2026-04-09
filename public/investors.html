@@ -8,15 +8,10 @@
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#02040e;--surface:#070d1a;--card:#0b1425;--green:#26e8b0;--blue:#4a9eff;--purple:#b06ef3;--gold:#f0c040;--red:#ff5e7d;--text:#e8f0fe;--muted:#8899aa;--border:#1a2a3a}
 html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(2,4,14,0.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
-.nav-logo{font-size:20px;font-weight:800;color:#fff;text-decoration:none}
-.nav-logo span{color:var(--green)}
-.nav-links{display:flex;gap:6px;align-items:center}
-.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;padding:5px 12px;border-radius:6px;transition:all .18s}
-.nav-links a:hover{color:#fff;background:rgba(255,255,255,0.06)}
-.nav-links a.active{color:var(--green);background:rgba(38,232,176,0.08)}
-.nav-badge{background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);color:var(--green);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;margin-left:8px}
-#hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(2,4,14,0.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);height:60px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 24px}
+.nav-links{display:flex;gap:2px;align-items:center;justify-content:center}
+.nav-right{display:flex;justify-content:flex-end;align-items:center}
+.nav-badge{background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);color:var(--green);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}#hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
 #heroCanvas{position:absolute;inset:0;z-index:0}
 .hero-content{position:relative;z-index:1;max-width:800px;padding:20px}
 .hero-tag{display:inline-block;background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);color:var(--green);font-size:12px;font-weight:700;letter-spacing:2px;padding:6px 18px;border-radius:30px;margin-bottom:28px;text-transform:uppercase}
@@ -171,11 +166,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(2,4,14,0.93)
   <a href="/" class="nav-logo">Seen<span>Shown</span></a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="/social.html">Explore</a>
-    <a href="/community.html">social</a>
+    <a href="/social.html">Social</a>
+    <a href="/community.html">Community</a>
     <a href="/investors.html" class="active">Investors</a>
-    <span class="nav-badge">Patent Pending AU 2026903218</span>
   </div>
+  <div class="nav-right"><span class="nav-badge">Patent Pending AU 2026903218</span></div>
 </nav>
 
 <section id="hero">
@@ -500,9 +495,9 @@ function showTab(id,btn){
 /* Hero particles */
 (function(){
   var c=document.getElementById('heroCanvas'),ctx=c.getContext('2d'),W,H,N=[];
-  function resize(){W=c.width=c.offsetWidth;H=c.height=c.offsetHeight;}
-  function init(){resize();N=[];for(var i=0;i<80;i++)N.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,r:Math.random()*2+1});}
-  function draw(){ctx.clearRect(0,0,W,H);N.forEach(function(n){n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1;});for(var i=0;i<N.length;i++)for(var j=i+1;j<N.length;j++){var dx=N[i].x-N[j].x,dy=N[i].y-N[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<130){ctx.beginPath();ctx.strokeStyle='rgba(38,232,176,'+(0.15*(1-d/130))+')';ctx.lineWidth=.7;ctx.moveTo(N[i].x,N[i].y);ctx.lineTo(N[j].x,N[j].y);ctx.stroke();}}N.forEach(function(n){ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fillStyle='rgba(38,232,176,0.65)';ctx.fill();});requestAnimationFrame(draw);}
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  function init(){resize();N=[];for(var i=0;i<180;i++)N.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,r:Math.random()*3+1.2});}
+  function draw(){ctx.clearRect(0,0,W,H);N.forEach(function(n){n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1;});for(var i=0;i<N.length;i++)for(var j=i+1;j<N.length;j++){var dx=N[i].x-N[j].x,dy=N[i].y-N[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<200){ctx.beginPath();ctx.strokeStyle='rgba(38,232,176,'+(0.15*(1-d/130))+')';ctx.lineWidth=.7;ctx.moveTo(N[i].x,N[i].y);ctx.lineTo(N[j].x,N[j].y);ctx.stroke();}}N.forEach(function(n){ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fillStyle='rgba(38,232,176,0.65)';ctx.fill();});requestAnimationFrame(draw);}
   window.addEventListener('resize',init);init();draw();
 })();
 function animateBars(){document.querySelectorAll('.bar-fill').forEach(function(b){b.style.width=(b.dataset.w||0)+'%';});}

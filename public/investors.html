@@ -544,14 +544,14 @@ function closeModalOutside(e,id){if(e.target.classList.contains('modal-overlay')
 function submitInvestor(tier,nId,eId,oId,cId,tId,noteId,formId,sucId){
   var name=document.getElementById(nId).value.trim(),email=document.getElementById(eId).value.trim();
   if(!name||!email){alert('Please enter your name and email.');return;}
-  fetch('https://seenshown-api-production.up.railway.app/v1/investor/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier,name,email,org:document.getElementById(oId).value,country:document.getElementById(cId).value,type:document.getElementById(tId).value,note:document.getElementById(noteId).value,ts:new Date().toISOString()})}).catch(function(){});
+  fetch('https://jnvdpmmxlbkxwanqqhfw.supabase.co/v1/investor/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier,name,email,org:document.getElementById(oId).value,country:document.getElementById(cId).value,type:document.getElementById(tId).value,note:document.getElementById(noteId).value,ts:new Date().toISOString()})}).catch(function(){});
   document.getElementById(formId).style.display='none';document.getElementById(sucId).style.display='block';
 }
 function submitReferral(){
   var name=document.getElementById('ref-name').value.trim(),email=document.getElementById('ref-email').value.trim();
   if(!name||!email){alert('Please enter your name and email.');return;}
   document.getElementById('ref-email-confirm').textContent=email;
-  fetch('https://seenshown-api-production.up.railway.app/v1/referral/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,role:document.getElementById('ref-role').value,type:document.getElementById('ref-type').value,how:document.getElementById('ref-how').value,ts:new Date().toISOString()})}).catch(function(){});
+  fetch('https://jnvdpmmxlbkxwanqqhfw.supabase.co/v1/referral/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,role:document.getElementById('ref-role').value,type:document.getElementById('ref-type').value,how:document.getElementById('ref-how').value,ts:new Date().toISOString()})}).catch(function(){});
   document.getElementById('ref-form').style.display='none';document.getElementById('ref-success').style.display='block';
 }
 function toggleFaq(el){el.classList.toggle('open');}

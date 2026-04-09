@@ -308,7 +308,6 @@ function register(){
   if(!name||!email){alert('Please enter your name and email.');return;}
   document.getElementById('email-confirm').textContent=email;
   fetch(SB_URL+'/rest/v1/referral_partners',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=minimal'},body:JSON.stringify({name:name,email:email,role:document.getElementById('r-role').value,track:document.getElementById('r-type').value,how:document.getElementById('r-how').value})}).catch(function(){});
-  },{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,email:email,role:document.getElementById('r-role').value,type:document.getElementById('r-type').value,how:document.getElementById('r-how').value,ts:new Date().toISOString()})}).catch(function(){});
   document.getElementById('reg-form').style.display='none';
   document.getElementById('reg-success').style.display='block';
   var t=document.getElementById('toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},4000);
@@ -357,6 +356,4 @@ buildGallery();
 var urlQ=new URLSearchParams(window.location.search).get('q');
 if(urlQ)window.location.href='/?q='+encodeURIComponent(urlQ);
 </script>
-var SB_URL='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
-var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
-var API='https://seenshown-api-production.up.railway.app';
+}

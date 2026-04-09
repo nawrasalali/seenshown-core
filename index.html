@@ -978,7 +978,7 @@ async function askQuestion(){
   switchDomain(key,pill);
   /* Try API for enriched narration */
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:'You are SeenShown, a particle simulation platform. Given a question, write 3 short narration phases (JSON array of arrays: [[phase_label, narration_text], ...]). Each narration_text must be 1-2 sentences, scientifically accurate, emotionally resonant. Labels: "Phase 1 · Initial State", "Phase 2 · Core Mechanism", "Phase 3 · Outcome". Return ONLY the JSON array, no other text.',messages:[{role:'user',content:'Question: "'+q+'"\nSimulation domain: '+key+'\nReturn the 3 narration phases.'}]})});
+    var res=await fetch('https://jnvdpmmxlbkxwanqqhfw.supabase.co/functions/v1/simulate',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M'},body:JSON.stringify({question:q,domain:key})});
     var data=await res.json();
     var raw=data.content&&data.content[0]&&data.content[0].text;
     if(raw){var parsed=JSON.parse(raw.replace(/```json\n?|```\n?/g,'').trim());if(Array.isArray(parsed)&&parsed.length===3)NARR[key]=parsed;}

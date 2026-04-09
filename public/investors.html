@@ -485,7 +485,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(2,4,14,0.93)
 
 <script>
 var SUPABASE_URL = 'https://jnvdpmmxlbkxwanqqhfw.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmY2JkZWF3eXBvb3FjZXZ1emFjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQ3NzYzOCwiZXhwIjoyMDkxMDUzNjM4fQ.DhlUHFELFMWM3LopalxV4S1-fWS_fN9JN3MP5oiSvFQ';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmY2JkZWF3eXBvb3FjZXZ1emFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
   function showTab(id,btn){
   document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
@@ -544,14 +544,14 @@ function closeModalOutside(e,id){if(e.target.classList.contains('modal-overlay')
 function submitInvestor(tier,nId,eId,oId,cId,tId,noteId,formId,sucId){
   var name=document.getElementById(nId).value.trim(),email=document.getElementById(eId).value.trim();
   if(!name||!email){alert('Please enter your name and email.');return;}
-  fetch('https://jnvdpmmxlbkxwanqqhfw.supabase.co/v1/investor/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tier,name,email,org:document.getElementById(oId).value,country:document.getElementById(cId).value,type:document.getElementById(tId).value,note:document.getElementById(noteId).value,ts:new Date().toISOString()})}).catch(function(){});
+  fetch(SUPABASE_URL+'/rest/v1/investor_registrations',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'},body:JSON.stringify({name:name,email:email,org:document.getElementById(oId).value,country:document.getElementById(cId).value,tier:tier,investor_type:document.getElementById(tId).value,notes:document.getElementById(noteId).value,status:'pending'})}).catch(function(){});
   document.getElementById(formId).style.display='none';document.getElementById(sucId).style.display='block';
 }
 function submitReferral(){
   var name=document.getElementById('ref-name').value.trim(),email=document.getElementById('ref-email').value.trim();
   if(!name||!email){alert('Please enter your name and email.');return;}
   document.getElementById('ref-email-confirm').textContent=email;
-  fetch('https://jnvdpmmxlbkxwanqqhfw.supabase.co/v1/referral/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,role:document.getElementById('ref-role').value,type:document.getElementById('ref-type').value,how:document.getElementById('ref-how').value,ts:new Date().toISOString()})}).catch(function(){});
+  fetch(SUPABASE_URL+'/rest/v1/referral_partners',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Prefer':'return=minimal'},body:JSON.stringify({name:name,email:email,role:document.getElementById('ref-role').value,track:document.getElementById('ref-type').value,how:document.getElementById('ref-how').value})}).catch(function(){});
   document.getElementById('ref-form').style.display='none';document.getElementById('ref-success').style.display='block';
 }
 function toggleFaq(el){el.classList.toggle('open');}

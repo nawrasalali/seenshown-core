@@ -449,9 +449,9 @@ var soundNodes=[];
 function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
 
 /* ── DOMAIN CONFIG ── */
-var DC={fireworks:'#ffdd44',heartbreak:'#e8a0c0',love:'#ff88aa',grief:'#8899bb',anger:'#ff4400',joy:'#ffdd44',neuron:'#60c0f0',immune:'#ff8c42',amr:'#26e8b0',bh:'#7C4FD4',bigbang:'#ffeecc',universe:'#4466ff',rumour:'#f0c040',urban:'#6090ff',chem:'#40d0f0'};
-var DOMAIN_ORDER=['fireworks','bigbang','universe','heartbreak','love','grief','anger','joy','neuron','immune','amr','bh','rumour','urban','chem'];
-var DOMAIN_LABELS={fireworks:'Fireworks',bigbang:'Big Bang',universe:'Universe',heartbreak:'Heartbreak',love:'Love',grief:'Grief',anger:'Anger',joy:'Joy',neuron:'Neuroscience',immune:'Immunity',amr:'Antibiotic',bh:'Black Hole',rumour:'Rumour',urban:'Urban',chem:'Chemistry'};
+var DC={fireworks:'#ffdd44',heartbreak:'#e8a0c0',love:'#ff88aa',grief:'#8899bb',anger:'#ff4400',joy:'#ffdd44',neuron:'#60c0f0',immune:'#ff8c42',amr:'#26e8b0',bh:'#7C4FD4',bigbang:'#ffeecc',rumour:'#f0c040',urban:'#6090ff',chem:'#40d0f0'};
+var DOMAIN_ORDER=['fireworks','bigbang','heartbreak','love','grief','anger','joy','neuron','immune','amr','bh','rumour','urban','chem'];
+var DOMAIN_LABELS={fireworks:'Fireworks',bigbang:'Big Bang',heartbreak:'Heartbreak',love:'Love',grief:'Grief',anger:'Anger',joy:'Joy',neuron:'Neuroscience',immune:'Immunity',amr:'Antibiotic',bh:'Black Hole',rumour:'Rumour',urban:'Urban',chem:'Chemistry'};
 
 /* Domain energy determines direction:
    'zero_to_full' = starts from nothing, builds
@@ -1062,7 +1062,8 @@ function initPhase(domain,phase,fromScratch){
       pBX[i]=(pX[i]>0||pY[i]>0)?pX[i]:cx();
       pBY[i]=(pX[i]>0||pY[i]>0)?pY[i]:cy();
     }
-    pLife[i]=0;
+    /* Keep pLife at 1 on transitions — particles stay visible and just move */
+    pLife[i]=(fromScratch&&phase===0)?0:1;
   }
   formT=0;
 }
@@ -1144,16 +1145,18 @@ function render(dt){
   ctx.globalAlpha=0.88;
   var lastColor='';
   /* Draw smallest particles first (faster ctx state) */
+  /* pLife tracks per-particle alpha — decoupled from formT */
   for(var i=0;i<N;i++){
     var delay=pDelay[i];
     var t=clamp((formT-delay)/FORM_DUR,0,1);
-    var alpha=t<.03?0:Math.min(t*2,1);
-    if(alpha<0.02)continue;
+    /* Fade in on first birth, stay fully visible on transitions */
+    if(pLife[i]<1){pLife[i]=Math.min(pLife[i]+0.04,1);}
+    var alpha=pLife[i]*0.9;
+    if(alpha<0.01)continue;
 
     var fx=pX[i],fy=pY[i];
     var sz=Math.max(0.4,pSz[i]*(0.35+easeOut(t)*.8));
 
-    /* Round colors to nearest 8 to batch similar colors */
     var cr=(pR[i]>>3)<<3,cg=(pG[i]>>3)<<3,cb=(pB[i]>>3)<<3;
     var col='rgba('+cr+','+cg+','+cb+','+alpha.toFixed(2)+')';
     if(col!==lastColor){ctx.fillStyle=col;lastColor=col;}
@@ -1356,9 +1359,10 @@ function updateNarr(domain,phase){
     (function(idx){d.onclick=function(){jumpToPhase(idx);};})(i);
     dots.appendChild(d);
   }}
-  /* Stream text + update ticker */
+  /* Stream text (word stream to hidden div) */
   if(typeof streamWords==='function')streamWords(ph[1]);
-  if(typeof buildTicker==='function')buildTicker(narrs);
+  /* Ticker: only build on phase 0 (new domain/question) — never restart mid-run */
+  if(phase===0&&typeof buildTicker==='function')buildTicker(narrs);
   /* Voice — word by word */
   if(voiceOn)startVoice(ph[1]);
   /* Sound */
@@ -1469,6 +1473,24 @@ function toggleSound(){
 
 /* ── DOMAIN SWITCH ── */
 var domIdx=DOMAIN_ORDER.indexOf(simDomain);
+/* Default questions for each domain — shown in question bar when swiping */
+var DOMAIN_QUESTIONS={
+  fireworks:'What makes fireworks explode in colour?',
+  bigbang:'How did the universe come about?',
+  heartbreak:'How does heartbreak feel in the brain?',
+  love:'What happens in the brain when we fall in love?',
+  grief:'How does grief work in the brain?',
+  anger:'What happens in the body when we feel anger?',
+  joy:'What is the neuroscience of joy?',
+  neuron:'How does a neuron fire a signal?',
+  immune:'How does the immune system fight bacteria?',
+  amr:'How does antibiotic resistance develop?',
+  bh:'How does a black hole form and die?',
+  rumour:'How does a rumour spread through a population?',
+  urban:'How does a city gridlock form?',
+  chem:'What happens during a chemical reaction?'
+};
+
 function switchDomain(key,pill){
   simDomain=key;simPhase=0;
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
@@ -1478,6 +1500,8 @@ function switchDomain(key,pill){
   domIdx=DOMAIN_ORDER.indexOf(key);
   initPhase(key,0,true);
   updateNarr(key,0);
+  /* Show default question in question bar */
+  showQuestionBar(DOMAIN_QUESTIONS[key]||DOMAIN_LABELS[key]);
 }
 
 function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTimeout(function(){reinitScheduled=false;initPhase(simDomain,simPhase,false);},100);}
@@ -2298,6 +2322,8 @@ requestAnimationFrame(loop);
 document.getElementById('lodOv').style.transition='opacity .5s';
 setTimeout(function(){document.getElementById('lodOv').style.opacity='0';setTimeout(function(){document.getElementById('lodOv').style.display='none';showGuide();},600);},300);
 updateNarr(simDomain,0);
+/* Show default question on first load */
+showQuestionBar(DOMAIN_QUESTIONS&&DOMAIN_QUESTIONS[simDomain]||'How did the universe come about?');
 if(urlQ){setTimeout(function(){var el=document.getElementById('mainQ');if(el){el.value=decodeURIComponent(urlQ);autoResizeMQ(el);askQuestion();}},500);}
 </script>
 <!-- External scripts load after main so DOMAIN_LABELS etc are available -->

@@ -9,127 +9,137 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--border:rgba(38,232,176,0.15);--red:#e05c5c;--gold:#f0c040}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-#simCanvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;user-select:none}
+
+/* CANVAS — true full screen, simulation biased to top 65% */
+#simCanvas{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;cursor:crosshair;z-index:0}
 
 /* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:48px;background:rgba(2,4,14,0.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06)}
-.nav-logo{font-size:1.05rem;font-weight:800;color:var(--g);text-decoration:none}
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:46px;background:rgba(2,4,14,0.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.05)}
+.nav-logo{font-size:1rem;font-weight:800;color:var(--g);text-decoration:none;letter-spacing:-.02em}
 .nav-tabs{display:flex;gap:1px}
-.ntab{padding:4px 10px;border-radius:6px;font-size:.72rem;color:var(--dim);cursor:pointer;border:none;background:transparent;text-decoration:none;display:inline-block;transition:color .18s}
+.ntab{padding:4px 9px;border-radius:6px;font-size:.7rem;color:var(--dim);cursor:pointer;border:none;background:transparent;text-decoration:none;display:inline-block;transition:color .18s}
 .ntab.active{color:var(--g);background:rgba(38,232,176,0.08)}
 .nav-right{display:flex;align-items:center;gap:6px}
-.nbadge{font-size:.55rem;background:rgba(124,79,212,0.18);border:1px solid rgba(124,79,212,0.4);color:#c4a0ff;padding:2px 6px;border-radius:12px}
-.inv-btn{font-size:.65rem;background:var(--g);color:#02040e;padding:4px 9px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block}
+.nbadge{font-size:.52rem;background:rgba(124,79,212,0.18);border:1px solid rgba(124,79,212,0.4);color:#c4a0ff;padding:2px 6px;border-radius:12px}
+.inv-btn{font-size:.62rem;background:var(--g);color:#02040e;padding:4px 9px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block}
 
 /* PILLS */
-#pills{position:fixed;top:48px;left:0;right:64px;z-index:100;display:flex;gap:4px;padding:7px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.9) 0%,transparent 100%)}
+#pills{position:fixed;top:46px;left:0;right:64px;z-index:100;display:flex;gap:4px;padding:6px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
 #pills::-webkit-scrollbar{display:none}
-.dpill{flex-shrink:0;font-size:.58rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:14px;border:1px solid rgba(255,255,255,0.09);color:var(--dim);cursor:pointer;transition:all .2s;background:rgba(2,4,14,0.7);white-space:nowrap}
-.dpill.active{color:#02040e;font-weight:700}
+.dpill{flex-shrink:0;font-size:.56rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);color:var(--dim);cursor:pointer;transition:all .2s;background:rgba(2,4,14,0.6);white-space:nowrap}
+.dpill.active{color:#02040e;font-weight:700;border-color:transparent}
 
-/* RIGHT RAIL — fixed width 64px, stays out of text */
-#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:18px;padding:14px 8px;width:64px}
-.rail-btn{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:transform .2s}
-.rail-btn:hover{transform:scale(1.08)}
-.rail-icon{width:42px;height:42px;border-radius:50%;background:rgba(2,4,14,0.8);border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:1.1rem;backdrop-filter:blur(10px);transition:border-color .2s}
-.rail-btn.liked .rail-icon{border-color:var(--red);background:rgba(224,92,92,0.15)}
-.rail-label{font-size:.54rem;color:var(--dim);font-weight:600;text-align:center;line-height:1.2}
+/* RIGHT RAIL — 64px wide, vertical centre */
+#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:16px;padding:12px 8px;width:64px}
+.rail-btn{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:transform .18s}
+.rail-btn:active{transform:scale(.9)}
+.rail-icon{width:40px;height:40px;border-radius:50%;background:rgba(2,4,14,0.75);border:1.5px solid rgba(255,255,255,0.11);display:flex;align-items:center;justify-content:center;font-size:1.05rem;backdrop-filter:blur(12px);transition:border-color .2s,background .2s}
+.rail-btn.liked .rail-icon{border-color:var(--red);background:rgba(224,92,92,0.18)}
+.rail-label{font-size:.5rem;color:var(--dim);font-weight:600;text-align:center;line-height:1.2;max-width:52px}
 .rail-label.red{color:var(--red)}
 .rail-label.gold{color:var(--gold)}
 .rail-label.green{color:var(--g)}
-@keyframes popUp{0%,100%{transform:scale(1)}50%{transform:scale(1.4)translateY(-6px)}}
-.popped{animation:popUp .3s ease}
 
-/* BOTTOM PANEL — right margin = rail width so text never overlaps */
+/* BOTTOM PANEL — right:64px, lighter semi-transparent bg */
 #bottomPanel{position:fixed;bottom:0;left:0;right:64px;z-index:150;pointer-events:none}
-#answerWrap{pointer-events:all;padding:0 16px 8px;background:linear-gradient(0deg,rgba(2,4,14,0.98) 0%,rgba(2,4,14,0.75) 65%,transparent 100%)}
-#narrPhase{font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(--g);opacity:.75;margin-bottom:5px;display:flex;align-items:center;gap:8px}
-#phaseProgress{flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:1px;overflow:hidden;max-width:120px}
-#phaseProgressFill{height:100%;background:var(--g);border-radius:1px;transition:width .5s linear}
-#narrDots{display:flex;gap:5px;margin-bottom:8px}
-.ndot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.14);cursor:pointer;transition:all .2s}
-.ndot.on{background:var(--g);width:16px;border-radius:3px}
-#answerText{font-size:.9rem;line-height:1.7;color:rgba(255,255,255,0.9);min-height:42px;letter-spacing:.01em;max-width:560px}
-.word{display:inline;opacity:0;transition:opacity .15s}
+
+/* ANSWER WRAP — lighter so sim shows through */
+#answerWrap{pointer-events:all;padding:0 14px 8px;background:linear-gradient(0deg,rgba(2,4,14,0.88) 0%,rgba(2,4,14,0.55) 55%,transparent 100%);backdrop-filter:blur(2px)}
+
+/* PHASE ROW */
+#phaseRow{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+#narrPhaseLabel{font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--g);opacity:.8;white-space:nowrap}
+#phaseProgress{flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:1px;overflow:hidden;max-width:100px}
+#phaseProgressFill{height:100%;background:var(--g);border-radius:1px;transition:width 5s linear}
+#stopBtn{font-size:.6rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--dim);padding:2px 7px;cursor:pointer;pointer-events:all;white-space:nowrap;flex-shrink:0}
+#stopBtn.stopped{color:var(--g);border-color:rgba(38,232,176,0.4)}
+
+/* PHASE DOTS */
+#narrDots{display:flex;gap:5px;margin-bottom:7px}
+.ndot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.13);cursor:pointer;transition:all .2s;pointer-events:all}
+.ndot.on{background:var(--g);width:14px;border-radius:3px}
+
+/* ANSWER TEXT */
+#answerText{font-size:.88rem;line-height:1.68;color:rgba(255,255,255,0.92);min-height:40px;letter-spacing:.01em;max-width:520px}
+.word{display:inline;opacity:0;transition:opacity .12s}
 .word.show{opacity:1}
 
-/* CONTROLS */
-#iconRow{pointer-events:all;display:flex;align-items:center;gap:6px;padding:7px 14px 0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+/* PHASE SWIPE ARROWS */
+#phaseArrows{pointer-events:all;display:flex;justify-content:space-between;align-items:center;padding:4px 0 4px;margin-bottom:2px}
+.parr{font-size:.8rem;color:var(--dim);cursor:pointer;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);transition:all .18s;user-select:none}
+.parr:hover{color:var(--g);border-color:rgba(38,232,176,0.3)}
+#phaseNum{font-size:.62rem;color:var(--dim);text-align:center}
+
+/* CONTROLS ROW */
+#iconRow{pointer-events:all;display:flex;align-items:center;gap:6px;padding:5px 14px 0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
 #iconRow::-webkit-scrollbar{display:none}
-.ictl{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:4px 9px;font-size:.68rem;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.ictl{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:4px 8px;font-size:.66rem;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:3px;transition:all .18s;white-space:nowrap;flex-shrink:0}
 .ictl:hover{border-color:rgba(38,232,176,0.4);color:var(--g)}
 .ictl.on{border-color:var(--g);color:var(--g);background:rgba(38,232,176,0.07)}
-.sdiv{width:1px;height:14px;background:rgba(255,255,255,0.07);flex-shrink:0}
-#speedR{width:64px;accent-color:var(--g);cursor:pointer;flex-shrink:0}
+.sdiv{width:1px;height:13px;background:rgba(255,255,255,0.07);flex-shrink:0;margin:0 2px}
+#speedR{width:60px;accent-color:var(--g);cursor:pointer;flex-shrink:0}
 .chips{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
 .chips::-webkit-scrollbar{display:none}
-.qchip{flex-shrink:0;font-size:.58rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:3px 8px;color:var(--dim);cursor:pointer;transition:all .17s;white-space:nowrap}
+.qchip{flex-shrink:0;font-size:.56rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:3px 7px;color:var(--dim);cursor:pointer;transition:all .17s;white-space:nowrap}
 .qchip:hover{border-color:var(--g);color:var(--g)}
 
 /* INPUT */
-#qRow{pointer-events:all;display:flex;gap:8px;padding:8px 14px 14px;background:rgba(2,4,14,0.98);border-top:1px solid rgba(255,255,255,0.06)}
-#mainQ{flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;color:var(--w);font-size:.92rem;outline:none;transition:border-color .2s;caret-color:var(--g);resize:none;min-height:44px;max-height:86px;font-family:inherit;line-height:1.4}
+#qRow{pointer-events:all;display:flex;gap:8px;padding:7px 14px 14px;background:rgba(2,4,14,0.96);border-top:1px solid rgba(255,255,255,0.05)}
+#mainQ{flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--w);font-size:.9rem;outline:none;transition:border-color .2s;caret-color:var(--g);resize:none;min-height:42px;max-height:80px;font-family:inherit;line-height:1.4}
 #mainQ:focus{border-color:var(--g);background:rgba(255,255,255,0.09)}
 #mainQ::placeholder{color:var(--dim)}
-#askBtn{background:var(--g);color:#02040e;border:none;border-radius:12px;padding:11px 14px;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;min-width:78px;transition:opacity .2s;align-self:flex-end}
-#askBtn.busy{opacity:.45;pointer-events:none}
+#askBtn{background:var(--g);color:#02040e;border:none;border-radius:12px;padding:10px 14px;font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap;min-width:72px;transition:opacity .2s;align-self:flex-end}
+#askBtn.busy{opacity:.4;pointer-events:none}
 
-/* VOICE */
-#voiceBadge{position:fixed;top:56px;left:14px;background:rgba(124,79,212,0.12);border:1px solid rgba(124,79,212,0.3);border-radius:8px;padding:4px 10px;font-size:.64rem;color:#c4a0ff;opacity:0;transition:opacity .3s;z-index:160;display:flex;align-items:center;gap:5px;pointer-events:none}
-#voiceBadge.show{opacity:1}
-.vwave{display:flex;gap:2px;align-items:center;height:12px}
-.vwave span{display:block;width:2px;background:#c4a0ff;border-radius:2px;animation:vw .6s ease-in-out infinite}
+/* VOICE + SOUND — side by side */
+#mediaBtns{position:fixed;top:54px;left:14px;z-index:160;display:flex;gap:6px}
+.mbtn{background:rgba(2,4,14,0.72);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:4px 10px;font-size:.64rem;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .2s;backdrop-filter:blur(8px)}
+.mbtn.speaking{border-color:rgba(124,79,212,0.5);color:#c4a0ff}
+.mbtn.sounding{border-color:rgba(38,232,176,0.4);color:var(--g)}
+.vwave{display:flex;gap:2px;align-items:center;height:10px}
+.vwave span{display:block;width:2px;background:currentColor;border-radius:2px;animation:vw .6s ease-in-out infinite}
 .vwave span:nth-child(1){height:3px}
-.vwave span:nth-child(2){animation-delay:.15s;height:9px}
-.vwave span:nth-child(3){animation-delay:.3s;height:6px}
-.vwave span:nth-child(4){animation-delay:.15s;height:11px}
+.vwave span:nth-child(2){animation-delay:.15s;height:8px}
+.vwave span:nth-child(3){animation-delay:.3s;height:5px}
+.vwave span:nth-child(4){animation-delay:.15s;height:10px}
 .vwave span:nth-child(5){height:3px}
-@keyframes vw{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+@keyframes vw{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
 
-/* PHASE LABEL FLASH */
-#phaseFlash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.2rem,4vw,2.2rem);font-weight:900;color:rgba(255,255,255,0.9);text-align:center;pointer-events:none;opacity:0;transition:opacity .4s;z-index:90;text-shadow:0 0 40px rgba(38,232,176,0.6);letter-spacing:.04em}
+/* PHASE FLASH */
+#phaseFlash{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.1rem,3.5vw,2rem);font-weight:900;color:rgba(255,255,255,0.88);text-align:center;pointer-events:none;opacity:0;transition:opacity .4s;z-index:90;text-shadow:0 0 36px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:80vw}
 #phaseFlash.show{opacity:1}
 
-/* POINTS TOAST */
-#ptToast{position:fixed;top:28%;left:50%;transform:translateX(-50%);background:rgba(240,192,64,0.18);border:1px solid rgba(240,192,64,0.5);border-radius:20px;padding:8px 18px;font-size:.78rem;font-weight:700;color:var(--gold);opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;white-space:nowrap;backdrop-filter:blur(8px)}
+/* TOAST */
+#ptToast{position:fixed;top:26%;left:50%;transform:translateX(-50%);background:rgba(240,192,64,0.16);border:1px solid rgba(240,192,64,0.45);border-radius:18px;padding:7px 16px;font-size:.75rem;font-weight:700;color:var(--gold);opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;white-space:nowrap;backdrop-filter:blur(8px)}
 #ptToast.show{opacity:1}
 
-/* SWIPE HINT */
-#swipeHint{position:fixed;right:70px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;opacity:.3;transition:opacity .5s;z-index:50}
-#swipeHint.hide{opacity:0}
-@keyframes bup{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+/* LOAD */
+#lodOv{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;transition:opacity .6s;z-index:300}
+#lodOv.gone{opacity:0;pointer-events:none}
+.lring{width:34px;height:34px;border:2px solid rgba(38,232,176,0.12);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* COMPETE */
 #compMode{position:fixed;inset:0;z-index:170;display:none;flex-direction:column}
 #compMode.active{display:flex}
 #compCanvas1,#compCanvas2{flex:1;display:block;width:100%}
-#compDivider{height:3px;background:linear-gradient(90deg,var(--p),var(--g));position:relative;flex-shrink:0}
-#compDivider::after{content:'VS';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--bg);padding:2px 10px;border:1px solid var(--border);border-radius:8px;font-size:.62rem;font-weight:800;color:var(--g)}
-#compVoteTop{position:fixed;bottom:50%;margin-bottom:8px;left:0;right:0;z-index:175;display:flex;padding:0 20px;pointer-events:all}
-#compVoteBot{position:fixed;top:50%;margin-top:8px;left:0;right:0;z-index:175;display:flex;padding:0 20px;pointer-events:all}
-.comp-vote-btn{flex:1;padding:10px;border:none;border-radius:10px;font-weight:700;font-size:.84rem;cursor:pointer;transition:all .2s;backdrop-filter:blur(12px)}
-#voteA{background:rgba(124,79,212,0.22);color:#c4a0ff;border:1px solid rgba(124,79,212,0.35)}
-#voteB{background:rgba(38,232,176,0.12);color:var(--g);border:1px solid rgba(38,232,176,0.28)}
-#compScores{position:fixed;top:55px;left:0;right:0;z-index:175;display:flex;justify-content:space-between;padding:6px 16px;font-size:.7rem;font-weight:700}
-#scoreA{color:#c4a0ff}
-#scoreB{color:var(--g)}
-#compTimer{position:fixed;top:55px;left:50%;transform:translateX(-50%);z-index:175;background:rgba(2,4,14,0.88);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:.72rem;color:var(--w);font-weight:700}
-#closeComp{position:fixed;top:55px;right:14px;z-index:176;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:5px 10px;font-size:.7rem;color:var(--dim);cursor:pointer}
-
-/* LOAD */
-#lodOv{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .5s;z-index:300}
-#lodOv.gone{opacity:0;pointer-events:none}
-.lring{width:36px;height:36px;border:2px solid rgba(38,232,176,0.12);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px}
-.ltxt{font-size:.68rem;color:var(--dim)}
-@keyframes spin{to{transform:rotate(360deg)}}
+#compDiv{height:3px;background:linear-gradient(90deg,var(--p),var(--g));position:relative;flex-shrink:0}
+#compDiv::after{content:'VS';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000;padding:2px 10px;border:1px solid var(--border);border-radius:8px;font-size:.6rem;font-weight:800;color:var(--g)}
+#compVT{position:fixed;bottom:50%;margin-bottom:8px;left:0;right:0;z-index:175;display:flex;padding:0 20%;pointer-events:all}
+#compVB{position:fixed;top:50%;margin-top:8px;left:0;right:0;z-index:175;display:flex;padding:0 20%;pointer-events:all}
+.cvbtn{flex:1;padding:10px;border:none;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;backdrop-filter:blur(12px)}
+#cvA{background:rgba(124,79,212,0.2);color:#c4a0ff;border:1px solid rgba(124,79,212,0.3)}
+#cvB{background:rgba(38,232,176,0.1);color:var(--g);border:1px solid rgba(38,232,176,0.25)}
+#compHUD{position:fixed;top:54px;left:0;right:0;z-index:175;display:flex;justify-content:space-between;align-items:center;padding:4px 16px;font-size:.68rem;font-weight:700}
+#compClose{position:fixed;top:54px;right:14px;z-index:176;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 9px;font-size:.66rem;color:var(--dim);cursor:pointer}
 
 @media(max-width:640px){
   .ntab:not(.active){display:none}
-  #rightRail{gap:14px;padding:10px 6px;width:56px}
-  .rail-icon{width:38px;height:38px;font-size:1rem}
-  #answerText{font-size:.82rem}
+  #rightRail{gap:12px;width:56px;padding:10px 6px}
+  .rail-icon{width:36px;height:36px;font-size:.95rem}
   #bottomPanel{right:56px}
+  #answerText{font-size:.82rem}
 }
 </style>
 </head>
@@ -151,6 +161,17 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-f
 </nav>
 
 <div id="pills"></div>
+
+<div id="mediaBtns">
+  <div class="mbtn" id="voiceBtn" onclick="toggleVoice()">
+    <div class="vwave"><span></span><span></span><span></span><span></span><span></span></div>
+    <span id="voiceLbl">Voice</span>
+  </div>
+  <div class="mbtn" id="soundBtn" onclick="toggleSound()">
+    <span id="soundIco">🔇</span>
+    <span id="soundLbl">Sound</span>
+  </div>
+</div>
 
 <div id="rightRail">
   <div class="rail-btn" id="railLike" onclick="doLike()">
@@ -177,998 +198,1040 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-f
 
 <div id="bottomPanel">
   <div id="answerWrap">
-    <div id="narrPhase">
+    <div id="phaseRow">
       <span id="narrPhaseLabel">Phase 1</span>
       <div id="phaseProgress"><div id="phaseProgressFill" style="width:20%"></div></div>
+      <button id="stopBtn" onclick="toggleAutoPlay()">⏸ Pause</button>
     </div>
     <div id="narrDots"></div>
     <div id="answerText"></div>
+    <div id="phaseArrows">
+      <div class="parr" onclick="prevPhase()">‹ Prev</div>
+      <div id="phaseNum">1 / 5</div>
+      <div class="parr" onclick="nextPhase()">Next ›</div>
+    </div>
   </div>
   <div id="iconRow">
     <div class="ictl" id="pauseBtn" onclick="togglePause()"><span>⏸</span><span id="pauseLabel">Pause</span></div>
     <div class="sdiv"></div>
-    <div class="ictl" id="voiceBtn" onclick="toggleVoice()"><span id="voiceIco">🔊</span><span>Voice</span></div>
-    <div class="sdiv"></div>
-    <span style="font-size:.56rem;color:var(--dim);flex-shrink:0">Speed</span>
-    <input type="range" id="speedR" min="0.2" max="2.5" step="0.1" value="1">
+    <span style="font-size:.54rem;color:var(--dim);flex-shrink:0">Speed</span>
+    <input type="range" id="speedR" min="0.2" max="2.5" step="0.05" value="1.75">
     <div class="sdiv"></div>
     <div class="chips" id="qchips"></div>
   </div>
   <div id="qRow">
-    <textarea id="mainQ" placeholder="Ask anything — How does the Big Bang start? Why does heartbreak hurt? How does a neuron fire?" maxlength="300" rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion()}"></textarea>
+    <textarea id="mainQ" placeholder="Ask here" maxlength="300" rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion()}"></textarea>
     <button id="askBtn" onclick="askQuestion()">Simulate ⚡</button>
   </div>
 </div>
 
 <div id="phaseFlash"></div>
 <div id="ptToast"></div>
-<div id="voiceBadge"><div class="vwave"><span></span><span></span><span></span><span></span><span></span></div> Speaking…</div>
-
-<div id="swipeHint">
-  <span style="font-size:.5rem;color:var(--dim);writing-mode:vertical-rl">swipe</span>
-  <span style="font-size:.9rem;color:var(--g);animation:bup 1.6s ease-in-out infinite">↕</span>
-</div>
 
 <div id="compMode">
-  <div id="compScores"><span id="scoreA">Top: 0</span><span id="scoreB">Bottom: 0</span></div>
-  <div id="compTimer">⏱ 60s</div>
-  <button id="closeComp" onclick="endCompete()">✕ Exit</button>
+  <div id="compHUD"><span id="cScoreA" style="color:#c4a0ff">Player A: 0</span><span id="cTimer">⏱ 60s</span><span id="cScoreB" style="color:var(--g)">Player B: 0</span></div>
+  <button id="compClose" onclick="endCompete()">✕ Exit</button>
   <canvas id="compCanvas1"></canvas>
-  <div id="compDivider"></div>
+  <div id="compDiv"></div>
   <canvas id="compCanvas2"></canvas>
-  <div id="compVoteTop"><button class="comp-vote-btn" id="voteA" onclick="castVote('A')">👆 Vote this</button></div>
-  <div id="compVoteBot"><button class="comp-vote-btn" id="voteB" onclick="castVote('B')">👆 Vote this</button></div>
+  <div id="compVT"><button class="cvbtn" id="cvA" onclick="castVote('A')">👆 Vote this simulation</button></div>
+  <div id="compVB"><button class="cvbtn" id="cvB" onclick="castVote('B')">👆 Vote this simulation</button></div>
 </div>
 
-<div id="lodOv"><div style="text-align:center"><div class="lring"></div><div class="ltxt">Initialising formation engine…</div></div></div>
+<div id="lodOv"><div style="text-align:center"><div class="lring"></div><div style="font-size:.64rem;color:var(--dim)">Forming…</div></div></div>
 
 <script>
 'use strict';
 
-/* ═══════════════════════════════════════════════════════
-   SEENSHOWN v6 — FORMATION ENGINE
+/* ════════════════════════════════════════════════════════
+   SEENSHOWN v7 — DYNAMIC FORMATION ENGINE
    
-   Architecture: Dr. Sina + Leo + Vera
+   Each domain has its OWN energy signature:
+   - DIRECTION: zero→full | full→zero | form→transform
+   - SOUND: emotional audio profile
+   - COLOUR TEMPERATURE: hot/cold/warm/electric
+   - PHASE BEHAVIOUR: how it plays out
    
-   Every simulation starts from NOTHING.
-   Particles are BORN and TRAVEL to target shapes.
-   The answer FORMS in front of the viewer.
-   
-   Shapes: point, explosion, face(emoji), spiral,
-           fracture, void_ring, scatter, wave, orbit,
-           galaxy, neural, crystal, heartbeat
-   
-   5 phases per domain. Each phase = new shape target.
-   Particles move from current → new target.
-   
-   The Big Bang: 1 particle → explosion → galaxy
-   Heartbreak: two faces form → crack appears → separate cold fields
-   Grief: face forms → face dissolves from centre → face reforms
-═══════════════════════════════════════════════════════ */
+   Touch: drag = gravitational pull, hard press = repulsion hole
+   Voice: word-synced reading, stops on phase change
+   Sound: synthesised emotional soundtrack per domain
+════════════════════════════════════════════════════════ */
 
-var SB_URL='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
-var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
-var ELEVEN_KEY='sk_a0c7de82c7a1a0e85ca0e62d5f69e7c5fcf3d0e1ac84fba8';
-var ELEVEN_VOICE='JBFqnCBsd6RMkjVDRZzb';
+var SB='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
+var ELK='sk_a0c7de82c7a1a0e85ca0e62d5f69e7c5fcf3d0e1ac84fba8';
+var ELV='JBFqnCBsd6RMkjVDRZzb';
 
+/* ── CANVAS ── */
 var canvas=document.getElementById('simCanvas');
 var ctx=canvas.getContext('2d');
-function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
-resize();window.addEventListener('resize',function(){resize();resetFormation();});
-
-var W=function(){return canvas.width;};
-var H=function(){return canvas.height;};
+function W(){return canvas.width;}
+function H(){return canvas.height;}
 function cx(){return W()/2;}
 function cy(){return H()/2;}
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',function(){resize();scheduleReinit();});
 
-/* ═══ UTILS ═══ */
+/* ── UTILS ── */
 function rnd(a,b){return a+(b-a)*Math.random();}
 function lerp(a,b,t){return a+(b-a)*t;}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-function easeOut(t){return 1-Math.pow(1-t,3);}
-function easeInOut(t){return t<.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1;}
+function easeOut(t){return 1-Math.pow(1-clamp(t,0,1),3);}
+function easeIn(t){return Math.pow(clamp(t,0,1),2);}
 
-/* ═══ STATE ═══ */
-var simDomain='bigbang';
+/* ── STATE ── */
+var simDomain='fireworks';
 var simPhase=0;
-var simSpeed=1;
+var simSpeed=1.75;
 var paused=false;
-var voiceOn=true;
+var autoPlay=true;
+var voiceOn=false;
+var soundOn=false;
 var voiceAudio=null;
 var currentLikes=0;
-var currentVotes=0;
 var userPoints=0;
 var currentSimId=null;
 var wordStreamTimer=null;
 var phaseAutoTimer=null;
 var compActive=false;
-var compTimer=null;
-var compScoreA=0;
-var compScoreB=0;
-var compDraw1='bigbang';
-var compDraw2='heartbreak';
+var compTimerInterval=null;
+var compScoreA=0,compScoreB=0,compDomain1='fireworks',compDomain2='bigbang';
+var PHASE_DUR=5000;
+var globalT=0;
+var lastTs=0;
+var formT=0;
+var FORM_DUR=5000;
+var N=60000;
+var reinitScheduled=false;
 
-/* ═══ PARTICLE POOL ═══ */
-var MAX_P=80000; // 80K default, scales up on fast devices
-var particles=[];
-var pCount=0;
-var formationT=0; // time within current phase
-var PHASE_DUR=8000; // ms per phase auto-advance
+/* ── PARTICLE BUFFERS ── */
+var pX,pY,pTX,pTY,pBX,pBY,pR,pG,pB,pSz,pDelay,pLife;
 
-/* Particle structure: x,y (current), tx,ty (target), bx,by (birth), r,rr,gg,bb,alpha, age, maxAge, formed */
-function makeParticle(bx,by,tx,ty,r,rr,gg,bb){
-  return {x:bx,y:by,tx:tx,ty:ty,bx:bx,by:by,r:r,rr:rr,gg:gg,bb:bb,alpha:0,age:0,delay:Math.random()*3000,formed:false,nx:0,ny:0};
-}
+/* ── TOUCH INTERACTION ── */
+var touchActive=false;
+var touchX=cx(),touchY=cy();
+var touchForce=0; /* +1 = attract, -1 = repel */
+var touchStartTime=0;
 
-/* ═══ SHAPE GENERATORS — return array of {tx,ty,rr,gg,bb,r} ═══ */
+/* ── AUDIO CONTEXT ── */
+var audioCtx=null;
+var soundNodes=[];
+function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
 
-function shapePoint(n,x,y){
-  var out=[];
-  for(var i=0;i<n;i++)out.push({tx:x+rnd(-4,4),ty:y+rnd(-4,4),rr:255,gg:255,bb:255,r:rnd(.5,1.5)});
+/* ── DOMAIN CONFIG ── */
+var DC={fireworks:'#ffdd44',heartbreak:'#e8a0c0',love:'#ff88aa',grief:'#8899bb',anger:'#ff4400',joy:'#ffdd44',neuron:'#60c0f0',immune:'#ff8c42',amr:'#26e8b0',bh:'#7C4FD4',bigbang:'#ffeecc',universe:'#4466ff',rumour:'#f0c040',urban:'#6090ff',chem:'#40d0f0'};
+var DOMAIN_ORDER=['fireworks','bigbang','universe','heartbreak','love','grief','anger','joy','neuron','immune','amr','bh','rumour','urban','chem'];
+var DOMAIN_LABELS={fireworks:'Fireworks',bigbang:'Big Bang',universe:'Universe',heartbreak:'Heartbreak',love:'Love',grief:'Grief',anger:'Anger',joy:'Joy',neuron:'Neuroscience',immune:'Immunity',amr:'Antibiotic',bh:'Black Hole',rumour:'Rumour',urban:'Urban',chem:'Chemistry'};
+
+/* Domain energy determines direction:
+   'zero_to_full' = starts from nothing, builds
+   'full_to_zero' = starts complete, dissolves
+   'form' = shapes appear and transform
+   'zoom' = perspective zoom */
+var DOMAIN_ENERGY={
+  fireworks:{dir:'zero_to_full',sound:'celebration',temp:'warm'},
+  bigbang:{dir:'zero_to_full',sound:'cosmic',temp:'hot'},
+  universe:{dir:'zoom',sound:'cosmic',temp:'cool'},
+  heartbreak:{dir:'form',sound:'sad',temp:'warm_to_cold'},
+  love:{dir:'form',sound:'warm',temp:'warm'},
+  grief:{dir:'full_to_zero',sound:'sad',temp:'cool'},
+  anger:{dir:'form',sound:'danger',temp:'hot'},
+  joy:{dir:'zero_to_full',sound:'happy',temp:'warm'},
+  neuron:{dir:'zero_to_full',sound:'electric',temp:'cool'},
+  immune:{dir:'form',sound:'warning',temp:'neutral'},
+  amr:{dir:'full_to_zero',sound:'warning',temp:'neutral'},
+  bh:{dir:'full_to_zero',sound:'cosmic',temp:'dark'},
+  rumour:{dir:'zero_to_full',sound:'warning',temp:'neutral'},
+  urban:{dir:'full_to_zero',sound:'neutral',temp:'cool'},
+  chem:{dir:'form',sound:'electric',temp:'neutral'}
+};
+
+/* ── SHAPE GENERATORS ── */
+function shapePoint(n,x,y,rr,gg,bb){
+  var out=[];for(var i=0;i<n;i++)out.push({tx:x+rnd(-2,2),ty:y+rnd(-2,2),rr:rr||255,gg:gg||255,bb:bb||255,r:.5+Math.random()*.8});
   return out;
 }
-
-function shapeExplosion(n,ox,oy,minR,maxR,rr,gg,bb){
+function shapeExplosion(n,ox,oy,minD,maxD,rr,gg,bb,hot){
   var out=[];
   for(var i=0;i<n;i++){
-    var a=rnd(0,Math.PI*2);
-    var d=Math.pow(Math.random(),.5)*(maxR-minR)+minR;
-    /* Colour gradient — hot at centre, cool at edge */
-    var heat=1-d/maxR;
-    var pr=Math.round(rr+heat*(255-rr));
-    var pg=Math.round(gg*heat);
-    var pb=Math.round(bb*heat);
-    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d,rr:clamp(pr,0,255),gg:clamp(pg,0,255),bb:clamp(pb,0,255),r:rnd(.4,2.2+heat*2)});
+    var a=rnd(0,Math.PI*2),d=minD+Math.pow(Math.random(),.5)*(maxD-minD);
+    var heat=hot?1-d/maxD:0;
+    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d,rr:Math.round(clamp(rr+heat*80,0,255)),gg:Math.round(clamp(gg-heat*60,0,255)),bb:Math.round(clamp(bb-heat*80,0,255)),r:.4+Math.random()*2.2});
   }
   return out;
 }
-
 function shapeSpiral(n,ox,oy,maxR,arms,rr,gg,bb){
   var out=[];
   for(var i=0;i<n;i++){
-    var arm=i%arms;
-    var t=Math.pow(Math.random(),0.6);
-    var d=t*maxR;
-    var baseA=arm/arms*Math.PI*2;
-    var a=baseA+d*0.018+rnd(-.4,.4);
-    var grad=t;
-    out.push({
-      tx:ox+Math.cos(a)*d,
-      ty:oy+Math.sin(a)*d*.52,
-      rr:Math.round(lerp(255,rr,grad)),
-      gg:Math.round(lerp(240,gg,grad)),
-      bb:Math.round(lerp(200,bb,grad)),
-      r:rnd(.4,2.2-t)
-    });
+    var arm=i%arms,t=Math.pow(Math.random(),.65),d=t*maxR;
+    var ba=arm/arms*Math.PI*2,a=ba+d*0.016+rnd(-.35,.35);
+    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.52,rr:Math.round(lerp(255,rr,t)),gg:Math.round(lerp(220,gg,t)),bb:Math.round(lerp(180,bb,t)),r:.4+Math.random()*(1.8-t)});
   }
   return out;
 }
-
 function shapeFace(n,emoji,ox,oy,size){
-  /* Render emoji to offscreen canvas, extract lit pixels as targets */
-  var off=document.createElement('canvas');
-  var sz=Math.min(size,320);
+  var off=document.createElement('canvas'),sz=Math.min(size,280);
   off.width=sz;off.height=sz;
-  var octx=off.getContext('2d');
-  octx.fillStyle='#000';
-  octx.fillRect(0,0,sz,sz);
-  octx.font='bold '+(sz*.82)+'px serif';
-  octx.textAlign='center';
-  octx.textBaseline='middle';
-  octx.fillText(emoji,sz/2,sz/2);
-  var imgData=octx.getImageData(0,0,sz,sz).data;
-  var lit=[];
-  for(var p=0;p<imgData.length;p+=4){
-    if(imgData[p]>30||imgData[p+1]>30||imgData[p+2]>30){
-      var px=(p/4)%sz;
-      var py=Math.floor((p/4)/sz);
-      lit.push({px:px/sz-.5,py:py/sz-.5,rr:imgData[p]||200,gg:imgData[p+1]||180,bb:imgData[p+2]||160});
-    }
+  var oc=off.getContext('2d');
+  oc.clearRect(0,0,sz,sz);
+  oc.font='bold '+(sz*.82)+'px serif';
+  oc.textAlign='center';oc.textBaseline='middle';
+  oc.fillText(emoji,sz/2,sz/2);
+  var d=oc.getImageData(0,0,sz,sz).data,lit=[];
+  for(var p=0;p<d.length;p+=4){
+    if(d[p+3]>30)lit.push({px:(p/4%sz)/sz-.5,py:Math.floor(p/4/sz)/sz-.5,rr:d[p]||220,gg:d[p+1]||200,bb:d[p+2]||180});
   }
   if(!lit.length)return shapeExplosion(n,ox,oy,20,size*.5,255,200,100);
   var out=[];
-  for(var i=0;i<n;i++){
-    var src=lit[Math.floor(Math.random()*lit.length)];
-    out.push({
-      tx:ox+src.px*size+rnd(-2,2),
-      ty:oy+src.py*size+rnd(-2,2),
-      rr:src.rr,gg:src.gg,bb:src.bb,
-      r:rnd(.5,1.8)
-    });
-  }
+  for(var i=0;i<n;i++){var s=lit[Math.floor(Math.random()*lit.length)];out.push({tx:ox+s.px*size+rnd(-1.5,1.5),ty:oy+s.py*size+rnd(-1.5,1.5),rr:s.rr,gg:s.gg,bb:s.bb,r:.4+Math.random()*1.6});}
   return out;
 }
-
-function shapeTwoFaces(n,emoji1,emoji2,ox,oy,size){
-  var half=Math.floor(n/2);
-  var left=shapeFace(half,emoji1,ox-size*.55,oy,size*.9);
-  var right=shapeFace(n-half,emoji2,ox+size*.55,oy,size*.9);
-  return left.concat(right);
+function shapeTwoFaces(n,e1,e2,ox,oy,size){
+  var h=Math.floor(n/2);
+  return shapeFace(h,e1,ox-size*.52,oy,size*.9).concat(shapeFace(n-h,e2,ox+size*.52,oy,size*.9));
 }
-
-function shapeRing(n,ox,oy,r,thickness,rr,gg,bb){
+function shapeRing(n,ox,oy,r,thick,rr,gg,bb){
   var out=[];
-  for(var i=0;i<n;i++){
-    var a=rnd(0,Math.PI*2);
-    var d=r+rnd(-thickness,thickness);
-    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.7,rr:rr,gg:gg,bb:bb,r:rnd(.5,1.8)});
-  }
+  for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=r+rnd(-thick,thick);out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.72,rr:rr,gg:gg,bb:bb,r:.5+Math.random()*1.8});}
   return out;
 }
-
-function shapeVoidRing(n,ox,oy,innerR,outerR,rr,gg,bb){
+function shapeVoid(n,ox,oy,inner,outer,rr,gg,bb){
   var out=[];
-  for(var i=0;i<n;i++){
-    var a=rnd(0,Math.PI*2);
-    var d=innerR+Math.random()*(outerR-innerR);
-    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.75,rr:rr,gg:gg,bb:bb,r:rnd(.4,1.6)});
-  }
+  for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=inner+Math.random()*(outer-inner);out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.72,rr:rr,gg:gg,bb:bb,r:.4+Math.random()*1.5});}
   return out;
 }
-
-function shapeFracture(n,ox,oy,size,sep,rr1,gg1,bb1,rr2,gg2,bb2){
-  var out=[];
-  var half=Math.floor(n/2);
+function shapeFracture(n,ox,oy,size,sep){
+  var out=[],h=Math.floor(n/2);
   for(var i=0;i<n;i++){
-    var side=i<half?-1:1;
-    var a=rnd(0,Math.PI*2);
-    var d=rnd(10,size*.45);
+    var side=i<h?-1:1,a=rnd(0,Math.PI*2),d=rnd(10,size*.45);
     var x=ox+side*(sep+Math.cos(a)*d*Math.abs(Math.cos(a)));
     var y=oy+Math.sin(a)*d*.7;
-    if(i<half)out.push({tx:x,ty:y,rr:rr1,gg:gg1,bb:bb1,r:rnd(.5,2)});
-    else out.push({tx:x,ty:y,rr:rr2,gg:gg2,bb:bb2,r:rnd(.5,2)});
+    var cold=side<0?1:0;
+    out.push({tx:x,ty:y,rr:cold?80:140,gg:cold?60:80,bb:cold?160:140,r:.5+Math.random()*1.8});
   }
   return out;
 }
-
+function shapeGrid(n,ox,oy,size,rr,gg,bb){
+  var out=[],cols=Math.round(Math.sqrt(n)*1.7),rows=Math.ceil(n/cols);
+  var sx=size*2/cols,sy=size*1.3/rows;
+  for(var i=0;i<n;i++){
+    var c=i%cols,r=Math.floor(i/cols);
+    out.push({tx:ox-size+c*sx+rnd(-1,1),ty:oy-size*.65+r*sy+rnd(-1,1),rr:rr,gg:gg,bb:bb,r:.4+Math.random()*1.4});
+  }
+  return out;
+}
 function shapeNeural(n,ox,oy,size){
-  /* Node cluster network */
-  var nodes=[];
-  var nNodes=Math.min(14,Math.floor(n/200));
-  for(var k=0;k<nNodes;k++)nodes.push({x:ox+rnd(-size*.45,size*.45),y:oy+rnd(-size*.38,size*.38)});
+  var nodes=[],nN=Math.min(12,Math.floor(n/300));
+  for(var k=0;k<nN;k++)nodes.push({x:ox+rnd(-size*.44,size*.44),y:oy+rnd(-size*.36,size*.36)});
   var out=[];
   for(var i=0;i<n;i++){
-    var nd=nodes[i%nNodes];
-    var spread=rnd(0,size*.12);
-    var a=rnd(0,Math.PI*2);
-    var heat=1-spread/(size*.12);
-    out.push({
-      tx:nd.x+Math.cos(a)*spread,
-      ty:nd.y+Math.sin(a)*spread,
-      rr:Math.round(lerp(100,38,heat)),
-      gg:Math.round(lerp(180,232,heat)),
-      bb:255,
-      r:rnd(.4,1.8)
-    });
+    var nd=nodes[i%nN],sp=rnd(0,size*.1),a=rnd(0,Math.PI*2),h=1-sp/(size*.1);
+    out.push({tx:nd.x+Math.cos(a)*sp,ty:nd.y+Math.sin(a)*sp,rr:Math.round(lerp(80,38,h)),gg:Math.round(lerp(160,232,h)),bb:255,r:.4+Math.random()*1.7});
   }
   return out;
 }
-
-function shapeWave(n,ox,oy,width,amp,rr,gg,bb){
+function shapeScatter(n,ox,oy,size,rr,gg,bb){
   var out=[];
-  for(var i=0;i<n;i++){
-    var t=i/n;
-    var x=ox-width/2+t*width;
-    var y=oy+Math.sin(t*Math.PI*4)*amp+rnd(-amp*.12,amp*.12);
-    out.push({tx:x,ty:y,rr:rr,gg:gg,bb:bb,r:rnd(.5,2)});
-  }
+  for(var i=0;i<n;i++)out.push({tx:rnd(ox-size,ox+size),ty:rnd(oy-size*.6,oy+size*.6),rr:rr||80,gg:gg||120,bb:bb||200,r:.3+Math.random()*1.2});
   return out;
 }
-
-function shapeScatter(n,ox,oy,size){
-  var out=[];
-  for(var i=0;i<n;i++){
-    out.push({tx:rnd(ox-size,ox+size),ty:rnd(oy-size*.6,oy+size*.6),rr:80,gg:120,bb:200,r:rnd(.3,1.2)});
-  }
-  return out;
-}
-
-function shapeCrystalGrid(n,ox,oy,size,rr,gg,bb){
-  var out=[];
-  var cols=Math.round(Math.sqrt(n)*1.6);
-  var rows=Math.round(n/cols);
-  var sx=size*2/cols;
-  var sy=size*1.3/rows;
-  for(var i=0;i<n;i++){
-    var col=i%cols;
-    var row=Math.floor(i/cols);
-    var jitter=(row%2)*.5;
-    out.push({
-      tx:ox-size+(col+jitter)*sx+rnd(-1,1),
-      ty:oy-size*.65+row*sy+rnd(-1,1),
-      rr:rr,gg:gg,bb:bb,r:rnd(.4,1.5)
-    });
-  }
-  return out;
-}
-
-/* ═══ DOMAIN CONFIGS — 5 phases each ═══ */
-var DC={heartbreak:'#e8a0c0',love:'#ff88aa',grief:'#8899bb',anger:'#ff4400',joy:'#ffdd44',neuron:'#60c0f0',immune:'#ff8c42',amr:'#26e8b0',bh:'#7C4FD4',bigbang:'#ffeecc',universe:'#4466ff',rumour:'#f0c040',urban:'#6090ff',chem:'#40d0f0'};
-var DOMAIN_ORDER=['heartbreak','love','grief','anger','joy','neuron','immune','amr','bh','bigbang','universe','rumour','urban','chem'];
-var DOMAIN_LABELS={heartbreak:'Heartbreak',love:'Love',grief:'Grief',anger:'Anger',joy:'Joy',neuron:'Neuroscience',immune:'Immunology',amr:'Antibiotic',bh:'Black Hole',bigbang:'Big Bang',universe:'Universe',rumour:'Social',urban:'Urban',chem:'Chemistry'};
-
-/* Shape spec function — returns array of particle targets for given domain+phase */
-function getShapeSpec(domain,phase,N){
-  var x=cx(),y=cy(),sW=W(),sH=H();
-  var sz=Math.min(sW,sH);
-  switch(domain){
-    case 'bigbang':
-      /* 1→single dot, 2→singularity flash, 3→explosion, 4→spiral galaxy, 5→CMB scatter */
-      if(phase===0)return shapePoint(N,x,y);
-      if(phase===1)return shapePoint(Math.min(N,80),x,y).concat(shapeRing(N-80,x,y,8,4,255,240,200));
-      if(phase===2)return shapeExplosion(N,x,y,5,sz*.7,255,180,80);
-      if(phase===3)return shapeSpiral(N,x,y,sz*.44,3,120,160,255);
-      return shapeScatter(N,x,y,sz*.5);
-
-    case 'heartbreak':
-      /* 1→two faces form, 2→two warm fields, 3→fracture appears, 4→cold separation, 5→two cold fields apart */
-      if(phase===0)return shapeTwoFaces(N,'😊','😊',x,y,sz*.38);
-      if(phase===1)return shapeFracture(N,x,y,sz*.42,sz*.02,220,140,100,200,120,160);
-      if(phase===2)return shapeFracture(N,x,y,sz*.44,sz*.08,180,100,120,140,80,160);
-      if(phase===3)return shapeFracture(N,x,y,sz*.44,sz*.18,80,60,140,60,40,120);
-      return shapeFracture(N,x,y,sz*.4,sz*.32,50,40,120,40,30,100);
-
-    case 'love':
-      /* 1→two scattered fields far apart, 2→two faces form, 3→fields merge centre, 4→single warm face, 5→bright unified field */
-      if(phase===0)return shapeFracture(N,x,y,sz*.4,sz*.3,200,100,100,100,120,220);
-      if(phase===1)return shapeTwoFaces(N,'😊','😊',x,y,sz*.42);
-      if(phase===2)return shapeFracture(N,x,y,sz*.42,sz*.06,255,160,120,255,200,140);
-      if(phase===3)return shapeFace(N,'🥰',x,y,sz*.52);
-      return shapeExplosion(N,x,y,5,sz*.45,255,200,150);
-
-    case 'grief':
-      /* 1→neutral face forms, 2→sad face, 3→void centre grows, 4→ring around void, 5→face reforms quieter */
-      if(phase===0)return shapeFace(N,'😐',x,y,sz*.52);
-      if(phase===1)return shapeFace(N,'😔',x,y,sz*.52);
-      if(phase===2)return shapeVoidRing(N,x,y,sz*.08,sz*.44,80,100,180);
-      if(phase===3)return shapeVoidRing(N,x,y,sz*.16,sz*.46,60,80,160);
-      return shapeFace(N,'🌱',x,y,sz*.48);
-
-    case 'anger':
-      /* 1→tense face, 2→explosion burst, 3→rage scatter, 4→fire wave, 5→slow dissipation ring */
-      if(phase===0)return shapeFace(N,'😤',x,y,sz*.5);
-      if(phase===1)return shapeExplosion(N,x,y,5,sz*.35,255,60,0);
-      if(phase===2)return shapeExplosion(N,x,y,5,sz*.65,255,100,0);
-      if(phase===3)return shapeWave(N,x,y,W()*.9,sz*.22,255,80,20);
-      return shapeRing(N,x,y,sz*.32,sz*.08,180,80,40);
-
-    case 'joy':
-      /* 1→small cluster, 2→joy face, 3→ring expansion, 4→full explosion, 5→warm scattered afterglow */
-      if(phase===0)return shapeRing(N,x,y,sz*.08,sz*.04,240,200,60);
-      if(phase===1)return shapeFace(N,'😊',x,y,sz*.5);
-      if(phase===2)return shapeRing(N,x,y,sz*.28,sz*.06,255,220,80);
-      if(phase===3)return shapeExplosion(N,x,y,5,sz*.55,255,230,100);
-      return shapeScatter(N,x,y,sz*.42);
-
-    case 'neuron':
-      /* 1→single node, 2→axon line forms, 3→network grows, 4→pulse wave, 5→full neural net */
-      if(phase===0)return shapePoint(N,x,y);
-      if(phase===1)return shapeWave(N,x,y,W()*.85,sz*.04,60,180,255);
-      if(phase===2)return shapeNeural(N,x,y,sz*.44);
-      if(phase===3)return shapeWave(N,x,y,W(),sz*.18,100,220,255);
-      return shapeNeural(N,x,y,sz*.48);
-
-    case 'immune':
-      /* 1→cancer cells scattered, 2→T-cells form, 3→T-cells converge, 4→collision, 5→clean field */
-      if(phase===0)return shapeScatter(N,x,y,sz*.42);
-      if(phase===1)return shapeRing(N,x,y,sz*.38,sz*.04,255,120,60);
-      if(phase===2)return shapeRing(N,x,y,sz*.22,sz*.04,38,232,176);
-      if(phase===3)return shapeExplosion(N,x,y,5,sz*.3,200,255,200);
-      return shapeCrystalGrid(N,x,y,sz*.38,38,232,176);
-
-    case 'amr':
-      /* 1→healthy green grid, 2→antibiotic wave hits, 3→mass death scatter, 4→survivors replicate, 5→resistant red grid */
-      if(phase===0)return shapeCrystalGrid(N,x,y,sz*.42,38,220,100);
-      if(phase===1)return shapeWave(N,x,y,W(),sz*.1,240,192,64);
-      if(phase===2)return shapeScatter(Math.floor(N*.15),x,y,sz*.4);
-      if(phase===3)return shapeRing(N,x,y,sz*.2,sz*.06,255,60,60);
-      return shapeCrystalGrid(N,x,y,sz*.42,220,60,60);
-
-    case 'bh':
-      /* 1→single dense point, 2→accretion ring forms, 3→photon sphere, 4→Einstein ring, 5→event horizon */
-      if(phase===0)return shapePoint(N,x,y);
-      if(phase===1)return shapeRing(N,x,y,sz*.32,sz*.12,255,160,40);
-      if(phase===2)return shapeRing(N,x,y,sz*.2,sz*.02,255,255,200);
-      if(phase===3)return shapeRing(N,x,y,sz*.36,sz*.02,255,255,255);
-      return shapeVoidRing(N,x,y,sz*.15,sz*.44,120,80,255);
-
-    case 'universe':
-      /* 1→Earth (emoji), 2→solar system ring, 3→milky way spiral, 4→galaxy cluster scatter, 5→CMB full scatter */
-      if(phase===0)return shapeFace(N,'🌍',x,y,sz*.5);
-      if(phase===1)return shapeRing(N,x,y,sz*.28,sz*.04,200,220,255);
-      if(phase===2)return shapeSpiral(N,x,y,sz*.44,3,140,180,255);
-      if(phase===3)return shapeScatter(N,x,y,sz*.46);
-      return shapeExplosion(N,x,y,0,sz*.52,200,210,255);
-
-    case 'rumour':
-      /* 1→one bright node, 2→small cluster, 3→exponential spread, 4→network chaos, 5→collapse scatter */
-      if(phase===0)return shapePoint(N,x,y);
-      if(phase===1)return shapeRing(N,x,y,sz*.06,sz*.03,240,192,64);
-      if(phase===2)return shapeNeural(N,x,y,sz*.4);
-      if(phase===3)return shapeExplosion(N,x,y,5,sz*.56,240,192,64);
-      return shapeScatter(N,x,y,sz*.5);
-
-    case 'urban':
-      /* 1→ordered grid, 2→flow lines, 3→congestion cluster, 4→gridlock void, 5→full scatter */
-      if(phase===0)return shapeCrystalGrid(N,x,y,sz*.42,100,140,220);
-      if(phase===1)return shapeWave(N,x,y,W()*.9,sz*.04,80,140,255);
-      if(phase===2)return shapeRing(N,x,y,sz*.1,sz*.06,255,80,80);
-      if(phase===3)return shapeVoidRing(N,x,y,sz*.12,sz*.4,100,100,200);
-      return shapeScatter(N,x,y,sz*.46);
-
-    case 'chem':
-      /* 1→two separated groups, 2→diffusion scatter, 3→collision ring, 4→reaction burst, 5→product crystal */
-      if(phase===0)return shapeFracture(N,x,y,sz*.38,sz*.24,40,180,255,255,80,80);
-      if(phase===1)return shapeScatter(N,x,y,sz*.4);
-      if(phase===2)return shapeRing(N,x,y,sz*.12,sz*.08,255,200,80);
-      if(phase===3)return shapeExplosion(N,x,y,5,sz*.36,255,220,100);
-      return shapeCrystalGrid(N,x,y,sz*.38,80,220,255);
-
-    default:
-      return shapeScatter(N,x,y,sz*.4);
-  }
-}
-
-/* ═══ FORMATION ENGINE ═══ */
-var targets=[];
-var birthPositions=[];
-var particleColors=[];
-var particleSizes=[];
-var particleDelays=[];
-var N=0;
-
-function initFormation(domain,phase){
-  var n=Math.min(MAX_P,Math.round(40000*simSpeed));
-  N=n;
-  var spec=getShapeSpec(domain,phase,n);
-  targets=new Float32Array(n*2);
-  birthPositions=new Float32Array(n*2);
-  particleColors=new Uint8Array(n*3);
-  particleSizes=new Float32Array(n);
-  particleDelays=new Float32Array(n);
-  var px=new Float32Array(n*2); // current positions
-  var maxDelay=phase===0?4000:2500;
-  for(var i=0;i<n;i++){
-    var s=spec[i]||spec[i%spec.length];
-    targets[i*2]=s.tx||cx();
-    targets[i*2+1]=s.ty||cy();
-    particleColors[i*3]=s.rr||255;
-    particleColors[i*3+1]=s.gg||255;
-    particleColors[i*3+2]=s.bb||255;
-    particleSizes[i]=s.r||1;
-    particleDelays[i]=Math.random()*maxDelay;
-    /* Birth position */
-    var bx,by;
-    if(phase===0){
-      /* Everything born from a single point */
-      bx=cx()+rnd(-3,3);by=cy()+rnd(-3,3);
-    } else {
-      /* Born from current position (wherever they are now) */
-      bx=px[i*2]||rnd(0,W());
-      by=px[i*2+1]||rnd(0,H());
+/* Fireworks burst — multi-colour shells */
+function shapeFireworks(n,phase){
+  var out=[],shells=phase===0?3:phase===1?6:phase===2?10:phase===3?14:18;
+  var colors=[[255,50,80],[255,140,0],[255,230,0],[0,200,255],[200,100,255],[0,255,150]];
+  for(var s=0;s<shells;s++){
+    var sc=colors[s%colors.length];
+    var bx=W()*(0.1+Math.random()*.8);
+    var by=H()*(0.05+Math.random()*0.45); /* Upper half of screen */
+    var bN=Math.floor(n/shells);
+    var maxR=Math.min(W(),H())*(0.08+Math.random()*.14);
+    for(var i=0;i<bN;i++){
+      var a=rnd(0,Math.PI*2),d=Math.pow(Math.random(),.4)*maxR;
+      out.push({tx:bx+Math.cos(a)*d,ty:by+Math.sin(a)*d,rr:sc[0],gg:sc[1],bb:sc[2],r:.5+Math.random()*2.5});
     }
-    birthPositions[i*2]=bx;
-    birthPositions[i*2+1]=by;
-    px[i*2]=bx;px[i*2+1]=by;
   }
-  /* Store current positions for next phase birth */
-  window._lastPositions=px;
-  formationT=0;
+  return out;
 }
 
-function transitionFormation(domain,phase){
-  /* Particles travel FROM their current (last) positions TO new targets */
+/* ── DOMAIN SHAPE SPECS — 5 phases each ── */
+function getSpec(domain,phase,n){
+  var x=cx(),y=cy()*0.55; /* Bias simulation to upper 55% */
+  var sz=Math.min(W(),H());
+  switch(domain){
+    /* FIREWORKS — zero→full, celebratory */
+    case 'fireworks':
+      if(phase===0)return shapePoint(n,x,y*0.3,255,255,200);
+      if(phase===1)return shapeFireworks(n,1);
+      if(phase===2)return shapeFireworks(n,2);
+      if(phase===3)return shapeFireworks(n,3);
+      return shapeFireworks(n,4);
+
+    /* BIG BANG — zero→full, one dot explodes to universe */
+    case 'bigbang':
+      if(phase===0)return shapePoint(n,x,y);
+      if(phase===1)return shapePoint(Math.floor(n*.05),x,y).concat(shapeRing(Math.ceil(n*.95),x,y,sz*.04,2,255,240,200));
+      if(phase===2)return shapeExplosion(n,x,y,4,sz*.72,255,180,80,true);
+      if(phase===3)return shapeSpiral(n,x,y,sz*.44,3,120,160,255);
+      return shapeScatter(n,x,y,sz*.5,200,210,255);
+
+    /* UNIVERSE — zoom from multiverse to earth */
+    case 'universe':
+      if(phase===0)return shapeScatter(n,x,y,sz*.52,150,160,220); /* multiverse */
+      if(phase===1)return shapeSpiral(n,x,y,sz*.46,3,180,200,255); /* galaxy cluster */
+      if(phase===2)return shapeSpiral(n,x,y,sz*.38,3,200,220,255); /* milky way */
+      if(phase===3)return shapeRing(n,x,y,sz*.24,sz*.04,220,240,255); /* solar system */
+      return shapeFace(n,'🌍',x,y,sz*.48); /* Earth */
+
+    /* HEARTBREAK — form (two faces) → full → zero */
+    case 'heartbreak':
+      if(phase===0)return shapeTwoFaces(n,'😊','😊',x,y,sz*.38);
+      if(phase===1)return shapeFracture(n,x,y,sz*.42,sz*.01);
+      if(phase===2)return shapeFracture(n,x,y,sz*.44,sz*.1);
+      if(phase===3)return shapeFracture(n,x,y,sz*.44,sz*.22);
+      return shapeFracture(n,x,y,sz*.38,sz*.38);
+
+    /* LOVE — zero→form→full */
+    case 'love':
+      if(phase===0)return shapeScatter(n,x-sz*.25,y,sz*.2,220,100,100).concat(shapeScatter(Math.floor(n/2),x+sz*.25,y,sz*.2,100,120,220));
+      if(phase===1)return shapeTwoFaces(n,'😊','😊',x,y,sz*.4);
+      if(phase===2)return shapeFracture(n,x,y,sz*.42,sz*.02);
+      if(phase===3)return shapeFace(n,'🥰',x,y,sz*.52);
+      return shapeExplosion(n,x,y,4,sz*.46,255,200,150,false);
+
+    /* GRIEF — full face → dissolves → void → reforms */
+    case 'grief':
+      if(phase===0)return shapeFace(n,'😐',x,y,sz*.5);
+      if(phase===1)return shapeFace(n,'😔',x,y,sz*.5);
+      if(phase===2)return shapeVoid(n,x,y,sz*.06,sz*.42,70,90,170);
+      if(phase===3)return shapeVoid(n,x,y,sz*.18,sz*.46,55,75,155);
+      return shapeFace(n,'🌱',x,y,sz*.46);
+
+    /* ANGER — tense face → explosion → wave */
+    case 'anger':
+      if(phase===0)return shapeFace(n,'😤',x,y,sz*.5);
+      if(phase===1)return shapeExplosion(n,x,y,4,sz*.35,255,60,0,true);
+      if(phase===2)return shapeExplosion(n,x,y,4,sz*.65,255,100,0,true);
+      if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*4)*sz*.2+rnd(-4,4);ow.push({tx:wx,ty:wy,rr:255,gg:80,bb:20,r:.5+Math.random()*2});}return ow;}
+      return shapeRing(n,x,y,sz*.3,sz*.08,180,70,30);
+
+    /* JOY — zero→face→explosion */
+    case 'joy':
+      if(phase===0)return shapePoint(n,x,y,255,220,60);
+      if(phase===1)return shapeFace(n,'😊',x,y,sz*.5);
+      if(phase===2)return shapeRing(n,x,y,sz*.26,sz*.05,255,220,80);
+      if(phase===3)return shapeExplosion(n,x,y,4,sz*.55,255,230,100,false);
+      return shapeScatter(n,x,y,sz*.42,255,240,180);
+
+    /* NEURON */
+    case 'neuron':
+      if(phase===0)return shapePoint(n,x,y,60,180,255);
+      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.03+t*W()*.94,wy=y+rnd(-sz*.02,sz*.02);ow.push({tx:wx,ty:wy,rr:60,gg:180,bb:255,r:.4+Math.random()*1.5});}return ow;}
+      if(phase===2)return shapeNeural(n,x,y,sz*.44);
+      if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*6)*sz*.16+rnd(-3,3);ow.push({tx:wx,ty:wy,rr:100,gg:220,bb:255,r:.4+Math.random()*2});}return ow;}
+      return shapeNeural(n,x,y,sz*.48);
+
+    /* IMMUNE */
+    case 'immune':
+      if(phase===0)return shapeScatter(n,x,y,sz*.42,200,80,100);
+      if(phase===1)return shapeRing(n,x,y,sz*.36,sz*.04,255,120,60);
+      if(phase===2)return shapeRing(n,x,y,sz*.22,sz*.04,38,232,176);
+      if(phase===3)return shapeExplosion(n,x,y,4,sz*.3,150,255,180,false);
+      return shapeGrid(n,x,y,sz*.38,38,200,160);
+
+    /* AMR — full→zero */
+    case 'amr':
+      if(phase===0)return shapeGrid(n,x,y,sz*.42,38,220,100);
+      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+rnd(-sz*.06,sz*.06);ow.push({tx:wx,ty:wy,rr:240,gg:192,bb:64,r:.5+Math.random()*1.8});}return ow;}
+      if(phase===2)return shapeScatter(Math.floor(n*.15),x,y,sz*.4,200,80,80);
+      if(phase===3)return shapeRing(n,x,y,sz*.18,sz*.05,255,60,60);
+      return shapeGrid(n,x,y,sz*.42,220,60,60);
+
+    /* BLACK HOLE — full→zero */
+    case 'bh':
+      if(phase===0)return shapeScatter(n,x,y,sz*.48,200,180,255);
+      if(phase===1)return shapeRing(n,x,y,sz*.34,sz*.12,255,160,40);
+      if(phase===2)return shapeRing(n,x,y,sz*.22,sz*.02,255,255,200);
+      if(phase===3)return shapeRing(n,x,y,sz*.38,sz*.015,255,255,255);
+      return shapeVoid(n,x,y,sz*.14,sz*.44,110,80,255);
+
+    /* RUMOUR */
+    case 'rumour':
+      if(phase===0)return shapePoint(n,x,y,240,192,64);
+      if(phase===1)return shapeRing(n,x,y,sz*.05,sz*.02,240,192,64);
+      if(phase===2)return shapeNeural(n,x,y,sz*.4);
+      if(phase===3)return shapeExplosion(n,x,y,4,sz*.55,240,192,64,false);
+      return shapeScatter(n,x,y,sz*.5,200,160,40);
+
+    /* URBAN */
+    case 'urban':
+      if(phase===0)return shapeGrid(n,x,y,sz*.42,100,140,220);
+      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.04+t*W()*.92,wy=(i%2===0?y-sz*.08:y+sz*.08)+rnd(-3,3);ow.push({tx:wx,ty:wy,rr:80,gg:140,bb:255,r:.5+Math.random()*1.5});}return ow;}
+      if(phase===2)return shapeRing(n,x,y,sz*.09,sz*.04,255,80,80);
+      if(phase===3)return shapeVoid(n,x,y,sz*.1,sz*.4,90,100,200);
+      return shapeScatter(n,x,y,sz*.46,100,110,180);
+
+    /* CHEM */
+    case 'chem':
+      if(phase===0)return shapeScatter(Math.floor(n/2),x-sz*.24,y,sz*.2,40,180,255).concat(shapeScatter(Math.ceil(n/2),x+sz*.24,y,sz*.2,255,80,80));
+      if(phase===1)return shapeScatter(n,x,y,sz*.4,150,150,200);
+      if(phase===2)return shapeRing(n,x,y,sz*.1,sz*.06,255,200,80);
+      if(phase===3)return shapeExplosion(n,x,y,4,sz*.36,255,220,100,false);
+      return shapeGrid(n,x,y,sz*.38,80,220,255);
+
+    default:return shapeScatter(n,x,y,sz*.4,100,150,200);
+  }
+}
+
+/* ── FORMATION ENGINE ── */
+function allocBuffers(n){
+  N=n;
+  pX=new Float32Array(n);pY=new Float32Array(n);
+  pTX=new Float32Array(n);pTY=new Float32Array(n);
+  pBX=new Float32Array(n);pBY=new Float32Array(n);
+  pR=new Uint8Array(n);pG=new Uint8Array(n);pB=new Uint8Array(n);
+  pSz=new Float32Array(n);pDelay=new Float32Array(n);pLife=new Float32Array(n);
+}
+
+function initPhase(domain,phase,fromScratch){
   var n=N;
-  var spec=getShapeSpec(domain,phase,n);
-  var prev=window._lastPositions||new Float32Array(n*2);
-  targets=new Float32Array(n*2);
-  birthPositions=new Float32Array(n*2);
-  particleColors=new Uint8Array(n*3);
-  particleSizes=new Float32Array(n);
-  particleDelays=new Float32Array(n);
-  var maxDelay=2000;
+  var spec=getSpec(domain,phase,n);
+  var dir=DOMAIN_ENERGY[domain]&&DOMAIN_ENERGY[domain].dir||'zero_to_full';
+  var maxDelay=fromScratch?4000:2200;
   for(var i=0;i<n;i++){
     var s=spec[i%spec.length];
-    targets[i*2]=s.tx||cx();
-    targets[i*2+1]=s.ty||cy();
-    particleColors[i*3]=s.rr||255;
-    particleColors[i*3+1]=s.gg||255;
-    particleColors[i*3+2]=s.bb||255;
-    particleSizes[i]=s.r||1;
-    particleDelays[i]=Math.random()*maxDelay;
-    birthPositions[i*2]=prev[i*2]||cx();
-    birthPositions[i*2+1]=prev[i*2+1]||cy();
+    pTX[i]=s.tx;pTY[i]=s.ty;
+    pR[i]=s.rr||200;pG[i]=s.gg||200;pB[i]=s.bb||200;
+    pSz[i]=s.r||1;
+    pDelay[i]=Math.random()*maxDelay;
+    /* Birth position */
+    if(fromScratch){
+      if(dir==='zero_to_full'||dir==='zoom'){
+        /* Born from a single point (centre for most, point for bigbang/rumour) */
+        pBX[i]=cx()+rnd(-3,3);pBY[i]=cy()*0.55+rnd(-3,3);
+      } else if(dir==='full_to_zero'){
+        /* Born at target — they ARE already there, then disperse next phase */
+        pBX[i]=s.tx+rnd(-2,2);pBY[i]=s.ty+rnd(-2,2);
+        pX[i]=pBX[i];pY[i]=pBY[i];
+      } else {
+        /* form — particles arrive from screen edges */
+        var edge=Math.floor(Math.random()*4);
+        if(edge===0){pBX[i]=rnd(0,W());pBY[i]=-20;}
+        else if(edge===1){pBX[i]=W()+20;pBY[i]=rnd(0,H());}
+        else if(edge===2){pBX[i]=rnd(0,W());pBY[i]=H()+20;}
+        else{pBX[i]=-20;pBY[i]=rnd(0,H());}
+      }
+    } else {
+      /* Transition — travel from current rendered position */
+      pBX[i]=pX[i]||cx();pBY[i]=pY[i]||cy()*0.55;
+    }
+    pLife[i]=0;
   }
-  formationT=0;
+  formT=0;
 }
 
-/* Snapshot current rendered positions for next transition */
-function snapshotPositions(elapsed,totalDur){
-  var snap=new Float32Array(N*2);
+/* Snapshot current rendered X/Y positions */
+function snapshot(){
+  var t2=Math.min(formT/FORM_DUR,1);
   for(var i=0;i<N;i++){
-    var delay=particleDelays[i];
-    var t=clamp((elapsed-delay)/totalDur,0,1);
+    var t=clamp((formT-pDelay[i])/FORM_DUR,0,1);
     var te=easeOut(t);
-    snap[i*2]=lerp(birthPositions[i*2],targets[i*2],te);
-    snap[i*2+1]=lerp(birthPositions[i*2+1],targets[i*2+1],te);
+    pX[i]=lerp(pBX[i],pTX[i],te);
+    pY[i]=lerp(pBY[i],pTY[i],te);
   }
-  window._lastPositions=snap;
 }
 
-/* ═══ RENDER LOOP ═══ */
-var lastFrame=0;
-var elapsed=0;
-var FORMATION_DUR=6000; /* ms for particles to reach target */
-var BREATHE_AMP=1.8; /* breathing noise amplitude */
-var globalT=0;
-
-function renderLoop(ts){
-  requestAnimationFrame(renderLoop);
-  if(paused)return;
-  var dt=Math.min(ts-lastFrame,50)*simSpeed;
-  lastFrame=ts;
-  elapsed+=dt;
-  formationT+=dt;
-  globalT+=dt;
-
-  ctx.fillStyle='rgba(2,4,14,0.18)';
+/* ── RENDER ── */
+function render(dt){
+  /* Trail fade — lighter so sim shows through bottom panel */
+  ctx.fillStyle='rgba(0,0,0,0.14)';
   ctx.fillRect(0,0,W(),H());
 
-  var FDur=FORMATION_DUR;
+  formT+=dt;
+  globalT+=dt;
+
+  var touchR=touchActive?Math.min(W(),H())*.22:0;
+  var tx=touchX,ty=touchY,tf=touchForce;
 
   for(var i=0;i<N;i++){
-    var delay=particleDelays[i];
-    var t=clamp((formationT-delay)/FDur,0,1);
+    var delay=pDelay[i];
+    var t=clamp((formT-delay)/FORM_DUR,0,1);
     var te=easeOut(t);
 
-    var bx=birthPositions[i*2],by=birthPositions[i*2+1];
-    var tx=targets[i*2],ty=targets[i*2+1];
+    var fx=lerp(pBX[i],pTX[i],te);
+    var fy=lerp(pBY[i],pTY[i],te);
 
-    /* Formed position */
-    var fx=lerp(bx,tx,te);
-    var fy=lerp(by,ty,te);
+    /* Gentle breathing after formed */
+    var formed=t>0.92;
+    var bAmt=formed?1:t;
+    var ang=globalT*.0007+i*.141;
+    fx+=Math.sin(ang)*1.8*bAmt;
+    fy+=Math.cos(ang*1.3)*1.8*bAmt;
 
-    /* Breathing noise after formation */
-    var formed=t>0.95;
-    var bNoise=formed?1:t;
-    var angle=globalT*.0008+i*.137;
-    fx+=Math.sin(angle)*BREATHE_AMP*bNoise;
-    fy+=Math.cos(angle*1.3)*BREATHE_AMP*bNoise;
+    /* Touch interaction — gravitational pull or repulsion */
+    if(touchActive&&t>.05){
+      var ddx=fx-tx,ddy=fy-ty;
+      var dist2=ddx*ddx+ddy*ddy;
+      if(dist2<touchR*touchR&&dist2>1){
+        var dist=Math.sqrt(dist2);
+        var strength=(1-dist/touchR)*12;
+        if(tf>0){/* attract */fx-=ddx/dist*strength;fy-=ddy/dist*strength;}
+        else{/* repel */fx+=ddx/dist*strength*2.5;fy+=ddy/dist*strength*2.5;}
+      }
+    }
 
-    var alpha=t<0.02?0:Math.min(t*3,1);
-    var rr=particleColors[i*3];
-    var gg=particleColors[i*3+1];
-    var bb=particleColors[i*3+2];
-    var sz=particleSizes[i]*(0.5+te*.8);
+    /* Store final position */
+    pX[i]=fx;pY[i]=fy;
 
-    ctx.globalAlpha=alpha;
-    ctx.fillStyle='rgb('+rr+','+gg+','+bb+')';
-    ctx.beginPath();
-    ctx.arc(fx,fy,sz,0,Math.PI*2);
-    ctx.fill();
+    var alpha=t<.02?0:Math.min(t*2.5,1);
+    var sz=pSz[i]*(0.4+te*.85);
+
+    ctx.globalAlpha=alpha*.9;
+    ctx.fillStyle='rgb('+pR[i]+','+pG[i]+','+pB[i]+')';
+    ctx.beginPath();ctx.arc(fx,fy,Math.max(.3,sz),0,6.283);ctx.fill();
   }
   ctx.globalAlpha=1;
-
-  /* Snapshot positions just before phase auto-advance */
-  if(formationT>FORMATION_DUR*1.4){
-    snapshotPositions(formationT,FDur);
-  }
 }
 
-/* ═══ NARRATION ═══ */
+/* ── MAIN LOOP ── */
+function loop(ts){
+  requestAnimationFrame(loop);
+  if(paused)return;
+  var dt=Math.min((ts-lastTs)*simSpeed,50);
+  lastTs=ts;
+  render(dt);
+}
+
+/* ── NARRATION ── */
 var NARR={
+  fireworks:[
+    ['Phase 1 · The First Light','One spark. The fuse catches and a single point of fire accelerates upward through the dark at 100 metres per second — invisible until the moment it is not.'],
+    ['Phase 2 · The Break','At the apex, a chemical reaction splits the shell into thousands of burning particles simultaneously. The light arrives at your eyes before the sound reaches your ears.'],
+    ['Phase 3 · Colour','Each colour is a different metal salt burning at a different temperature. Strontium for red. Barium for green. Copper for blue. Magnesium for the white that is almost too bright to look at.'],
+    ['Phase 4 · The Sky in Bloom','Overlapping shells create interference patterns — colours that exist only in the space between bursts, for a fraction of a second, never repeated exactly. Every firework is unique.'],
+    ['Phase 5 · The Silence After','The sound reaches you in waves — the crack, then the bass rumble that you feel in your chest. Then silence. The smoke drifts. The sky is dark again, and somehow larger than it was.']
+  ],
   bigbang:[
-    ['Phase 1 · The Singularity','All matter, energy, space, and time compressed into a single point smaller than a proton. Temperature: 10³² Kelvin. Duration: zero. This is the entire universe, before it existed.'],
-    ['Phase 2 · The Flash','An incomprehensible release of energy in a fraction of a nanosecond — not matter moving through space, but space itself suddenly existing. Every particle of light born simultaneously.'],
-    ['Phase 3 · Inflation','In 10⁻³² seconds the universe expanded by 10²⁶. Quantum fluctuations stretched to cosmic scales. These imperfections in the early universe became every galaxy, every star, every planet.'],
-    ['Phase 4 · First Stars','Hydrogen and helium condensed under gravity into the first stars — a billion times more massive than our sun, burning for only a million years, then exploding to seed space with heavier elements.'],
-    ['Phase 5 · Cosmic Background','380,000 years after the Big Bang the universe cooled enough for electrons to bind to protons. It became transparent. That light is still arriving — we call it the Cosmic Microwave Background.']
-  ],
-  heartbreak:[
-    ['Phase 1 · Two Whole People','Two complete human beings, each with their own warmth. The face you see is who they were before the overlap — before they changed each other\'s phase space.'],
-    ['Phase 2 · The Shared Field','They entered the same gravitational field. The colour you see in the centre — that specific warmth — exists nowhere else. It could only be generated by these two people, together.'],
-    ['Phase 3 · The Fracture','A crack propagates from the centre. The shared warmth cannot survive without both fields. The particles at the fracture line cool first — always the most connected ones, hurt the most.'],
-    ['Phase 4 · Cold Separation','Each field retreats. The temperature drops as the distance grows. The particles do not know they are becoming cold — the body experiences it as an ache in the chest.'],
-    ['Phase 5 · Silence','Two separate cold fields. The warmth they generated together is thermodynamically impossible to reconstruct. Not damaged — gone. This is why heartbreak feels final even when the mind knows better.']
-  ],
-  love:[
-    ['Phase 1 · Two Separate Worlds','Two independent systems, orbiting separately. The first sign of attraction is a deviation from the original path — almost too small to measure. Something has changed.'],
-    ['Phase 2 · Recognition','Two people who see each other. Not at objects, but as subjects. Each recognises something in the other that resembles something in themselves — the face is familiar before it should be.'],
-    ['Phase 3 · Overlap','The fields begin to merge. The colours blend — warmer than either alone, brighter than either alone. This is emergence: two systems producing a property that neither possesses independently.'],
-    ['Phase 4 · The Face of Love','The combined field settles into a single emotional signature. The warmth of love is measurable — oxytocin, dopamine, serotonin — but its felt quality exceeds its chemistry.'],
-    ['Phase 5 · Mutual Amplification','Two fields in mutual orbit, each amplifying the other\'s signal. The mathematics of this state is stable — it does not decay without external perturbation. Love, undisturbed, lasts.']
-  ],
-  grief:[
-    ['Phase 1 · The Face Before','A person, intact. The brain holds a complete predictive model of someone who is loved — their voice, their weight, their responses. This model runs continuously, even now.'],
-    ['Phase 2 · The Face After','The same face, but wrong. The model still predicts — and every prediction fails. Grief is not sadness. It is the gap between prediction and reality, felt thousands of times per day.'],
-    ['Phase 3 · The Void Grows','The absence becomes a presence. The dark centre pulling inward — this is what absence feels like when it is acute. The brain cannot delete what it loved. It can only learn to carry it.'],
-    ['Phase 4 · The Ring of Survival','The particles orbit the void rather than being consumed by it. This is integration, not healing. The wound does not close — the field reorganises around it and continues.'],
-    ['Phase 5 · New Growth','A different face. The same person, but changed. Grief, carried long enough, becomes part of the person who carries it. The loss stays. So does the love. Both are permanent.']
-  ],
-  anger:[
-    ['Phase 1 · The Tense Face','The amygdala fires 250 milliseconds before conscious awareness. Cortisol and adrenaline flood the bloodstream before the thought forms. The face you see is the body preparing.'],
-    ['Phase 2 · Eruption','At the moment of anger, the prefrontal cortex goes offline. This is not a metaphor — executive function reduces by 40%. The explosion happening now is what it looks like inside.'],
-    ['Phase 3 · Full Rage','Every particle at maximum velocity. No rational constraint. This is the brain in threat-response mode, optimised for physical danger — in a world that rarely requires it.'],
-    ['Phase 4 · The Wave','Anger moves in waves — through the body, through conversation, through relationships. Each wave reinforces the neural pathway that produced it. Anger practiced becomes anger habit.'],
-    ['Phase 5 · Dissipation','The parasympathetic system wins. Cortisol clears in 20 minutes. The particles slow. But every pathway that fired has been reinforced — the next anger arrives faster, from a smaller provocation.']
-  ],
-  joy:[
-    ['Phase 1 · The First Signal','A small dopaminergic signal from the ventral tegmental area. Joy begins as anticipation — the brain predicts something good before it arrives. The prediction itself is part of the experience.'],
-    ['Phase 2 · The Joyful Face','Recognition of the face: this is what joy looks like when it is felt, not performed. The muscles around the eyes. The involuntary quality of a real smile. The body cannot fake this.'],
-    ['Phase 3 · The Ring Expands','Joy radiates outward — it is one of the few emotions that naturally seeks to include others. The ring you see is not metaphor. Happy people literally cause happiness in those around them.'],
-    ['Phase 4 · Peak — The Flood','Dopamine, serotonin, endorphins, and oxytocin at simultaneous peaks. The nucleus accumbens saturates. This is neurologically indistinguishable from certain states of temporary madness.'],
-    ['Phase 5 · The Afterglow','Serotonin — the background contentment signal — expands slowly after the peak. This is why good moments leave warmth behind them. The chemistry outlasts the cause.']
-  ],
-  neuron:[
-    ['Phase 1 · One Neuron','A single cell. 100 trillion connections in the human brain — this is one of them, at rest. Resting membrane potential: −70mV. Everything waiting.'],
-    ['Phase 2 · The Action Potential','Voltage-gated Na⁺ channels open at the axon hillock. The membrane flips to +40mV in under 1 millisecond. The signal begins its journey — this is a thought, beginning.'],
-    ['Phase 3 · The Network Wakes','86 billion neurons, each connected to thousands of others. What fires together wires together. Every idea you have is a specific pattern across this network, unique as a fingerprint.'],
-    ['Phase 4 · The Pulse Travels','120 metres per second down myelinated axons. The signal arrives at the synapse — 20 nanometres of gap — and converts from electrical to chemical to electrical again.'],
-    ['Phase 5 · The Full Network','Every thought you have ever had has left a trace in this structure. Every memory is a specific set of synaptic weights. You are the pattern, not the substrate.']
-  ],
-  immune:[
-    ['Phase 1 · The Threat','Cancer cells — growing without instruction, without limit. The body produces them continuously. The question is not whether they form, but whether they are found in time.'],
-    ['Phase 2 · Patrol','Cytotoxic T-cells circulate continuously — 2 million new cells per day. They read every cell they encounter, checking for the mutant peptides that cancer cells cannot hide.'],
-    ['Phase 3 · Convergence','Recognition. The T-cell binds. Perforin polymerises into membrane pores. Granzyme B enters. The cancer cell has 10 minutes. The T-cell has already moved on to its next target.'],
-    ['Phase 4 · The Kill','Apoptosis — cell suicide, precisely induced. The cancer cell dismantles itself from the inside. DNA cuts at specific sites. No inflammation. No bystander damage.'],
-    ['Phase 5 · Clean Field','Macrophages arrive to clear the debris. The tissue returns to normal. This happens thousands of times per day in a healthy immune system — silently, without any signal to consciousness.']
-  ],
-  amr:[
-    ['Phase 1 · The Colony','A bacterial colony at equilibrium — 10⁹ cells, orderly, vulnerable. Within this population, resistance genes exist at low frequency, invisible in the healthy field.'],
-    ['Phase 2 · The Antibiotic Wave','Antibiotic exposure — not a cure but a filter. Every susceptible bacterium dies. This is 99.99% of the colony. The antibiotic cannot reach the 0.01% with resistance genes.'],
-    ['Phase 3 · The Survivors','A handful remain. These bacteria did not develop resistance in response to the antibiotic — they already had it. Natural selection did not create the solution. It merely revealed it.'],
-    ['Phase 4 · Replication','The resistant survivors replicate. 20 minutes per generation. 10 hours to one billion descendants, all resistant. The antibiotic that once cured this infection no longer works.'],
-    ['Phase 5 · The Red Colony','An entirely resistant population — indistinguishable in appearance from the original, but impervious to the treatment that defeated its ancestors. We are developing new antibiotics more slowly than this.']
-  ],
-  bh:[
-    ['Phase 1 · The Beginning','Before the black hole — a single massive point of gravitational collapse. A star exhausted its nuclear fuel. Without radiation pressure to counter gravity, it collapsed inward in seconds.'],
-    ['Phase 2 · Accretion Disk','Matter falls inward, spiralling as it goes — heated to millions of Kelvin by friction and compression. The disk glows across the entire electromagnetic spectrum. This is the light that escapes.'],
-    ['Phase 3 · The Photon Sphere','At 1.5 Schwarzschild radii — light itself orbits. Below this boundary, nothing returns. Above it, light from behind the black hole curves completely around it. The object has no backside.'],
-    ['Phase 4 · Einstein Ring','When the black hole aligns precisely between Earth and a distant star, the star\'s light bends around the mass in a perfect circle. This ring is not an image — it is bent reality.'],
-    ['Phase 5 · Event Horizon','The boundary of no return. Not a surface — a geometric fact. Cross it and all paths through spacetime lead inward, even paths taken at the speed of light. Nothing escapes, including information.']
+    ['Phase 1 · The Singularity','One particle. All matter, energy, space, and time compressed into a volume smaller than a proton. Temperature: 10³² Kelvin. The laws of physics as we know them do not apply yet.'],
+    ['Phase 2 · The Flash','An incomprehensible release of energy — not matter moving through space, but space itself suddenly existing and expanding. Every particle of light born in the same instant.'],
+    ['Phase 3 · Expansion','In 10⁻³² seconds the universe expanded by 10²⁶. Quantum fluctuations stretched to cosmic scales — these imperfections in the early universe became every galaxy, every star, every planet.'],
+    ['Phase 4 · First Stars','Hydrogen and helium condensed under gravity into the first stars — billions of times more massive than our sun, burning for only a million years, then exploding to seed space with heavier elements.'],
+    ['Phase 5 · The Light Still Arriving','380,000 years later the universe cooled enough to become transparent for the first time. That first light is still travelling. We call it the Cosmic Microwave Background.']
   ],
   universe:[
-    ['Phase 1 · Here','Earth — 12,742 km across, third rock from an average star. Every human being who has ever lived was born on this single rock. Every war, every love, every idea — here.'],
-    ['Phase 2 · Our Solar System','Eight planets orbiting one star, bound by gravity in a disk 30 billion km across. The furthest probe humanity has launched — Voyager 1 — is still within the gravitational influence of our sun.'],
-    ['Phase 3 · The Milky Way','200 billion stars in a disk 100,000 light-years across. Our solar system is 26,000 light-years from the centre. A beam of light left when humans first used fire would still be in transit.'],
-    ['Phase 4 · The Local Group','The Milky Way is one of 54 galaxies gravitationally bound in a cluster 10 million light-years across. The nearest large galaxy — Andromeda — is approaching at 110 km per second. It will arrive in 4 billion years.'],
-    ['Phase 5 · The Observable Universe','At least 2 trillion galaxies in a sphere 93 billion light-years across. Beyond that edge, the universe continues — but the light has not had time to reach us. We live in a visible bubble within an infinite unknown.']
+    ['Phase 1 · The Multiverse','An infinite field. If string theory is correct, there are 10⁵⁰⁰ possible universes — each with different physical constants, different laws of physics. Ours is one that permits stars, carbon, and life.'],
+    ['Phase 2 · Galaxy Clusters','Galaxy clusters — the largest structures in the universe — span hundreds of millions of light-years. They are connected by filaments of dark matter in a web that looks, under analysis, like a neural network.'],
+    ['Phase 3 · The Milky Way','Our galaxy: 200 billion suns, 100,000 light-years across, 4 billion years before it collides with Andromeda. Every star visible to the naked eye is in this single galaxy.'],
+    ['Phase 4 · Our Solar System','Eight planets, one average star, in the outer spiral arm of the Milky Way. Our sun is 4.6 billion years old. It will become a red giant and consume the Earth in another 5 billion years.'],
+    ['Phase 5 · Here','Earth. 12,742 km across. Every human being who has ever lived was born on this single rock. Every war, every love, every idea, every language — here. Pale blue dot.']
+  ],
+  heartbreak:[
+    ['Phase 1 · Two Whole People','Two complete human beings, each with their own warmth. Before they overlapped — before they changed each other\'s phase space.'],
+    ['Phase 2 · The Fracture Begins','A crack propagates from the centre. The shared warmth that existed only between them — that specific colour — begins to cool at the fracture line first.'],
+    ['Phase 3 · Pulling Apart','Each field retreats. The temperature drops as the distance grows. The particles don\'t know they are becoming cold. The body feels it as an ache.'],
+    ['Phase 4 · Cold Separation','Two fields, cooling rapidly. The specific warmth they generated together cannot survive without both. It requires exactly these two people to exist.'],
+    ['Phase 5 · Silence','Two separate cold fields. The warmth they produced together is thermodynamically impossible to reconstruct. Not damaged — gone. This is why it feels final even when the mind knows better.']
+  ],
+  love:[
+    ['Phase 1 · Two Separate Systems','Two independent particle systems, orbiting separately. The first sign of attraction is a slight deviation from the original path — almost too small to notice. Something has changed.'],
+    ['Phase 2 · Recognition','Two people who see each other. Not as objects, but as subjects. Each recognises something in the other that resembles something in themselves.'],
+    ['Phase 3 · Overlap','The fields begin to merge. Warmer than either alone. Brighter than either alone. This is emergence: two systems producing a property that neither possesses independently.'],
+    ['Phase 4 · The Face of Love','The combined field settles into a single emotional signature. Oxytocin, dopamine, serotonin — measurable. But the felt quality exceeds its chemistry.'],
+    ['Phase 5 · Amplification','Two fields in mutual orbit, each amplifying the other\'s signal. The mathematics of this state is stable. Love, undisturbed, does not decay.']
+  ],
+  grief:[
+    ['Phase 1 · The Face Before','A person, intact. The brain holds a complete predictive model of someone loved — their voice, their weight, their responses. This model runs continuously.'],
+    ['Phase 2 · The Face After','The same face, but wrong. The model still predicts — and every prediction fails. Grief is not sadness. It is the gap between prediction and reality, felt thousands of times per day.'],
+    ['Phase 3 · The Void','Absence becomes a presence. The dark centre pulling inward — this is what loss feels like when it is acute. The brain cannot delete what it loved. It can only learn to carry it.'],
+    ['Phase 4 · The Ring','The particles orbit the void rather than being consumed. This is integration, not healing. The wound does not close — the field reorganises around it and continues.'],
+    ['Phase 5 · New Growth','A different face. The same person, but changed. Grief carried long enough becomes part of the person who carries it. The loss stays. So does the love. Both are permanent.']
+  ],
+  anger:[
+    ['Phase 1 · Tension','The amygdala fires 250 milliseconds before conscious awareness. Cortisol and adrenaline flood the bloodstream before the thought forms. Every particle is already accelerating.'],
+    ['Phase 2 · Eruption','The prefrontal cortex goes offline. Executive function drops by 40%. The explosion is what it looks like inside — genuine, total, without rational constraint.'],
+    ['Phase 3 · Rage','Every particle at maximum velocity. The body is optimised for physical danger, in a world that rarely requires it. The energy has nowhere useful to go.'],
+    ['Phase 4 · The Wave','Anger moves in waves — through the body, through conversations, through relationships. Each wave reinforces the pathway that produced it. Anger practised becomes anger habit.'],
+    ['Phase 5 · Dissipation','The parasympathetic system gradually wins. Cortisol clears in 20 minutes. The particles slow. But every pathway that fired has been reinforced — the next anger arrives faster.']
+  ],
+  joy:[
+    ['Phase 1 · The First Signal','A small dopaminergic signal from the ventral tegmental area. Joy begins as anticipation — the brain predicts something good before it arrives. The prediction itself is part of the pleasure.'],
+    ['Phase 2 · The Joyful Face','This is joy when it is real, not performed. The orbicularis oculi — the muscle around the eye — fires involuntarily. The body cannot convincingly fake this contraction.'],
+    ['Phase 3 · The Ring Expands','Joy radiates outward. It is one of the few emotions that naturally seeks to include others. Happy people cause happiness in those around them — it is contagious in the literal sense.'],
+    ['Phase 4 · The Flood','Dopamine, serotonin, endorphins, and oxytocin at simultaneous peaks. The nucleus accumbens saturates. Peak joy is neurochemically indistinguishable from certain states of madness.'],
+    ['Phase 5 · Afterglow','Serotonin — the background contentment signal — expands slowly after the peak. This is why good moments leave warmth behind them. The chemistry outlasts the cause.']
+  ],
+  neuron:[
+    ['Phase 1 · One Neuron, At Rest','A single cell. Resting membrane potential: −70mV. 86 billion neurons in the human brain, each capable of firing 1,000 times per second. This is one of them, waiting.'],
+    ['Phase 2 · The Action Potential','Voltage-gated Na⁺ channels open at the axon hillock. The membrane flips to +40mV in under 1 millisecond. The signal begins its journey — this is a thought, beginning.'],
+    ['Phase 3 · The Network','What fires together, wires together. Every idea you have ever had is a specific pattern across 86 billion nodes, each connected to thousands of others. You are the pattern.'],
+    ['Phase 4 · The Pulse','120 metres per second down myelinated axons. The signal arrives at the synapse — a 20-nanometre gap — and converts from electrical to chemical to electrical again.'],
+    ['Phase 5 · The Full Brain','Every thought you have ever had has left a trace in this structure. Every memory is a specific set of synaptic weights. The brain you have today is shaped by every experience you have ever had.']
+  ],
+  immune:[
+    ['Phase 1 · The Threat','Cancer cells — growing without instruction, without limit. The body produces abnormal cells continuously. The question is not whether they form, but whether they are found in time.'],
+    ['Phase 2 · Patrol','Cytotoxic T-cells circulate continuously. They read every cell they pass, checking MHC-I complexes for mutant peptide antigens. A cancer cell cannot hide what it has become.'],
+    ['Phase 3 · Convergence','Recognition. The T-cell binds. Perforin polymerises into membrane pores. Granzyme B enters. The cancer cell has 10 minutes. The T-cell has already moved on.'],
+    ['Phase 4 · Apoptosis','Cell suicide, precisely induced. The cancer cell dismantles itself from the inside. DNA cuts at specific sites. No inflammation. No bystander damage. Surgical precision.'],
+    ['Phase 5 · Clean Field','Macrophages clear the debris. The tissue returns to normal. This happens thousands of times per day in a healthy immune system — silently, without any signal to consciousness.']
+  ],
+  amr:[
+    ['Phase 1 · The Colony','A bacterial colony at equilibrium. Within this population, resistance genes exist at low frequency — invisible, harmless-seeming, waiting.'],
+    ['Phase 2 · The Antibiotic','Not a cure. A filter. The antibiotic wave kills 99.99% of the colony. The 0.01% with resistance genes did not develop resistance in response — they already had it.'],
+    ['Phase 3 · The Survivors','A handful remain. Everything else is gone. These bacteria reproduced. Natural selection did not create the solution — it revealed the one that already existed.'],
+    ['Phase 4 · Replication','20 minutes per generation. 10 hours to a billion descendants. All resistant. The antibiotic that once cured this infection no longer works.'],
+    ['Phase 5 · Red Colony','An entirely resistant population, indistinguishable in appearance from the original. We are developing new antibiotics more slowly than resistance evolves.']
+  ],
+  bh:[
+    ['Phase 1 · Before The Collapse','A massive star, exhausting its nuclear fuel. Without radiation pressure to counter gravity, it will collapse inward in seconds. The particles you see are the star, intact.'],
+    ['Phase 2 · Accretion Disk','Matter spiralling inward, heated to millions of Kelvin by friction and compression. The disk emits X-rays visible across the galaxy. This is the light that escapes.'],
+    ['Phase 3 · Photon Sphere','At 1.5 Schwarzschild radii, light orbits. Below this, nothing returns. Above it, light from behind the black hole curves completely around it — the object has no backside.'],
+    ['Phase 4 · Einstein Ring','When the mass aligns precisely between Earth and a distant star, the star\'s light bends around it in a perfect circle. Predicted 1915. Photographed 2019.'],
+    ['Phase 5 · Event Horizon','The boundary of no return. Not a surface — a geometric fact. All paths through spacetime lead inward. Nothing escapes, including information.']
   ],
   rumour:[
-    ['Phase 1 · One Person Knows','A single node in a network of 8 billion. Within three hops, this person has connections to 3 billion others. The conditions for exponential spread are always present. All it takes is one match.'],
-    ['Phase 2 · The First Cluster','Early spread is invisible — below the threshold of detection. The network appears unchanged. Below the surface, R₀ is growing. When it exceeds 1.0, collapse of the original state becomes inevitable.'],
-    ['Phase 3 · Cascade','Exponential growth looks like nothing, then everything. Each infected node infects multiple others. Hub nodes — the highly connected — become super-spreaders. One message, one billion minds, in hours.'],
-    ['Phase 4 · Network Chaos','The message mutates as it travels. Details change with each transmission. By the time it reaches the network\'s edge, it may share only its emotional charge with the original — the feeling survives; the facts do not.'],
-    ['Phase 5 · Collapse by Exhaustion','The cascade ends not when truth wins but when attention fails. Spreaders become stiflers when they grow bored. Information, like all energy, dissipates. The story dies of exhaustion, not correction.']
+    ['Phase 1 · One Person Knows','A single node in a network of 8 billion. Within three hops, connections reach 3 billion others. The conditions for exponential spread are permanently present.'],
+    ['Phase 2 · The First Cluster','Early spread is invisible. R₀ is growing below the threshold of detection. When it exceeds 1.0, the collapse of the original state becomes inevitable.'],
+    ['Phase 3 · Cascade','Exponential growth looks like nothing, then everything. Hub nodes become super-spreaders. One message, one billion minds, in hours.'],
+    ['Phase 4 · Mutation','The message mutates as it travels. Details change with each transmission. The emotional charge survives. The facts do not.'],
+    ['Phase 5 · Exhaustion','The cascade collapses not when truth wins, but when attention fails. Information, like all energy, dissipates. The story dies of exhaustion, not correction.']
   ],
   urban:[
-    ['Phase 1 · Ordered Flow','A city at optimal capacity — vehicles distributed evenly across the network, each junction clearing in sequence. This state is productive, efficient, and inherently fragile.'],
-    ['Phase 2 · The Flow Lines','Traffic behaves as fluid dynamics — laminar flow at low density, turbulent at high. The lines you see are streams of vehicles at their natural speed, before any junction fails.'],
-    ['Phase 3 · The Bottleneck','One junction reaches capacity. Upstream vehicles cannot proceed. The queue grows faster than it clears. This is the point of phase transition — and it happens faster than any human can respond to.'],
-    ['Phase 4 · The Void of Gridlock','The hollow centre is not emptiness — it is the junction where nothing moves. Vehicles from four directions cannot enter because they cannot exit. The city has locked itself.'],
-    ['Phase 5 · Cascade Failure','Congestion propagates to adjacent junctions, then further. The entire network fails from a single point — not because of the volume of vehicles, but because of the topology of the connections between them.']
+    ['Phase 1 · Ordered Flow','A city at optimal capacity. Every junction clearing in sequence. This state is productive, efficient, and inherently fragile — one failure propagates instantly.'],
+    ['Phase 2 · The Flow Lines','Traffic behaves as fluid dynamics. Laminar flow at low density, turbulent at high. The lines are vehicles at their natural speed, before any junction fails.'],
+    ['Phase 3 · The Bottleneck','One junction reaches capacity. Upstream queues grow faster than they clear. The phase transition has begun — and it happens faster than any human can respond to.'],
+    ['Phase 4 · The Void of Gridlock','The hollow centre is not emptiness — it is the junction where nothing moves. Vehicles from four directions cannot enter because they cannot exit.'],
+    ['Phase 5 · Cascade Failure','Congestion propagates to adjacent junctions, then further. The network fails from a single point — not because of the volume, but because of the topology of connections.']
   ],
   chem:[
-    ['Phase 1 · Separation','Reactant molecules A and B, separated. At this distance, they cannot react — the activation energy barrier prevents it. They need a collision of sufficient kinetic energy to overcome the threshold.'],
-    ['Phase 2 · Brownian Motion','Molecules drift randomly through solution, driven by thermal energy. Each collision is random. Most lack sufficient energy to react. But with enough molecules, sufficient energy, and time — it is inevitable.'],
-    ['Phase 3 · The Reaction Zone','A collision with enough energy occurs. Bonds break and reform simultaneously in microseconds. The transition state — a brief moment where the old bonds are breaking and the new ones forming — is unstable.'],
-    ['Phase 4 · Product Formation','Products appear at the reaction zone, releasing energy as they form. The energy released may catalyse further reactions. Chain reactions — including fire, life, and explosions — follow this principle.'],
-    ['Phase 5 · Equilibrium','Products accumulate; reactants deplete. The forward and reverse reaction rates equalise. Le Chatelier\'s principle governs the balance. The system has settled into its lowest-energy configuration.']
+    ['Phase 1 · Separation','Molecules A and B, separated. At this distance, they cannot react — the activation energy barrier prevents it. They need a collision of sufficient kinetic energy.'],
+    ['Phase 2 · Diffusion','Molecules drift randomly through solution — Brownian motion, driven by thermal energy. Most collisions lack sufficient energy to react. But with enough molecules and time — inevitable.'],
+    ['Phase 3 · The Reaction Zone','A collision with enough energy occurs. Bonds break and reform simultaneously in microseconds. The transition state exists for less than a single vibration.'],
+    ['Phase 4 · Product Formation','Products appear, releasing energy as they form. The energy released may catalyse further reactions. Fire, life, and explosions all follow this principle.'],
+    ['Phase 5 · Equilibrium','Products accumulate; reactants deplete. Forward and reverse rates equalise. Le Chatelier\'s principle governs the balance. The lowest-energy configuration.']
   ]
 };
 
-/* ═══ QUESTION ROUTING ═══ */
+/* ── QUESTION ROUTING ── */
 var QMAP=[
-  {re:/heartbreak|breakup|break.*up|end.*relation|lost.*love|she left|he left|left me|miss.*them/i,key:'heartbreak'},
-  {re:/love|falling.*love|romance|attraction|chemistry|bond.*person|soulmate/i,key:'love'},
-  {re:/grief|griev|mourn|loss.*person|someone.*died|bereavement|missing.*person/i,key:'grief'},
+  {re:/firework|fire.*work|new year|celebrate|celebration|diwali|pyrotech/i,key:'fireworks'},
+  {re:/heartbreak|breakup|break.*up|she left|he left|left me|miss.*them|end.*relation/i,key:'heartbreak'},
+  {re:/love|falling.*love|romance|attraction|soulmate|chemistry.*person/i,key:'love'},
+  {re:/grief|griev|mourn|loss.*person|someone.*died|bereavement|miss.*person/i,key:'grief'},
   {re:/anger|angry|rage|furious|frustrat|hate/i,key:'anger'},
-  {re:/joy|happy|happiness|euphoria|pleasure|delight/i,key:'joy'},
-  {re:/neuron|brain|action potential|synap|nerve|myelin|thought|memory|cognit/i,key:'neuron'},
-  {re:/cancer|tumor|t.cell|immune|immunolog|natural killer|lymph|perforin/i,key:'immune'},
-  {re:/antibiotic|bacteria|amr|resist.*drug|drug.*resist|penicillin|superbug/i,key:'amr'},
-  {re:/black hole|event horizon|singularity|hawking|accretion|spacetime|schwarzschild/i,key:'bh'},
-  {re:/big bang|bigbang|universe.*begin|origin.*universe|inflation.*universe|cosmic.*microwave/i,key:'bigbang'},
-  {re:/universe.*scale|how big|milky way|galaxy|observable universe|cosmos/i,key:'universe'},
-  {re:/rumour|rumor|gossip|misinform|fake news|viral.*spread|social.*spread/i,key:'rumour'},
+  {re:/joy|happy|happiness|euphoria|delight/i,key:'joy'},
+  {re:/neuron|brain|action potential|synap|nerve|myelin|thought|cognit/i,key:'neuron'},
+  {re:/cancer|tumor|t.cell|immune|immunolog|lymph|perforin/i,key:'immune'},
+  {re:/antibiotic|bacteria|amr|resist.*drug|superbug/i,key:'amr'},
+  {re:/black hole|event horizon|singularity|hawking|accretion|schwarzschild/i,key:'bh'},
+  {re:/big bang|bigbang|universe.*begin|origin.*universe|cosmic.*microwave/i,key:'bigbang'},
+  {re:/universe.*scale|multiverse|how big|milky way|observable universe|galaxy.*scale/i,key:'universe'},
+  {re:/rumour|rumor|gossip|fake news|viral.*spread|misinform/i,key:'rumour'},
   {re:/traffic|gridlock|congest|urban.*flow|transport/i,key:'urban'},
   {re:/chem|react|molecule|atom|bond|enzyme|catalyst|acid|equilibrium/i,key:'chem'},
 ];
 function smartRoute(q){for(var i=0;i<QMAP.length;i++)if(QMAP[i].re.test(q))return QMAP[i].key;return DOMAIN_ORDER[Math.floor(Math.random()*DOMAIN_ORDER.length)];}
 
-/* ═══ WORD STREAM ═══ */
-function streamWords(text){
+/* ── WORD STREAM — synced with voice ── */
+var wordTimers=[];
+function streamWords(text,onWord){
   if(wordStreamTimer)clearInterval(wordStreamTimer);
-  var el=document.getElementById('answerText');
-  el.innerHTML='';
+  wordTimers.forEach(clearTimeout);wordTimers=[];
+  var el=document.getElementById('answerText');el.innerHTML='';
   var words=text.split(' ');
   words.forEach(function(w){var s=document.createElement('span');s.className='word';s.textContent=w+' ';el.appendChild(s);});
   var spans=el.querySelectorAll('.word');
   var i=0;
+  var msPerWord=voiceOn?120:80; /* slightly slower when voice is on, so text matches */
   wordStreamTimer=setInterval(function(){
-    if(i<spans.length){spans[i].classList.add('show');i++;}
+    if(i<spans.length){spans[i].classList.add('show');if(onWord)onWord(i,words[i]);i++;}
     else{clearInterval(wordStreamTimer);wordStreamTimer=null;}
-  },80);
+  },msPerWord);
 }
 
-/* ═══ NARRATION UI ═══ */
-function updateNarr(){
-  var narrs=NARR[simDomain];
-  if(!narrs)return;
-  var ph=narrs[simPhase]||narrs[0];
+/* ── NARRATION UI ── */
+var autoPlayOn=true;
+
+function updateNarr(domain,phase){
+  var narrs=NARR[domain];if(!narrs)return;
+  var ph=narrs[phase]||narrs[0];
   document.getElementById('narrPhaseLabel').textContent=ph[0];
-  var pct=((simPhase+1)/narrs.length*100).toFixed(0);
-  document.getElementById('phaseProgressFill').style.width=pct+'%';
-  /* Flash phase label in sim area */
+  var pct=((phase+1)/narrs.length*100).toFixed(0);
+  /* Reset progress bar animation */
+  var fill=document.getElementById('phaseProgressFill');
+  fill.style.transition='none';fill.style.width='0%';
+  setTimeout(function(){fill.style.transition='width '+(PHASE_DUR/1000)+'s linear';fill.style.width=pct+'%';},50);
+  document.getElementById('phaseNum').textContent=(phase+1)+' / '+narrs.length;
+  /* Phase flash */
   var flash=document.getElementById('phaseFlash');
-  flash.textContent=ph[0].split('·')[1]||ph[0];
-  flash.classList.add('show');
-  setTimeout(function(){flash.classList.remove('show');},1800);
-  streamWords(ph[1]);
-  /* Phase dots */
+  flash.textContent=(ph[0].split('·')[1]||ph[0]).trim();
+  flash.style.opacity='1';
+  setTimeout(function(){flash.style.opacity='0';},2000);
+  /* Dots */
   var dots=document.getElementById('narrDots');dots.innerHTML='';
   for(var i=0;i<narrs.length;i++){
-    var d=document.createElement('div');d.className='ndot'+(i===simPhase?' on':'');
-    (function(idx){d.onclick=function(){goToPhase(idx);};})(i);
+    var d=document.createElement('div');d.className='ndot'+(i===phase?' on':'');
+    (function(idx){d.onclick=function(){jumpToPhase(idx);};})(i);
     dots.appendChild(d);
   }
-  if(voiceOn)speakNarr(ph[1]);
-  /* Schedule auto-advance */
+  /* Stream text */
+  streamWords(ph[1]);
+  /* Voice — word by word */
+  if(voiceOn)startVoice(ph[1]);
+  /* Sound */
+  if(soundOn)playEmotionalSound(domain);
+  /* Auto advance */
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
-  var narrs2=NARR[simDomain];
-  if(simPhase<narrs2.length-1){
+  if(autoPlayOn&&narrs&&phase<narrs.length-1){
     phaseAutoTimer=setTimeout(function(){
-      snapshotPositions(formationT,FORMATION_DUR);
+      if(!autoPlayOn)return;
+      snapshot();
       simPhase++;
-      transitionFormation(simDomain,simPhase);
-      updateNarr();
+      initPhase(simDomain,simPhase,false);
+      updateNarr(simDomain,simPhase);
     },PHASE_DUR);
   }
 }
 
-function goToPhase(ph){
+function toggleAutoPlay(){
+  autoPlayOn=!autoPlayOn;
+  var btn=document.getElementById('stopBtn');
+  btn.textContent=autoPlayOn?'⏸ Pause':'▶ Play';
+  btn.classList.toggle('stopped',!autoPlayOn);
+  if(!autoPlayOn&&phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
+  else if(autoPlayOn)updateNarr(simDomain,simPhase);
+}
+
+function jumpToPhase(ph){
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
-  snapshotPositions(formationT,FORMATION_DUR);
+  if(wordStreamTimer)clearInterval(wordStreamTimer);
+  stopVoice();
+  snapshot();
   simPhase=ph;
-  transitionFormation(simDomain,simPhase);
-  updateNarr();
+  initPhase(simDomain,simPhase,false);
+  updateNarr(simDomain,simPhase);
 }
+function nextPhase(){var n=NARR[simDomain];if(n&&simPhase<n.length-1)jumpToPhase(simPhase+1);}
+function prevPhase(){if(simPhase>0)jumpToPhase(simPhase-1);}
 
-function nextPhase(){
-  var narrs=NARR[simDomain];
-  if(narrs&&simPhase<narrs.length-1)goToPhase(simPhase+1);
-}
-
-/* ═══ VOICE ═══ */
-async function speakNarr(text){
-  if(!voiceOn)return;
-  if(voiceAudio){voiceAudio.pause();voiceAudio=null;}
-  document.getElementById('voiceBadge').classList.add('show');
+/* ── VOICE — word synced ── */
+async function startVoice(text){
+  stopVoice();
+  document.getElementById('voiceBtn').classList.add('speaking');
   try{
-    var res=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+ELEVEN_VOICE+'/stream',{
+    var res=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+ELV+'/stream',{
       method:'POST',
-      headers:{'Content-Type':'application/json','xi-api-key':ELEVEN_KEY},
+      headers:{'Content-Type':'application/json','xi-api-key':ELK},
       body:JSON.stringify({text:text,model_id:'eleven_turbo_v2',voice_settings:{stability:.44,similarity_boost:.82}})
     });
-    if(!res.ok)throw new Error(res.status);
-    var blob=await res.blob();
-    var url=URL.createObjectURL(blob);
+    if(!res.ok)throw 0;
+    var blob=await res.blob(),url=URL.createObjectURL(blob);
     voiceAudio=new Audio(url);
-    voiceAudio.onended=function(){URL.revokeObjectURL(url);voiceAudio=null;document.getElementById('voiceBadge').classList.remove('show');};
-    voiceAudio.onerror=function(){document.getElementById('voiceBadge').classList.remove('show');};
-    voiceAudio.play();
-  }catch(e){document.getElementById('voiceBadge').classList.remove('show');}
+    voiceAudio.onended=function(){URL.revokeObjectURL(url);voiceAudio=null;document.getElementById('voiceBtn').classList.remove('speaking');};
+    voiceAudio.onerror=function(){document.getElementById('voiceBtn').classList.remove('speaking');};
+    if(voiceOn)voiceAudio.play();
+  }catch(e){document.getElementById('voiceBtn').classList.remove('speaking');}
 }
-
+function stopVoice(){if(voiceAudio){voiceAudio.pause();voiceAudio=null;}document.getElementById('voiceBtn').classList.remove('speaking');}
 function toggleVoice(){
   voiceOn=!voiceOn;
-  document.getElementById('voiceIco').textContent=voiceOn?'🔊':'🔇';
-  document.getElementById('voiceBtn').classList.toggle('on',voiceOn);
-  if(!voiceOn&&voiceAudio){voiceAudio.pause();voiceAudio=null;document.getElementById('voiceBadge').classList.remove('show');}
-  else if(voiceOn){var narrs=NARR[simDomain];if(narrs&&narrs[simPhase])speakNarr(narrs[simPhase][1]);}
+  document.getElementById('voiceLbl').textContent=voiceOn?'Voice On':'Voice';
+  document.getElementById('voiceBtn').classList.toggle('speaking',voiceOn);
+  if(!voiceOn)stopVoice();
+  else{var narrs=NARR[simDomain];if(narrs&&narrs[simPhase])startVoice(narrs[simPhase][1]);}
 }
 
-/* ═══ DOMAIN SWITCH ═══ */
-var domIdx=DOMAIN_ORDER.indexOf(simDomain);
+/* ── SOUND TRACKS — Web Audio API synthesis ── */
+function stopSound(){soundNodes.forEach(function(n){try{n.stop();}catch(e){}});soundNodes=[];}
+function playEmotionalSound(domain){
+  if(!soundOn)return;
+  stopSound();
+  try{
+    var ac=getAudioCtx();
+    var energy=DOMAIN_ENERGY[domain]&&DOMAIN_ENERGY[domain].sound||'neutral';
+    var presets={
+      celebration:{freq:[523,659,784,1047],type:'sine',vol:.12,dur:3},
+      cosmic:{freq:[55,82,110],type:'sine',vol:.06,dur:8},
+      sad:{freq:[220,277,330],type:'sine',vol:.07,dur:6},
+      warm:{freq:[330,415,523],type:'sine',vol:.08,dur:5},
+      danger:{freq:[100,150,200],type:'sawtooth',vol:.09,dur:4},
+      happy:{freq:[523,659,784],type:'triangle',vol:.1,dur:4},
+      electric:{freq:[440,880,1320],type:'square',vol:.05,dur:3},
+      warning:{freq:[330,370,415],type:'sawtooth',vol:.07,dur:4},
+      neutral:{freq:[220,330,440],type:'sine',vol:.05,dur:5},
+      dark:{freq:[55,73,82],type:'sine',vol:.06,dur:8}
+    };
+    var p=presets[energy]||presets.neutral;
+    p.freq.forEach(function(f,i){
+      var osc=ac.createOscillator();
+      var gain=ac.createGain();
+      var filter=ac.createBiquadFilter();
+      filter.type='lowpass';filter.frequency.value=800+i*200;
+      osc.type=p.type;osc.frequency.value=f;
+      gain.gain.setValueAtTime(0,ac.currentTime);
+      gain.gain.linearRampToValueAtTime(p.vol/(i+1),ac.currentTime+1.5);
+      gain.gain.linearRampToValueAtTime(0,ac.currentTime+p.dur);
+      osc.connect(filter);filter.connect(gain);gain.connect(ac.destination);
+      osc.start();osc.stop(ac.currentTime+p.dur+.1);
+      soundNodes.push(osc);
+    });
+  }catch(e){}
+}
+function toggleSound(){
+  soundOn=!soundOn;
+  document.getElementById('soundIco').textContent=soundOn?'🔊':'🔇';
+  document.getElementById('soundLbl').textContent=soundOn?'Sound On':'Sound';
+  document.getElementById('soundBtn').classList.toggle('sounding',soundOn);
+  if(!soundOn)stopSound();
+  else playEmotionalSound(simDomain);
+}
 
+/* ── DOMAIN SWITCH ── */
+var domIdx=DOMAIN_ORDER.indexOf(simDomain);
 function switchDomain(key,pill){
-  simDomain=key;
-  simPhase=0;
+  simDomain=key;simPhase=0;
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
-  if(voiceAudio){voiceAudio.pause();voiceAudio=null;document.getElementById('voiceBadge').classList.remove('show');}
+  stopVoice();stopSound();
   document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
   if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
   domIdx=DOMAIN_ORDER.indexOf(key);
-  initFormation(key,0);
-  updateNarr();
+  initPhase(key,0,true);
+  updateNarr(key,0);
 }
 
-function resetFormation(){
-  initFormation(simDomain,simPhase);
-}
+function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTimeout(function(){reinitScheduled=false;initPhase(simDomain,simPhase,false);},100);}
 
-/* ═══ ASK QUESTION ═══ */
+/* ── ASK QUESTION ── */
 async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();if(!q)return;
   var btn=document.getElementById('askBtn');btn.classList.add('busy');btn.textContent='…';
+  stopVoice();stopSound();
   document.getElementById('answerText').innerHTML='';
   document.getElementById('narrPhaseLabel').textContent='Forming…';
   var key=smartRoute(q);
   var pill=document.querySelector('.dpill[data-key="'+key+'"]');
-  /* Start simulation immediately */
   simDomain=key;simPhase=0;
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
   document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
   if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
   domIdx=DOMAIN_ORDER.indexOf(key);
-  initFormation(key,0);
-  /* Fetch question-specific narration in background */
+  initPhase(key,0,true);
+  /* Fetch question-specific narration */
   var gotNarr=false;
   try{
-    var res=await fetch(SB_URL+'/functions/v1/simulate',{
+    var res=await fetch(SB+'/functions/v1/simulate',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_KEY},
+      headers:{'Content-Type':'application/json','apikey':SBK},
       body:JSON.stringify({question:q,domain:key})
     });
     var data=await res.json();
     if(data.narration&&Array.isArray(data.narration)&&data.narration.length>=3){
       var clean=data.narration.filter(function(p){
-        return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>20
-          &&p[1].indexOf('this simulation')<0&&p[1].indexOf('This simulation')<0;
+        return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>15
+          &&p[1].indexOf('this simulation')<0&&p[1].indexOf('This simulation')<0
+          &&p[1].indexOf('models the')<0;
       });
-      if(clean.length>=3){NARR[key]=clean;gotNarr=true;}
+      if(clean.length>=3){
+        /* Pad to 5 phases if needed */
+        while(clean.length<5)clean.push(clean[clean.length-1]);
+        NARR[key]=clean;gotNarr=true;
+      }
     }
   }catch(e){}
-  updateNarr();
+  updateNarr(key,0);
   btn.classList.remove('busy');btn.textContent='Simulate ⚡';
   currentLikes=0;document.getElementById('likeCount').textContent='0';
   saveSimulation(q,key);
 }
 
-/* ═══ SAVE ═══ */
 async function saveSimulation(q,domain){
   try{
-    var r=await fetch(SB_URL+'/rest/v1/simulations',{
+    var r=await fetch(SB+'/rest/v1/simulations',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'},
+      headers:{'Content-Type':'application/json','apikey':SBK,'Authorization':'Bearer '+SBK,'Prefer':'return=representation'},
       body:JSON.stringify({title:q,domain:domain,is_public:true,likes:0})
     });
-    var d=await r.json();
-    if(d&&d[0])currentSimId=d[0].id;
+    var d=await r.json();if(d&&d[0])currentSimId=d[0].id;
   }catch(e){}
 }
 
-/* ═══ TIKTOK HEART BURST ═══ */
-function spawnHeartBurst(x,y){
-  currentLikes++;
-  document.getElementById('likeCount').textContent=currentLikes;
-  document.getElementById('railLike').classList.add('liked');
-  var count=Math.round(5+Math.random()*7);
+/* ── TIKTOK HEARTS ── */
+var heartTotalCount=0;
+var heartThisClick=false;
+function spawnHeartBurst(x,y,countLike){
+  if(countLike&&!heartThisClick){
+    heartThisClick=true;
+    currentLikes++;
+    document.getElementById('likeCount').textContent=currentLikes;
+    document.getElementById('railLike').classList.add('liked');
+    if(currentSimId){fetch(SB+'/rest/v1/simulations?id=eq.'+currentSimId,{method:'PATCH',headers:{'Content-Type':'application/json','apikey':SBK,'Authorization':'Bearer '+SBK},body:JSON.stringify({likes:currentLikes})}).catch(function(){});}
+    setTimeout(function(){heartThisClick=false;},300);
+  }
+  var count=4+Math.floor(Math.random()*6);
   for(var i=0;i<count;i++){
     (function(i){setTimeout(function(){
       var h=document.createElement('div');
-      var size=Math.round(16+Math.random()*24);
-      var dx=(Math.random()-.5)*70;
-      h.style.cssText='position:fixed;left:'+(x-size/2)+'px;top:'+(y-size/2)+'px;font-size:'+size+'px;pointer-events:none;z-index:500;opacity:1;transition:transform 1.1s ease-out,opacity 1.1s ease-out;transform:scale(0.1)';
+      var sz=14+Math.random()*20;
+      var dx=(Math.random()-.5)*60;
+      h.style.cssText='position:fixed;left:'+(x-sz/2)+'px;top:'+(y-sz/2)+'px;font-size:'+sz+'px;pointer-events:none;z-index:500;opacity:1;transition:transform 1s ease-out,opacity 1s ease-out;transform:scale(.1)';
       h.textContent='❤️';
       document.body.appendChild(h);
       requestAnimationFrame(function(){requestAnimationFrame(function(){
-        h.style.transform='translateY(-'+(70+Math.random()*80)+'px) translateX('+dx+'px) scale(1)';
+        h.style.transform='translateY(-'+(65+Math.random()*75)+'px) translateX('+dx+'px) scale(1)';
         h.style.opacity='0';
       });});
-      setTimeout(function(){h.remove();},1200);
-    },i*75);})(i);
-  }
-  if(currentSimId){
-    fetch(SB_URL+'/rest/v1/simulations?id=eq.'+currentSimId,{
-      method:'PATCH',
-      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
-      body:JSON.stringify({likes:currentLikes})
-    }).catch(function(){});
+      setTimeout(function(){h.remove();},1100);
+    },i*70);})(i);
   }
 }
+function doLike(){spawnHeartBurst(window.innerWidth/2,window.innerHeight*.35,true);}
 
-function doLike(){spawnHeartBurst(window.innerWidth/2,window.innerHeight*.4);}
-
-/* ═══ RAIL ACTIONS ═══ */
+/* ── RAIL ACTIONS ── */
 function doShare(){
   var q=document.getElementById('mainQ').value||DOMAIN_LABELS[simDomain];
   var url='https://seenshown.com/?domain='+simDomain+'&q='+encodeURIComponent(q);
-  if(navigator.share){navigator.share({title:'SeenShown',text:'"'+q+'"',url:url});}
-  else{navigator.clipboard&&navigator.clipboard.writeText(url);showPtToast('🔗 Link copied!');}
+  if(navigator.share)navigator.share({title:'SeenShown',text:'"'+q+'"',url:url});
+  else{navigator.clipboard&&navigator.clipboard.writeText(url);showToast('🔗 Copied!');}
   earnPoint('🔗 +2 pts',2);
 }
-function doVote(){
-  currentVotes++;
-  var el=document.getElementById('voteCount');
-  el.textContent=currentVotes+' votes';
-  el.classList.add('popped');setTimeout(function(){el.classList.remove('popped');},350);
-  earnPoint('⭐ +5 pts',5);
-}
-function doEarn(){showPtToast('💰 '+userPoints+' pts = $'+(userPoints*.01).toFixed(2)+' · Redeem at 1000 pts');}
-function earnPoint(msg,pts){userPoints+=(pts||1);document.getElementById('pointsCount').textContent=userPoints+' pts';showPtToast(msg);}
-function showPtToast(msg){var t=document.getElementById('ptToast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+function doVote(){currentVotes=(currentVotes||0)+1;var el=document.getElementById('voteCount');el.textContent=currentVotes+' votes';earnPoint('⭐ +5 pts',5);}
+function doEarn(){showToast('💰 '+userPoints+' pts = $'+(userPoints*.01).toFixed(2)+' · Redeem at 1000 pts');}
+function earnPoint(msg,pts){userPoints+=(pts||1);document.getElementById('pointsCount').textContent=userPoints+' pts';showToast(msg);}
+function showToast(msg){var t=document.getElementById('ptToast');t.textContent=msg;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},2400);}
 
-/* ═══ PAUSE / SPEED ═══ */
+/* ── PAUSE ── */
 function togglePause(){
   paused=!paused;
   document.getElementById('pauseBtn').classList.toggle('on',paused);
   document.getElementById('pauseLabel').textContent=paused?'Play':'Pause';
   document.querySelector('#pauseBtn span:first-child').textContent=paused?'▶':'⏸';
+  if(paused){stopVoice();stopSound();}
 }
 document.getElementById('speedR').oninput=function(){simSpeed=parseFloat(this.value);};
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,86)+'px';}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
 
-/* ═══ COMPETE MODE ═══ */
-var compCtx1,compCtx2,compTimeLeft=60;
+/* ── COMPETE ── */
+var compCtx1,compCtx2,compTimeLeft=60,compDomain1='fireworks',compDomain2='bigbang';
 function startCompete(){
   if(compActive)return;
   compActive=true;compScoreA=0;compScoreB=0;compTimeLeft=60;
-  document.getElementById('scoreA').textContent='Top: 0';
-  document.getElementById('scoreB').textContent='Bottom: 0';
-  document.getElementById('compTimer').textContent='⏱ 60s';
-  document.getElementById('compMode').classList.add('active');
-  document.getElementById('compVoteTop').style.display='flex';
-  document.getElementById('compVoteBot').style.display='flex';
-  compDraw1=simDomain;
+  document.getElementById('cScoreA').textContent='Player A: 0';
+  document.getElementById('cScoreB').textContent='Player B: 0';
+  document.getElementById('cTimer').textContent='⏱ 60s';
+  document.getElementById('compMode').style.display='flex';
+  document.getElementById('compVT').style.display='flex';
+  document.getElementById('compVB').style.display='flex';
+  compDomain1=simDomain;
   var others=DOMAIN_ORDER.filter(function(d){return d!==simDomain;});
-  compDraw2=others[Math.floor(Math.random()*others.length)];
-  document.getElementById('voteA').textContent='👆 '+DOMAIN_LABELS[compDraw1];
-  document.getElementById('voteB').textContent='👆 '+DOMAIN_LABELS[compDraw2];
-  compTimer=setInterval(function(){compTimeLeft--;document.getElementById('compTimer').textContent='⏱ '+compTimeLeft+'s';if(compTimeLeft<=0)endCompete();},1000);
+  compDomain2=others[Math.floor(Math.random()*others.length)];
+  /* Canvases */
+  var c1=document.getElementById('compCanvas1'),c2=document.getElementById('compCanvas2');
+  c1.width=window.innerWidth;c2.width=window.innerWidth;
+  c1.height=(window.innerHeight-3)/2;c2.height=(window.innerHeight-3)/2;
+  compCtx1=c1.getContext('2d');compCtx2=c2.getContext('2d');
+  compTimerInterval=setInterval(function(){compTimeLeft--;document.getElementById('cTimer').textContent='⏱ '+compTimeLeft+'s';if(compTimeLeft<=0)endCompete();},1000);
+  /* Animate with separate simple draw — questions not shown */
+  var ct=0;
+  (function cl(){
+    if(!compActive)return;
+    requestAnimationFrame(cl);
+    ct+=16*simSpeed;
+    /* Simple particle draw for comp canvases */
+    [{ctx:compCtx1,c:c1,dom:compDomain1},{ctx:compCtx2,c:c2,dom:compDomain2}].forEach(function(p){
+      p.ctx.fillStyle='rgba(0,0,0,.15)';p.ctx.fillRect(0,0,p.c.width,p.c.height);
+      var cx2=p.c.width/2,cy2=p.c.height/2,r=Math.min(p.c.width,p.c.height)*.4;
+      var dc=DC[p.dom]||'#26e8b0';
+      var hex=dc.replace('#','');
+      var rr=parseInt(hex.slice(0,2),16)||100,gg=parseInt(hex.slice(2,4),16)||150,bb=parseInt(hex.slice(4,6),16)||200;
+      for(var i=0;i<200;i++){
+        var a=i/200*Math.PI*2+ct*.001,d=r*(.3+Math.sin(ct*.002+i*.5)*.7);
+        p.ctx.globalAlpha=.6+Math.sin(ct*.003+i)*.3;
+        p.ctx.fillStyle='rgb('+rr+','+gg+','+bb+')';
+        p.ctx.beginPath();p.ctx.arc(cx2+Math.cos(a)*d,cy2+Math.sin(a)*d*.6,1.5+Math.random()*2,0,6.283);p.ctx.fill();
+      }
+      p.ctx.globalAlpha=1;
+    });
+  })();
 }
 function castVote(side){
-  document.getElementById('compVoteTop').style.display='none';
-  document.getElementById('compVoteBot').style.display='none';
-  if(side==='A'){compScoreA++;document.getElementById('scoreA').textContent='Top: '+compScoreA;}
-  else{compScoreB++;document.getElementById('scoreB').textContent='Bottom: '+compScoreB;}
+  document.getElementById('compVT').style.display='none';
+  document.getElementById('compVB').style.display='none';
+  if(side==='A'){compScoreA++;document.getElementById('cScoreA').textContent='Player A: '+compScoreA;}
+  else{compScoreB++;document.getElementById('cScoreB').textContent='Player B: '+compScoreB;}
   earnPoint('⚔️ +3 pts',3);
 }
 function endCompete(){
-  compActive=false;
-  if(compTimer)clearInterval(compTimer);
-  document.getElementById('compMode').classList.remove('active');
-  showPtToast('🏆 '+(compScoreA>=compScoreB?DOMAIN_LABELS[compDraw1]:DOMAIN_LABELS[compDraw2])+' wins!');
+  compActive=false;if(compTimerInterval)clearInterval(compTimerInterval);
+  document.getElementById('compMode').style.display='none';
+  showToast('🏆 '+(compScoreA>=compScoreB?'Player A':'Player B')+' wins!');
 }
 
-/* ═══ TOUCH — heart on tap, swipe to change domain ═══ */
-var tY=0,tX=0,swipeUsed=false;
-document.addEventListener('touchstart',function(e){
-  if(e.target.closest('#bottomPanel')||e.target.closest('#rightRail')||e.target.closest('#pills')||e.target.closest('#nav'))return;
-  tY=e.touches[0].clientY;tX=e.touches[0].clientX;
+/* ── TOUCH INTERACTION ── */
+var touchStartX=0,touchStartY=0,swipeUsed=false;
+canvas.addEventListener('touchstart',function(e){
+  var t=e.touches[0];
+  touchStartX=t.clientX;touchStartY=t.clientY;
+  touchX=t.clientX;touchY=t.clientY;
+  touchStartTime=Date.now();
+  touchActive=true;touchForce=1; /* default attract */
+},{passive:true});
+canvas.addEventListener('touchmove',function(e){
+  var t=e.touches[0];
+  touchX=t.clientX;touchY=t.clientY;
+  /* Long press = repel */
+  if(Date.now()-touchStartTime>600)touchForce=-1;
 },{passive:true});
 canvas.addEventListener('touchend',function(e){
+  touchActive=false;touchForce=0;
   var t=e.changedTouches[0];
-  var dy=tY-t.clientY,dx=tX-t.clientX;
-  if(!swipeUsed){swipeUsed=true;document.getElementById('swipeHint').style.opacity='0';}
-  if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)){
+  var dy=touchStartY-t.clientY,dx=touchStartX-t.clientX;
+  if(!swipeUsed&&(Math.abs(dy)>40||Math.abs(dx)>40))swipeUsed=true;
+  /* Swipe up/down = change domain */
+  if(Math.abs(dy)>50&&Math.abs(dy)>Math.abs(dx)*1.5){
     domIdx=(domIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
-    var nd=DOMAIN_ORDER[domIdx];
-    switchDomain(nd,document.querySelector('.dpill[data-key="'+nd+'"]'));
-  } else if(Math.abs(dy)<18&&Math.abs(dx)<18){
-    spawnHeartBurst(t.clientX,t.clientY);
+    switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));
+    return;
+  }
+  /* Swipe left/right = change phase */
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){
+    if(dx>0)nextPhase();else prevPhase();
+    return;
+  }
+  /* Short tap = heart */
+  if(Math.abs(dy)<18&&Math.abs(dx)<18){
+    spawnHeartBurst(t.clientX,t.clientY,true);
   }
 },{passive:true});
-canvas.addEventListener('dblclick',function(e){spawnHeartBurst(e.clientX,e.clientY);});
-var mD=false,mY=0;
-canvas.addEventListener('mousedown',function(e){mD=true;mY=e.clientY;});
+
+/* Mouse drag = attract, double click = repel burst */
+var mDown=false,mStartY=0,mStartX=0;
+canvas.addEventListener('mousedown',function(e){mDown=true;mStartY=e.clientY;mStartX=e.clientX;touchX=e.clientX;touchY=e.clientY;touchActive=true;touchForce=1;});
+canvas.addEventListener('mousemove',function(e){if(mDown){touchX=e.clientX;touchY=e.clientY;}});
 canvas.addEventListener('mouseup',function(e){
-  if(!mD)return;mD=false;var dy=mY-e.clientY;
-  if(Math.abs(dy)>65){
-    domIdx=(domIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
-    var nd=DOMAIN_ORDER[domIdx];
-    switchDomain(nd,document.querySelector('.dpill[data-key="'+nd+'"]'));
-  }
+  mDown=false;touchActive=false;touchForce=0;
+  var dy=mStartY-e.clientY,dx=mStartX-e.clientX;
+  if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)){domIdx=(domIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
+  else if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)){if(dx>0)nextPhase();else prevPhase();}
 });
-document.addEventListener('keydown',function(e){
-  if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();domIdx=(domIdx+1)%DOMAIN_ORDER.length;var nd=DOMAIN_ORDER[domIdx];switchDomain(nd,document.querySelector('.dpill[data-key="'+nd+'"]'));}
-  if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();domIdx=(domIdx-1+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;var nd=DOMAIN_ORDER[domIdx];switchDomain(nd,document.querySelector('.dpill[data-key="'+nd+'"]'));}
-  if(e.key===' '){var ae=document.activeElement;if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'))return;e.preventDefault();togglePause();}
-  if(e.key==='1')goToPhase(0);if(e.key==='2')goToPhase(1);if(e.key==='3')goToPhase(2);if(e.key==='4')goToPhase(3);if(e.key==='5')goToPhase(4);
-  if(e.key==='v'||e.key==='V')toggleVoice();
+canvas.addEventListener('dblclick',function(e){
+  /* Double click = repulsion burst */
+  touchX=e.clientX;touchY=e.clientY;touchForce=-1;touchActive=true;
+  setTimeout(function(){touchActive=false;touchForce=0;},800);
+  spawnHeartBurst(e.clientX,e.clientY,true);
 });
 
-/* ═══ UI BUILD ═══ */
+/* Keyboard */
+document.addEventListener('keydown',function(e){
+  var ae=document.activeElement;
+  if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'))return;
+  if(e.key==='ArrowRight')nextPhase();
+  if(e.key==='ArrowLeft')prevPhase();
+  if(e.key==='ArrowDown'){e.preventDefault();domIdx=(domIdx+1)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
+  if(e.key==='ArrowUp'){e.preventDefault();domIdx=(domIdx-1+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
+  if(e.key===' '){e.preventDefault();togglePause();}
+  if(e.key==='v')toggleVoice();
+  if(e.key==='s')toggleSound();
+});
+
+/* ── BUILD UI ── */
 function buildStrip(){
   var strip=document.getElementById('pills');strip.innerHTML='';
   DOMAIN_ORDER.forEach(function(key){
@@ -1179,45 +1242,29 @@ function buildStrip(){
     strip.appendChild(el);
   });
 }
-var QS=['How does the Big Bang start?','How does heartbreak feel?','Why does grief hurt so much?','How does love work?','How does anger form in the brain?','What is joy?','How does a neuron fire?','How do T-cells kill cancer?','How does antibiotic resistance happen?','How does a black hole form?','How big is the universe?','How do rumours spread?','How does traffic gridlock happen?','What is a chemical reaction?'];
+var QS=['Show me fireworks in the night sky','How does the Big Bang start?','How big is the universe?','How does heartbreak feel?','What is love?','How does grief work?','How does anger form?','What is joy?','How does a neuron fire?','How do T-cells kill cancer?','How does antibiotic resistance happen?','How does a black hole form?','How do rumours spread?','How does gridlock happen?','What is a chemical reaction?'];
 function buildChips(){
   var c=document.getElementById('qchips');
-  QS.forEach(function(q){
-    var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;
-    ch.onclick=function(){document.getElementById('mainQ').value=q;autoResize(document.getElementById('mainQ'));askQuestion();};
-    c.appendChild(ch);
-  });
+  QS.forEach(function(q){var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;ch.onclick=function(){document.getElementById('mainQ').value=q;autoResize(document.getElementById('mainQ'));askQuestion();};c.appendChild(ch);});
 }
 
-/* ═══ URL PARAMS ═══ */
+/* ── URL PARAMS ── */
 var urlP=new URLSearchParams(window.location.search);
 var urlDomain=urlP.get('domain');
 var urlQ=urlP.get('q');
 if(urlDomain&&DOMAIN_ORDER.includes(urlDomain))simDomain=urlDomain;
 
-/* ═══ BOOT ═══ */
-/* Detect device speed and scale particle count */
-(function(){
-  var t0=performance.now();var n=0;while(performance.now()-t0<10)n++;
-  MAX_P=n>20000?80000:n>10000?50000:30000;
-})();
-
-function boot(){
-  buildStrip();buildChips();
-  initFormation(simDomain,0);
-  lastFrame=performance.now();
-  renderLoop(performance.now());
-  document.getElementById('lodOv').classList.add('gone');
-  updateNarr();
-  if(urlQ){
-    setTimeout(function(){
-      document.getElementById('mainQ').value=decodeURIComponent(urlQ);
-      autoResize(document.getElementById('mainQ'));
-      askQuestion();
-    },400);
-  }
-}
-boot();
+/* ── BOOT ── */
+(function detectSpeed(){var t=performance.now(),n=0;while(performance.now()-t<8)n++;N=n>18000?70000:n>9000?50000:35000;})();
+allocBuffers(N);
+buildStrip();buildChips();
+initPhase(simDomain,0,true);
+lastTs=performance.now();
+requestAnimationFrame(loop);
+document.getElementById('lodOv').style.transition='opacity .5s';
+setTimeout(function(){document.getElementById('lodOv').style.opacity='0';setTimeout(function(){document.getElementById('lodOv').style.display='none';},600);},300);
+updateNarr(simDomain,0);
+if(urlQ){setTimeout(function(){document.getElementById('mainQ').value=decodeURIComponent(urlQ);autoResize(document.getElementById('mainQ'));askQuestion();},500);}
 </script>
 </body>
 </html>

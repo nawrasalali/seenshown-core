@@ -117,23 +117,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-f
 /* ═══ COMPETITION MODE ═══ */
 #compMode{position:fixed;inset:0;z-index:170;display:none;flex-direction:column}
 #compMode.active{display:flex}
-#compCanvas1,#compCanvas2{flex:1;display:block;width:100%}
+#compCanvas1,#compCanvas2{flex:1;display:block;width:100%;position:relative}
 #compDivider{height:3px;background:linear-gradient(90deg,var(--p),var(--g));position:relative;flex-shrink:0}
 #compDivider::after{content:'VS';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--bg);padding:2px 10px;border:1px solid var(--border);border-radius:8px;font-size:.65rem;font-weight:800;color:var(--g)}
-#compVoteBar{position:fixed;bottom:130px;left:0;right:0;z-index:175;display:flex;gap:1rem;padding:10px 16px;pointer-events:all}
-.comp-vote-btn{flex:1;padding:12px;border:none;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s}
-#voteA{background:rgba(124,79,212,0.25);color:#c4a0ff;border:1px solid rgba(124,79,212,0.4)}
-#voteB{background:rgba(38,232,176,0.15);color:var(--g);border:1px solid rgba(38,232,176,0.3)}
-#voteA:hover{background:rgba(124,79,212,0.4)}
-#voteB:hover{background:rgba(38,232,176,0.28)}
+/* Vote buttons now sit inside each sim half — absolute positioned */
+#compVoteTop{position:fixed;bottom:50%;margin-bottom:10px;left:0;right:0;z-index:175;display:flex;padding:0 20px;pointer-events:all}
+#compVoteBot{position:fixed;top:50%;margin-top:10px;left:0;right:0;z-index:175;display:flex;padding:0 20px;pointer-events:all}
+.comp-vote-btn{flex:1;padding:11px;border:none;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;backdrop-filter:blur(12px)}
+#voteA{background:rgba(124,79,212,0.22);color:#c4a0ff;border:1px solid rgba(124,79,212,0.35)}
+#voteB{background:rgba(38,232,176,0.12);color:var(--g);border:1px solid rgba(38,232,176,0.28)}
+#voteA:hover{background:rgba(124,79,212,0.38)}
+#voteB:hover{background:rgba(38,232,176,0.25)}
 #compScores{position:fixed;top:55px;left:0;right:0;z-index:175;display:flex;justify-content:space-between;padding:6px 16px;font-size:.7rem;font-weight:700}
 #scoreA{color:#c4a0ff}
 #scoreB{color:var(--g)}
 #compTimer{position:fixed;top:55px;left:50%;transform:translateX(-50%);z-index:175;background:rgba(2,4,14,0.85);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:.72rem;color:var(--w);font-weight:700}
 #closeComp{position:fixed;top:55px;right:14px;z-index:176;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:5px 10px;font-size:.7rem;color:var(--dim);cursor:pointer}
 
-/* ═══ POINTS TOAST ═══ */
-#ptToast{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.4);border-radius:20px;padding:6px 16px;font-size:.76rem;font-weight:700;color:var(--gold);opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;white-space:nowrap}
+/* ═══ POINTS TOAST — floats in sim area, not over text ═══ */
+#ptToast{position:fixed;top:30%;left:50%;transform:translateX(-50%);background:rgba(240,192,64,0.18);border:1px solid rgba(240,192,64,0.5);border-radius:20px;padding:8px 18px;font-size:.8rem;font-weight:700;color:var(--gold);opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;white-space:nowrap;backdrop-filter:blur(8px)}
 #ptToast.show{opacity:1}
 
 /* ═══ SWIPE HINT ═══ */
@@ -240,15 +242,19 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-f
 
 <!-- COMPETITION MODE -->
 <div id="compMode">
-  <div id="compScores"><span id="scoreA">A: 0 votes</span><span id="scoreB">B: 0 votes</span></div>
+  <div id="compScores"><span id="scoreA">Top: 0 votes</span><span id="scoreB">Bottom: 0 votes</span></div>
   <div id="compTimer">⏱ 60s</div>
   <button id="closeComp" onclick="endCompete()">✕ Exit</button>
   <canvas id="compCanvas1"></canvas>
   <div id="compDivider"></div>
   <canvas id="compCanvas2"></canvas>
-  <div id="compVoteBar">
-    <button class="comp-vote-btn" id="voteA" onclick="castVote('A')">👆 Vote Top Sim</button>
-    <button class="comp-vote-btn" id="voteB" onclick="castVote('B')">👆 Vote Bottom Sim</button>
+  <!-- Vote button sits in bottom of TOP half -->
+  <div id="compVoteTop">
+    <button class="comp-vote-btn" id="voteA" onclick="castVote('A')">👆 Vote this simulation</button>
+  </div>
+  <!-- Vote button sits in top of BOTTOM half -->
+  <div id="compVoteBot">
+    <button class="comp-vote-btn" id="voteB" onclick="castVote('B')">👆 Vote this simulation</button>
   </div>
 </div>
 
@@ -512,10 +518,14 @@ async function askQuestion(){
   simT=0;simPhase=0;customDrawFn=null;
   var btn=document.getElementById('askBtn');btn.classList.add('busy');btn.textContent='…';
   document.getElementById('thinkOv').classList.add('show');
+  /* Clear current answer while loading */
+  document.getElementById('answerText').innerHTML='';
+  document.getElementById('narrPhase').textContent='Simulating…';
   var key=smartRoute(q);
   var pill=document.querySelector('.dpill[data-key="'+key+'"]');
   switchDomain(key,pill,true);
-  /* Get enriched narration + written answer from Supabase Edge Function */
+  /* Always try to get question-specific narration from Edge Function */
+  var gotSpecific=false;
   try{
     var res=await fetch(SB_URL+'/functions/v1/simulate',{
       method:'POST',
@@ -524,17 +534,42 @@ async function askQuestion(){
     });
     var data=await res.json();
     if(data.narration&&Array.isArray(data.narration)&&data.narration.length===3){
-      NARR[key]=data.narration;
+      /* Validate — each phase must have label and text */
+      var valid=data.narration.every(function(p){return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>20;});
+      if(valid){NARR[key]=data.narration;gotSpecific=true;}
     }
-  }catch(e){/* keep existing narr */}
+  }catch(e){}
+  /* If Edge Function failed, build question-specific narration locally */
+  if(!gotSpecific){
+    NARR[key]=buildLocalNarr(q,key);
+  }
   updateNarr();
   document.getElementById('thinkOv').classList.remove('show');
   btn.classList.remove('busy');btn.textContent='Simulate ⚡';
-  /* Reset likes for new sim */
   currentLikes=0;document.getElementById('likeCount').textContent='0';
-  /* Save to Supabase */
   saveSimulation(q,key);
 }
+
+/* Build question-specific narration locally when Edge Function unavailable */
+function buildLocalNarr(q,domain){
+  var base=NARR_BASE[domain]||NARR[domain]||[];
+  /* Inject the question into Phase 1 label and text to make it specific */
+  if(base.length===3){
+    return [
+      ['Phase 1 · '+q.replace(/\?$/,''),'This simulation models the answer to: "'+q+'" '+base[0][1]],
+      base[1],
+      base[2]
+    ];
+  }
+  return [
+    ['Phase 1 · '+q.replace(/\?$/,''),'Simulating "'+q+'" — watch the particles model the answer in real time.'],
+    ['Phase 2 · Core Mechanism','The particle behaviour you are seeing is specifically designed to answer your question. Each movement represents a key aspect of the phenomenon.'],
+    ['Phase 3 · Outcome','The final state of the simulation represents the conclusion — the answer made visible through physics.']
+  ];
+}
+
+/* Preserve original narration as backup base */
+var NARR_BASE=JSON.parse(JSON.stringify(NARR));
 
 /* ═══ SAVE SIMULATION ═══ */
 async function saveSimulation(q,domain){
@@ -646,8 +681,8 @@ function startCompete(){
     (DRAW[compDraw2]||DRAW.love)(compT,0);
     ctx=savedCtx;canvas=savedCanvas;W=function(){return canvas.width};H=function(){return canvas.height};
   })();
-  document.getElementById('voteA').textContent='👆 Vote: '+DOMAIN_LABELS[compDraw1];
-  document.getElementById('voteB').textContent='👆 Vote: '+DOMAIN_LABELS[compDraw2];
+  document.getElementById('voteA').textContent='👆 Vote — '+DOMAIN_LABELS[compDraw1];
+  document.getElementById('voteB').textContent='👆 Vote — '+DOMAIN_LABELS[compDraw2];
 }
 
 function castVote(side){

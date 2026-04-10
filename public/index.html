@@ -284,13 +284,21 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div class="rail-icon">💰</div>
     <div class="rail-label green" id="pointsCount">0 pts</div>
   </div>
+  <div class="rail-btn" id="railSave" onclick="doSaveOnly()" style="opacity:.5">
+    <div class="rail-icon">💾</div>
+    <div class="rail-label">Save</div>
+  </div>
+  <div class="rail-btn" id="railPost" onclick="doSaveAndPost()" style="opacity:.5">
+    <div class="rail-icon">🌍</div>
+    <div class="rail-label green">Post</div>
+  </div>
 </div>
 
 <div id="bottomPanel">
   <!-- QUESTION BAR — fixed, shows current question -->
-  <div id="questionBar" style="pointer-events:none;padding:5px 14px 3px;background:rgba(2,4,14,0.75);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,0.04);display:none">
+  <div id="questionBar" style="pointer-events:none;padding:6px 14px 6px;background:rgba(10,16,40,0.88);backdrop-filter:blur(18px) saturate(1.5);border-top:1px solid rgba(255,255,255,0.08);display:none;box-shadow:0 -1px 0 rgba(38,232,176,0.12)">
     <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(38,232,176,.55);margin-bottom:2px">Question</div>
-    <div id="questionBarText" style="font-size:.78rem;color:rgba(255,255,255,.85);line-height:1.3;font-weight:500"></div>
+    <div id="questionBarText" style="font-size:.82rem;color:#ffffff;line-height:1.35;font-weight:600;letter-spacing:.01em"></div>
   </div>
   <!-- TICKER BAR — scrolling answer, tap to expand -->
   <div id="answerTicker"
@@ -1492,6 +1500,11 @@ var DOMAIN_QUESTIONS={
 };
 
 function switchDomain(key,pill){
+  /* Scroll the active pill into view */
+  setTimeout(function(){
+    var ap=document.querySelector('.dpill.active');
+    if(ap&&ap.scrollIntoView)ap.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  },80);
   simDomain=key;simPhase=0;
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
   stopVoice();stopSound();
@@ -1513,50 +1526,68 @@ async function askQuestion(){
   /* Gate anon users */
   var anonCount=parseInt(localStorage.getItem('ss_anon_sims')||'0');
   if(anonCount>=5&&(!window.SS||!window.SS.isSubscriber)){showUpgradeModal('limit');return;}
-  /* Show question in bar immediately */
+
+  /* 1. Show question in bar IMMEDIATELY */
   showQuestionBar(q);
   hideSimActions();
-  /* Visual — busy state on submit icon */
+
+  /* 2. Visual feedback */
   var icon=document.getElementById('submitIcon');
   if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='…';}
-  /* Route domain */
+
+  /* 3. Route to domain */
   var key=smartRoute(q);
-  var pill=document.querySelector('.dpill[data-key="'+key+'"]');
   simDomain=key;simPhase=0;
+  domIdx=DOMAIN_ORDER.indexOf(key);
+
+  /* 4. Update domain pill */
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
   document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
+  var pill=document.querySelector('.dpill[data-key="'+key+'"]');
   if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
-  domIdx=DOMAIN_ORDER.indexOf(key);
-  /* Start sim immediately */
+
+  /* 5. START FORMATION IMMEDIATELY — don't wait for AI */
   initPhase(key,0,true);
-  /* Show loading state in ticker */
-  buildTicker(null,true);
+
+  /* 6. Show existing narration in ticker while AI fetches */
+  buildTicker(NARR[key]);
+
+  /* 7. Start auto-advance through phases */
+  updateNarr(key,0);
   closePhasesPanel();
-  /* Fetch narration */
-  try{
-    var res=await fetch(SB+'/functions/v1/simulate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SBK},
-      body:JSON.stringify({question:q,domain:key})
-    });
-    var data=await res.json();
+
+  /* 8. Fetch AI narration in background — update when ready */
+  fetch(SB+'/functions/v1/simulate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SBK},
+    body:JSON.stringify({question:q,domain:key})
+  }).then(function(res){return res.json();}).then(function(data){
     if(data.narration&&Array.isArray(data.narration)&&data.narration.length>=3){
       var clean=data.narration.filter(function(p){
         return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>15
           &&!p[1].toLowerCase().includes('this simulation')
-          &&!p[1].toLowerCase().includes('models the');
+          &&!p[1].toLowerCase().includes('models the')
+          &&!p[1].toLowerCase().includes('simulation');
       });
-      while(clean.length<5)clean.push(clean[clean.length-1]);
-      if(clean.length>=3)NARR[key]=clean;
+      while(clean.length<5&&clean.length>0)clean.push(clean[clean.length-1]);
+      if(clean.length>=3){
+        NARR[key]=clean;
+        /* Update ticker with AI answer — don't reset phase */
+        buildTicker(NARR[key]);
+      }
     }
-  }catch(e){}
-  /* Update ticker with final answer */
-  buildTicker(NARR[key]);
+  }).catch(function(){/* keep existing narration */});
+
+  /* 9. Restore submit icon */
   if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
+
+  /* 10. Track and save */
   currentLikes=0;document.getElementById('likeCount').textContent='0';
   localStorage.setItem('ss_anon_sims',anonCount+1);
   saveSimulation(q,key);
-  if(q)setTimeout(function(){offerSaveModal(q,simDomain);},9000);
+
+  /* 11. Offer save after 12s */
+  if(q)setTimeout(function(){offerSaveModal(q,simDomain);},12000);
 }
 
 async function saveSimulation(q,domain){
@@ -1817,7 +1848,10 @@ function endCompete(){
 
 var GT={sx:0,sy:0,st:0,mx:0,my:0,moved:false};
 
+/* Close phases panel when touching canvas */
 canvas.addEventListener('touchstart',function(e){
+  var panel=document.getElementById('phasesPanel');
+  if(panel&&panel.style.display!=='none'){closePhasesPanel();return;}
   var t=e.touches[0];
   GT.sx=GT.mx=t.clientX;
   GT.sy=GT.my=t.clientY;
@@ -1879,6 +1913,8 @@ canvas.addEventListener('touchend',function(e){
 /* MOUSE — desktop support */
 var MD=false,MSX=0,MSY=0;
 canvas.addEventListener('mousedown',function(e){
+  var panel=document.getElementById('phasesPanel');
+  if(panel&&panel.style.display!=='none'){closePhasesPanel();return;}
   MD=true;MSX=e.clientX;MSY=e.clientY;
   touchX=e.clientX;touchY=e.clientY;touchActive=true;touchForce=1;
 });

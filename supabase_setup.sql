@@ -47,3 +47,22 @@ CREATE TABLE IF NOT EXISTS point_transactions (
 
 -- Enable Realtime on profiles
 ALTER PUBLICATION supabase_realtime ADD TABLE profiles;
+
+-- Add columns needed for rate limiting and auth
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS sims_today INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS sims_today_date DATE,
+  ADD COLUMN IF NOT EXISTS subscribed_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS pro_rata_intent BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS pro_rata_registered_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS investor_ref TEXT;
+
+ALTER TABLE investor_registrations
+  ADD COLUMN IF NOT EXISTS investor_ref TEXT,
+  ADD COLUMN IF NOT EXISTS safe_sent_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS pro_rata_intent BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS amount INTEGER DEFAULT 0;
+
+-- Add email to point_transactions
+ALTER TABLE point_transactions
+  ADD COLUMN IF NOT EXISTS email TEXT;

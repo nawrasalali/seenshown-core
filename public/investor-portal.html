@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SeenShown — Investor Portal</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--card:#080d1a;--border:rgba(38,232,176,0.12);--gold:#f0c040;--blue:#4a9eff}
+body{background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:rgba(2,4,14,0.97);border-bottom:1px solid var(--border)}
+.nav-logo{font-size:1rem;font-weight:800;color:var(--g);text-decoration:none}
+.nav-links a{color:var(--dim);font-size:.78rem;padding:5px 11px;border-radius:6px;text-decoration:none;margin-left:4px;transition:color .18s}
+.nav-links a:hover{color:#fff}
+.nav-links a.active{color:var(--g);background:rgba(38,232,176,0.08)}
+.page{padding:72px 24px 40px;max-width:1100px;margin:0 auto}
+.hero{text-align:center;padding:2rem 0 2.5rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(38,232,176,0.08);border:1px solid rgba(38,232,176,0.25);border-radius:20px;padding:5px 14px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--g);margin-bottom:1rem}
+.hero h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;margin-bottom:.5rem}
+.hero p{font-size:.88rem;color:var(--dim);line-height:1.7;max-width:560px;margin:0 auto}
+/* Metric strip */
+.metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.5rem}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem}
+.metric-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:.4rem}
+.metric-val{font-size:1.8rem;font-weight:900;line-height:1;color:var(--g)}
+.metric-val.gold{color:var(--gold)}
+.metric-val.blue{color:var(--blue)}
+.metric-sub{font-size:.65rem;color:var(--dim);margin-top:.3rem}
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+.grid-full{margin-bottom:.75rem}
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.3rem}
+.card-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+/* Safe doc */
+.safe-box{background:linear-gradient(135deg,rgba(38,232,176,0.05),rgba(124,79,212,0.04));border:1px solid rgba(38,232,176,0.2);border-radius:12px;padding:1.3rem}
+.safe-badge{display:inline-block;background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);border-radius:8px;padding:3px 10px;font-size:.62rem;font-weight:700;letter-spacing:.08em;color:var(--g);margin-bottom:.8rem;text-transform:uppercase}
+.safe-term{display:flex;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:.8rem}
+.safe-term:last-child{border-bottom:none}
+.safe-term .label{color:var(--dim)}
+.safe-term .value{color:var(--w);font-weight:600;text-align:right}
+/* Timeline */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:1rem;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tl-dot.done{background:var(--g)}
+.tl-dot.current{background:var(--gold);box-shadow:0 0 8px rgba(240,192,64,0.5)}
+.tl-dot.future{background:rgba(255,255,255,0.15)}
+.tl-content{flex:1}
+.tl-label{font-size:.8rem;font-weight:600;margin-bottom:.2rem}
+.tl-sub{font-size:.72rem;color:var(--dim);line-height:1.5}
+/* Exit calc */
+.calc-results{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-top:1rem}
+.cr{background:rgba(38,232,176,0.05);border:1px solid rgba(38,232,176,0.15);border-radius:10px;padding:.9rem;text-align:center}
+.cr-lbl{font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem}
+.cr-val{font-size:1.4rem;font-weight:900;color:var(--g)}
+.cr-mult{font-size:.68rem;color:rgba(38,232,176,0.6);margin-top:.2rem}
+/* Auth gate */
+.auth-gate{max-width:480px;margin:4rem auto;text-align:center;padding:2rem}
+.auth-gate h2{font-size:1.3rem;font-weight:800;margin-bottom:.5rem}
+.auth-gate p{font-size:.82rem;color:var(--dim);line-height:1.7;margin-bottom:1.5rem}
+.ss-input{width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:var(--w);font-size:.9rem;outline:none;margin-bottom:.8rem;transition:border-color .2s;font-family:inherit}
+.ss-input:focus{border-color:var(--g)}
+.ss-btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;background:var(--g);color:#02040e;margin-bottom:.5rem}
+/* Update row */
+.update-item{display:flex;gap:.75rem;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.update-item:last-child{border-bottom:none}
+.update-date{font-size:.62rem;color:var(--dim);white-space:nowrap;padding-top:.1rem;min-width:72px}
+.update-title{font-size:.8rem;font-weight:600;margin-bottom:.2rem}
+.update-body{font-size:.75rem;color:var(--dim);line-height:1.5}
+/* Loading */
+.loading{display:flex;align-items:center;gap:.5rem;color:var(--dim);font-size:.76rem;padding:.5rem 0}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* toast */
+#toast{position:fixed;bottom:2rem;right:2rem;background:rgba(38,232,176,.12);border:1px solid var(--border);border-radius:10px;padding:.8rem 1.2rem;font-size:.8rem;color:var(--g);opacity:0;transition:opacity .3s;z-index:1000}
+#toast.show{opacity:1}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}.calc-results{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">SeenShown</a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/investors.html">Invest</a>
+    <a class="active" href="/investor-portal.html">My Portal</a>
+  </div>
+</nav>
+
+<!-- AUTH GATE (shown if not signed in) -->
+<div class="page" id="auth-gate">
+  <div class="auth-gate">
+    <div style="font-size:2.5rem;margin-bottom:1rem">🔐</div>
+    <h2>Investor Portal</h2>
+    <p>Sign in with the email you used to invest. We'll send you a secure magic link — no password needed.</p>
+    <input class="ss-input" id="gate-email" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')gateSignIn()">
+    <button class="ss-btn" id="gate-btn" onclick="gateSignIn()">Send sign-in link →</button>
+    <div id="gate-msg" style="font-size:.72rem;min-height:1em;color:var(--g)"></div>
+    <div style="margin-top:1.5rem;font-size:.72rem;color:var(--dim)">Not yet invested? <a href="/investors.html" style="color:var(--g)">View the investor page →</a></div>
+  </div>
+</div>
+
+<!-- INVESTOR DASHBOARD (shown when signed in with investment) -->
+<div class="page" id="investor-dashboard" style="display:none">
+  <div class="hero">
+    <div class="hero-badge">✅ Confirmed Investor</div>
+    <h1>Welcome, <span id="investor-name" style="color:var(--g)">Investor</span></h1>
+    <p>Your SAFE agreement is active. Below is your investment summary, exit projections, and quarterly updates.</p>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metric-strip">
+    <div class="metric">
+      <div class="metric-label">Package</div>
+      <div class="metric-val" id="m-package" style="font-size:1.2rem">—</div>
+      <div class="metric-sub" id="m-seats">— seats</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Investment</div>
+      <div class="metric-val gold" id="m-amount">—</div>
+      <div class="metric-sub">AUD invested</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Valuation Cap</div>
+      <div class="metric-val blue">$8M</div>
+      <div class="metric-sub">post-money</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Series A Discount</div>
+      <div class="metric-val">20%</div>
+      <div class="metric-sub">on next priced round</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Investor Ref</div>
+      <div class="metric-val" id="m-ref" style="font-size:.9rem;word-break:break-all">—</div>
+      <div class="metric-sub">your reference</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- SAFE SUMMARY -->
+    <div class="safe-box">
+      <div class="card-title">📄 Your SAFE Agreement</div>
+      <div class="safe-badge">Active · NSW Law</div>
+      <div class="safe-term"><span class="label">Investment structure</span><span class="value">SAFE (post-money)</span></div>
+      <div class="safe-term"><span class="label">Valuation cap</span><span class="value">AUD $8,000,000</span></div>
+      <div class="safe-term"><span class="label">Series A discount</span><span class="value">20%</span></div>
+      <div class="safe-term"><span class="label">Pro-rata rights</span><span class="value">✅ Active</span></div>
+      <div class="safe-term"><span class="label">Information rights</span><span class="value">Quarterly updates</span></div>
+      <div class="safe-term"><span class="label">Governing law</span><span class="value">NSW, Australia</span></div>
+      <div class="safe-term"><span class="label">SAFE sent to</span><span class="value" id="safe-email">—</span></div>
+      <div style="margin-top:1rem">
+        <button onclick="requestSAFECopy()" style="background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);border-radius:8px;color:var(--g);padding:8px 16px;font-size:.76rem;font-weight:600;cursor:pointer">📧 Resend SAFE to email</button>
+      </div>
+    </div>
+
+    <!-- EXIT SCENARIOS -->
+    <div class="card">
+      <div class="card-title">📊 Exit Scenarios <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:.7rem">illustrative only</span></div>
+      <div style="font-size:.76rem;color:var(--dim);margin-bottom:.75rem">Based on your investment at $8M cap with 20% discount.</div>
+      <div class="calc-results" id="exit-calc">
+        <div class="cr"><div class="cr-lbl">Exit $25M</div><div class="cr-val" id="exit-25m">—</div><div class="cr-mult" id="mult-25m">—</div></div>
+        <div class="cr"><div class="cr-lbl">Exit $50M</div><div class="cr-val" id="exit-50m">—</div><div class="cr-mult" id="mult-50m">—</div></div>
+        <div class="cr"><div class="cr-lbl">Exit $100M</div><div class="cr-val" id="exit-100m">—</div><div class="cr-mult" id="mult-100m">—</div></div>
+      </div>
+      <div style="font-size:.62rem;color:var(--dim);margin-top:.75rem;line-height:1.6">⚠️ These are illustrative projections only. Past performance does not guarantee future results. Startup investment involves significant risk including total loss.</div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🗓 Investment Timeline</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot done"></div>
+          <div class="tl-content"><div class="tl-label">SAFE Executed</div><div class="tl-sub">Your investment is confirmed and legally binding.</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot current"></div>
+          <div class="tl-content"><div class="tl-label">Seed Round — Open</div><div class="tl-sub">$2M target round ongoing. You hold pro-rata priority for Series A.</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot future"></div>
+          <div class="tl-content"><div class="tl-label">1M Users Milestone</div><div class="tl-sub">Trigger for Series A pricing discussions with institutional investors.</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot future"></div>
+          <div class="tl-content"><div class="tl-label">Series A — Priced Round</div><div class="tl-sub">SAFE converts at lower of $8M cap price or Series A price × 0.80.</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot future"></div>
+          <div class="tl-content"><div class="tl-label">Liquidity Event</div><div class="tl-sub">IPO or acquisition. You receive the greater of investment or pro-rata proceeds.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUARTERLY UPDATES -->
+    <div class="card">
+      <div class="card-title">📬 Quarterly Updates</div>
+      <div id="updates-list">
+        <div class="loading"><div class="spin"></div> Loading updates…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WAITLIST: NEXT ROUND -->
+  <div class="grid-full">
+    <div class="card" style="text-align:center;padding:2rem">
+      <div style="font-size:1.5rem;margin-bottom:.5rem">🚀</div>
+      <div style="font-size:1rem;font-weight:700;margin-bottom:.4rem">Pro-Rata Rights — Series A</div>
+      <div style="font-size:.8rem;color:var(--dim);line-height:1.7;margin-bottom:1rem;max-width:500px;margin-left:auto;margin-right:auto">
+        As a SAFE holder you have the right to invest in Series A at a 15% priority discount (better than new Series A investors). Register your intent to exercise pro-rata rights.
+      </div>
+      <button onclick="registerProRata()" style="background:var(--g);color:#02040e;border:none;border-radius:8px;padding:10px 24px;font-weight:700;font-size:.85rem;cursor:pointer">Register Pro-Rata Intent →</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var SB='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
+var H={'apikey':SBK,'Authorization':'Bearer '+SBK};
+
+var currentEmail=null;
+var investorData=null;
+
+/* Check session from localStorage (set by auth-callback.html) */
+function checkSession(){
+  var session=localStorage.getItem('ss_session');
+  if(session){
+    try{
+      var s=JSON.parse(session);
+      if(s.user&&s.user.email){
+        currentEmail=s.user.email;
+        loadInvestorDashboard(currentEmail);
+        return;
+      }
+    }catch(e){}
+  }
+  /* Check URL params (post-payment redirect) */
+  var sp=new URLSearchParams(window.location.search);
+  var emailParam=sp.get('email');
+  if(emailParam){currentEmail=emailParam;loadInvestorDashboard(emailParam);return;}
+  /* Show auth gate */
+  document.getElementById('auth-gate').style.display='block';
+}
+
+async function gateSignIn(){
+  var email=(document.getElementById('gate-email').value||'').trim();
+  if(!email||!email.includes('@')){document.getElementById('gate-msg').textContent='Enter a valid email';return;}
+  var btn=document.getElementById('gate-btn');btn.textContent='Sending…';btn.disabled=true;
+  /* Store redirect intent */
+  localStorage.setItem('ss_auth_redirect',window.location.href);
+  try{
+    var r=await fetch(SB+'/auth/v1/otp',{
+      method:'POST',
+      headers:{apikey:SBK,'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,create_user:false}) /* don't create — only existing investors */
+    });
+    var d=await r.json();
+    if(d.error){document.getElementById('gate-msg').textContent='Not found — ensure you use your investment email. Error: '+d.error.message;document.getElementById('gate-msg').style.color='var(--red)';}
+    else{document.getElementById('gate-msg').textContent='✅ Magic link sent to '+email;btn.textContent='Link sent!';}
+  }catch(e){document.getElementById('gate-msg').textContent='Error — please email invest@seenshown.com';}
+  btn.disabled=false;
+}
+
+async function loadInvestorDashboard(email){
+  document.getElementById('auth-gate').style.display='none';
+  document.getElementById('investor-dashboard').style.display='block';
+  /* Load investor registration */
+  try{
+    var r=await fetch(SB+'/rest/v1/investor_registrations?email=eq.'+encodeURIComponent(email)+'&order=created_at.desc&limit=1',{headers:H});
+    var data=await r.json();
+    if(!data||!data[0]){
+      /* No investment found */
+      document.getElementById('investor-dashboard').innerHTML='<div style="text-align:center;padding:4rem 2rem"><div style="font-size:2rem;margin-bottom:1rem">🔍</div><div style="font-size:1rem;font-weight:700;margin-bottom:.5rem">No investment found</div><div style="font-size:.82rem;color:var(--dim);margin-bottom:1.5rem">No investment found for '+email+'.<br>If you believe this is an error, contact invest@seenshown.com</div><a href="/investors.html" style="background:var(--g);color:#02040e;border-radius:8px;padding:10px 20px;font-weight:700;font-size:.85rem;text-decoration:none">View Investment Packages →</a></div>';
+      return;
+    }
+    investorData=data[0];
+    renderDashboard(investorData,email);
+  }catch(e){
+    console.error(e);
+  }
+}
+
+function renderDashboard(inv,email){
+  var pkgNames={entry:'Seed Entry',growth:'Seed Growth',lead:'Seed Lead'};
+  var pkgAmounts={entry:1000,growth:10000,lead:100000};
+  var amount=(inv.amount/100)||pkgAmounts[inv.package]*(inv.seats||1)||0;
+  document.getElementById('investor-name').textContent=email.split('@')[0];
+  document.getElementById('m-package').textContent=pkgNames[inv.package]||inv.package;
+  document.getElementById('m-seats').textContent=(inv.seats||1)+' seat'+(inv.seats>1?'s':'');
+  document.getElementById('m-amount').textContent='$'+amount.toLocaleString();
+  document.getElementById('m-ref').textContent=inv.investor_ref||'Pending';
+  document.getElementById('safe-email').textContent=email;
+  /* Exit calculations */
+  var cap=8000000;
+  var exits=[25000000,50000000,100000000];
+  var ids=['25m','50m','100m'];
+  exits.forEach(function(exit,i){
+    var equity=(amount/cap)*exit;
+    var mult=(equity/amount).toFixed(1);
+    document.getElementById('exit-'+ids[i]).textContent='$'+Math.round(equity).toLocaleString();
+    document.getElementById('mult-'+ids[i]).textContent=mult+'×';
+  });
+  /* Quarterly updates — static for now, will come from DB */
+  var updates=[
+    {date:'Apr 2026',title:'Q1 2026 Update',body:'Simulation engine v9 deployed. PWA installable. Investor portal live. Seed round open. Background: 5 domains complete, formation engine running at 60fps.'},
+    {date:'Mar 2026',title:'Product Launch',body:'SeenShown.com launched publicly. Big Bang, Heartbreak, Grief, Joy, Love simulations live. Supabase Auth integrated. Stripe payments operational.'},
+  ];
+  document.getElementById('updates-list').innerHTML=updates.map(function(u){
+    return '<div class="update-item"><div class="update-date">'+u.date+'</div><div><div class="update-title">'+u.title+'</div><div class="update-body">'+u.body+'</div></div></div>';
+  }).join('');
+}
+
+function requestSAFECopy(){
+  if(!currentEmail||!investorData)return;
+  fetch('/api/generate-safe',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:currentEmail,package:investorData.package,seats:investorData.seats,investor_type:investorData.investor_type,session_id:investorData.stripe_session_id})
+  }).then(function(){showToast('✅ SAFE agreement resent to '+currentEmail);}).catch(function(){showToast('Error — contact invest@seenshown.com');});
+}
+
+function registerProRata(){
+  fetch(SB+'/rest/v1/investor_registrations?email=eq.'+encodeURIComponent(currentEmail),{
+    method:'PATCH',
+    headers:{...H,'Content-Type':'application/json'},
+    body:JSON.stringify({pro_rata_intent:true,pro_rata_registered_at:new Date().toISOString()})
+  }).then(function(){showToast('✅ Pro-rata intent registered. You will be contacted for Series A.');}).catch(function(){showToast('Error — please email invest@seenshown.com');});
+}
+
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},4000);}
+
+checkSession();
+</script>
+</body>
+</html>

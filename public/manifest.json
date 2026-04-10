@@ -21,7 +21,10 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "entertainment"],
+  "categories": [
+    "education",
+    "entertainment"
+  ],
   "screenshots": [
     {
       "src": "/screenshot-1.png",
@@ -32,8 +35,21 @@
     }
   ],
   "shortcuts": [
-    {"name": "Big Bang", "url": "/?domain=bigbang", "description": "Watch the Big Bang form"},
-    {"name": "Heartbreak", "url": "/?domain=heartbreak", "description": "See heartbreak as particles"},
-    {"name": "Ask a question", "url": "/", "description": "Ask anything"}
-  ]
+    {
+      "name": "Big Bang",
+      "url": "/?domain=bigbang",
+      "description": "Watch the Big Bang form"
+    },
+    {
+      "name": "Heartbreak",
+      "url": "/?domain=heartbreak",
+      "description": "See heartbreak as particles"
+    },
+    {
+      "name": "Ask a question",
+      "url": "/",
+      "description": "Ask anything"
+    }
+  ],
+  "scope": "/"
 }

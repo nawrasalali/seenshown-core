@@ -162,16 +162,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="pills"></div>
 
-<div id="mediaBtns">
-  <div class="mbtn" id="voiceBtn" onclick="toggleVoice()">
-    <div class="vwave"><span></span><span></span><span></span><span></span><span></span></div>
-    <span id="voiceLbl">Voice</span>
-  </div>
-  <div class="mbtn" id="soundBtn" onclick="toggleSound()">
-    <span id="soundIco">🔇</span>
-    <span id="soundLbl">Sound</span>
-  </div>
-</div>
+<div id="mediaBtns" style="display:none"></div>
 
 <div id="rightRail">
   <div class="rail-btn" id="railLike" onclick="doLike()">
@@ -214,6 +205,8 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   <div id="iconRow">
     <div class="ictl" id="pauseBtn" onclick="togglePause()"><span>⏸</span><span id="pauseLabel">Pause</span></div>
     <div class="sdiv"></div>
+    <div class="ictl" id="soundBtn" onclick="toggleSound()"><span id="soundIco">🔇</span><span>Sound</span></div>
+    <div class="sdiv"></div>
     <span style="font-size:.54rem;color:var(--dim);flex-shrink:0">Speed</span>
     <input type="range" id="speedR" min="0.2" max="2.5" step="0.05" value="1.75">
     <div class="sdiv"></div>
@@ -239,6 +232,21 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 </div>
 
 <div id="lodOv"><div style="text-align:center"><div class="lring"></div><div style="font-size:.64rem;color:var(--dim)">Forming…</div></div></div>
+
+<!-- FIRST-TIME ONBOARDING GUIDE -->
+<div id="guide" style="position:fixed;inset:0;z-index:400;background:rgba(2,4,14,0.92);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;display:none">
+  <div style="max-width:400px;width:100%;text-align:center">
+    <div style="font-size:2.2rem;margin-bottom:.8rem">✨</div>
+    <div style="font-size:1.4rem;font-weight:800;color:var(--g);margin-bottom:.4rem">Welcome to SeenShown</div>
+    <div style="font-size:.82rem;color:var(--dim);margin-bottom:2rem;line-height:1.6">Ask any question. Watch it form as particles.</div>
+    <div id="guideSteps">
+      <!-- Steps injected by JS -->
+    </div>
+    <div style="display:flex;justify-content:center;gap:6px;margin:1.6rem 0 1.2rem" id="guideDots"></div>
+    <button id="guideBtn" onclick="guideNext()" style="background:var(--g);color:#02040e;border:none;border-radius:12px;padding:12px 32px;font-weight:700;font-size:.9rem;cursor:pointer;width:100%">Next →</button>
+    <div style="margin-top:.8rem"><span onclick="closeguide()" style="font-size:.72rem;color:var(--dim);cursor:pointer;text-decoration:underline">Skip</span></div>
+  </div>
+</div>
 
 <script>
 'use strict';
@@ -458,13 +466,13 @@ function getSpec(domain,phase,n){
   var x=cx(),y=cy()*0.55; /* Bias simulation to upper 55% */
   var sz=Math.min(W(),H());
   switch(domain){
-    /* FIREWORKS — zero→full, celebratory */
+    /* FIREWORKS — New Year countdown: single dot → shells burst */
     case 'fireworks':
-      if(phase===0)return shapePoint(n,x,y*0.3,255,255,200);
-      if(phase===1)return shapeFireworks(n,1);
-      if(phase===2)return shapeFireworks(n,2);
-      if(phase===3)return shapeFireworks(n,3);
-      return shapeFireworks(n,4);
+      if(phase===0)return shapePoint(n,W()/2,H()*.35,255,220,100); /* single spark — countdown plays as overlay */
+      if(phase===1)return shapeFireworks(n,1);  /* first shells */
+      if(phase===2)return shapeFireworks(n,2);  /* more shells */
+      if(phase===3)return shapeFireworks(n,3);  /* peak celebration */
+      return shapeFireworks(n,4);               /* grand finale */
 
     /* BIG BANG — zero→full, one dot explodes to universe */
     case 'bigbang':
@@ -596,33 +604,26 @@ function initPhase(domain,phase,fromScratch){
   var n=N;
   var spec=getSpec(domain,phase,n);
   var dir=DOMAIN_ENERGY[domain]&&DOMAIN_ENERGY[domain].dir||'zero_to_full';
-  var maxDelay=fromScratch?4000:2200;
+  /* Phase 0 from scratch gets staggered birth, all other phases = CONTINUOUS
+     — particles leave from exactly where they are now, no restart */
+  var maxDelay=fromScratch&&phase===0?3500:1200;
   for(var i=0;i<n;i++){
     var s=spec[i%spec.length];
     pTX[i]=s.tx;pTY[i]=s.ty;
     pR[i]=s.rr||200;pG[i]=s.gg||200;pB[i]=s.bb||200;
     pSz[i]=s.r||1;
     pDelay[i]=Math.random()*maxDelay;
-    /* Birth position */
-    if(fromScratch){
-      if(dir==='zero_to_full'||dir==='zoom'){
-        /* Born from a single point (centre for most, point for bigbang/rumour) */
-        pBX[i]=cx()+rnd(-3,3);pBY[i]=cy()*0.55+rnd(-3,3);
-      } else if(dir==='full_to_zero'){
-        /* Born at target — they ARE already there, then disperse next phase */
-        pBX[i]=s.tx+rnd(-2,2);pBY[i]=s.ty+rnd(-2,2);
-        pX[i]=pBX[i];pY[i]=pBY[i];
+    if(fromScratch&&phase===0){
+      /* First ever load — origin determined by domain energy */
+      if(dir==='zero_to_full'||dir==='zoom'||dir==='form'){
+        pBX[i]=cx()+rnd(-4,4);pBY[i]=cy()*.55+rnd(-4,4);
       } else {
-        /* form — particles arrive from screen edges */
-        var edge=Math.floor(Math.random()*4);
-        if(edge===0){pBX[i]=rnd(0,W());pBY[i]=-20;}
-        else if(edge===1){pBX[i]=W()+20;pBY[i]=rnd(0,H());}
-        else if(edge===2){pBX[i]=rnd(0,W());pBY[i]=H()+20;}
-        else{pBX[i]=-20;pBY[i]=rnd(0,H());}
+        pBX[i]=s.tx+rnd(-3,3);pBY[i]=s.ty+rnd(-3,3);
+        pX[i]=pBX[i];pY[i]=pBY[i];
       }
     } else {
-      /* Transition — travel from current rendered position */
-      pBX[i]=pX[i]||cx();pBY[i]=pY[i]||cy()*0.55;
+      /* CONTINUOUS — birth = current actual particle position, no gap */
+      pBX[i]=pX[i]||cx();pBY[i]=pY[i]||cy()*.55;
     }
     pLife[i]=0;
   }
@@ -641,51 +642,82 @@ function snapshot(){
 }
 
 /* ── RENDER ── */
+/* Velocity buffers for living particle behaviour */
+var pVX,pVY;
+function allocVelocity(n){pVX=new Float32Array(n);pVY=new Float32Array(n);}
+
 function render(dt){
-  /* Trail fade — lighter so sim shows through bottom panel */
-  ctx.fillStyle='rgba(0,0,0,0.14)';
+  ctx.fillStyle='rgba(0,0,0,0.13)';
   ctx.fillRect(0,0,W(),H());
 
   formT+=dt;
   globalT+=dt;
 
-  var touchR=touchActive?Math.min(W(),H())*.22:0;
+  /* Fireworks countdown — special overlay */
+  if(simDomain==='fireworks'&&simPhase===0&&formT<5500){
+    var countdown=Math.ceil((5500-formT)/1000);
+    if(countdown>0&&countdown<=5){
+      ctx.save();
+      ctx.globalAlpha=Math.min((5500-formT)/1000,1)*.9;
+      ctx.fillStyle='#fff';
+      ctx.font='bold '+Math.round(Math.min(W(),H())*.22)+'px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(countdown,W()/2,H()*.4);
+      ctx.restore();
+    }
+  }
+
+  var touchR=touchActive?Math.min(W(),H())*.28:0; /* larger radius */
   var tx=touchX,ty=touchY,tf=touchForce;
+  var dtSec=dt/1000;
 
   for(var i=0;i<N;i++){
     var delay=pDelay[i];
     var t=clamp((formT-delay)/FORM_DUR,0,1);
     var te=easeOut(t);
 
+    /* Formation travel */
     var fx=lerp(pBX[i],pTX[i],te);
     var fy=lerp(pBY[i],pTY[i],te);
 
-    /* Gentle breathing after formed */
-    var formed=t>0.92;
+    /* Breathing noise — stronger for bigbang, makes it feel alive */
+    var breathAmp=simDomain==='bigbang'?4:simDomain==='fireworks'?3:1.8;
+    var formed=t>0.90;
     var bAmt=formed?1:t;
     var ang=globalT*.0007+i*.141;
-    fx+=Math.sin(ang)*1.8*bAmt;
-    fy+=Math.cos(ang*1.3)*1.8*bAmt;
+    fx+=Math.sin(ang)*breathAmp*bAmt;
+    fy+=Math.cos(ang*1.3)*breathAmp*bAmt;
 
-    /* Touch interaction — gravitational pull or repulsion */
-    if(touchActive&&t>.05){
+    /* Touch — much stronger, with velocity persistence */
+    if(touchActive&&t>.03){
       var ddx=fx-tx,ddy=fy-ty;
       var dist2=ddx*ddx+ddy*ddy;
-      if(dist2<touchR*touchR&&dist2>1){
+      if(dist2<touchR*touchR&&dist2>0.5){
         var dist=Math.sqrt(dist2);
-        var strength=(1-dist/touchR)*12;
-        if(tf>0){/* attract */fx-=ddx/dist*strength;fy-=ddy/dist*strength;}
-        else{/* repel */fx+=ddx/dist*strength*2.5;fy+=ddy/dist*strength*2.5;}
+        var falloff=1-dist/touchR;
+        var str=falloff*falloff*22; /* quadratic falloff, stronger */
+        if(tf>0){
+          /* attract — spiral slightly */
+          pVX[i]+=-ddx/dist*str*dtSec*60;
+          pVY[i]+=-ddy/dist*str*dtSec*60;
+        } else {
+          /* repel — strong burst outward */
+          pVX[i]+=ddx/dist*str*3.5*dtSec*60;
+          pVY[i]+=ddy/dist*str*3.5*dtSec*60;
+        }
       }
     }
 
-    /* Store final position */
+    /* Apply velocity with damping */
+    fx+=pVX[i];fy+=pVY[i];
+    pVX[i]*=0.78;pVY[i]*=0.78; /* damping — velocity fades */
+
     pX[i]=fx;pY[i]=fy;
 
-    var alpha=t<.02?0:Math.min(t*2.5,1);
+    var alpha=t<.025?0:Math.min(t*2.2,1);
     var sz=pSz[i]*(0.4+te*.85);
 
-    ctx.globalAlpha=alpha*.9;
+    ctx.globalAlpha=alpha*.92;
     ctx.fillStyle='rgb('+pR[i]+','+pG[i]+','+pB[i]+')';
     ctx.beginPath();ctx.arc(fx,fy,Math.max(.3,sz),0,6.283);ctx.fill();
   }
@@ -704,11 +736,11 @@ function loop(ts){
 /* ── NARRATION ── */
 var NARR={
   fireworks:[
-    ['Phase 1 · The First Light','One spark. The fuse catches and a single point of fire accelerates upward through the dark at 100 metres per second — invisible until the moment it is not.'],
-    ['Phase 2 · The Break','At the apex, a chemical reaction splits the shell into thousands of burning particles simultaneously. The light arrives at your eyes before the sound reaches your ears.'],
-    ['Phase 3 · Colour','Each colour is a different metal salt burning at a different temperature. Strontium for red. Barium for green. Copper for blue. Magnesium for the white that is almost too bright to look at.'],
-    ['Phase 4 · The Sky in Bloom','Overlapping shells create interference patterns — colours that exist only in the space between bursts, for a fraction of a second, never repeated exactly. Every firework is unique.'],
-    ['Phase 5 · The Silence After','The sound reaches you in waves — the crack, then the bass rumble that you feel in your chest. Then silence. The smoke drifts. The sky is dark again, and somehow larger than it was.']
+    ['5 · Four more seconds','The crowd is counting. The sky holds its breath. Every face tilted upward, lit by city light. In four seconds the year ends. Something old becomes something new.'],
+    ['4 · Three more seconds','The fuses are lit. The shells are already climbing. At 100 metres per second, they are invisible — just a whisper of smoke against the dark.'],
+    ['3 · Two more seconds','The atmosphere hums. You can feel the people around you tensing — not with anxiety, but with something older. Anticipation. The body preparing for a gift.'],
+    ['2 · One more second','The first shell reaches its apex. 300 metres above you, a chemical fuse burns its last millimetre. The crowd is at ONE.'],
+    ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
     ['Phase 1 · The Singularity','One particle. All matter, energy, space, and time compressed into a volume smaller than a proton. Temperature: 10³² Kelvin. The laws of physics as we know them do not apply yet.'],
@@ -878,8 +910,9 @@ function updateNarr(domain,phase){
   if(voiceOn)startVoice(ph[1]);
   /* Sound */
   if(soundOn)playEmotionalSound(domain);
-  /* Auto advance */
+  /* Auto advance — fireworks countdown phase gets 6s, others 5s */
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
+  var phaseDurMs=(domain==='fireworks'&&phase===0)?6200:PHASE_DUR;
   if(autoPlayOn&&narrs&&phase<narrs.length-1){
     phaseAutoTimer=setTimeout(function(){
       if(!autoPlayOn)return;
@@ -887,7 +920,7 @@ function updateNarr(domain,phase){
       simPhase++;
       initPhase(simDomain,simPhase,false);
       updateNarr(simDomain,simPhase);
-    },PHASE_DUR);
+    },phaseDurMs);
   }
 }
 
@@ -1242,10 +1275,47 @@ function buildStrip(){
     strip.appendChild(el);
   });
 }
-var QS=['Show me fireworks in the night sky','How does the Big Bang start?','How big is the universe?','How does heartbreak feel?','What is love?','How does grief work?','How does anger form?','What is joy?','How does a neuron fire?','How do T-cells kill cancer?','How does antibiotic resistance happen?','How does a black hole form?','How do rumours spread?','How does gridlock happen?','What is a chemical reaction?'];
+var QS=['How does the Big Bang start?','How big is the universe?','How does heartbreak feel?','What is love?','How does grief work?','How does anger form?','What is joy?','How does a neuron fire?','How do T-cells kill cancer?','How does antibiotic resistance happen?','How does a black hole form?','How do rumours spread?','How does gridlock happen?','What is a chemical reaction?'];
 function buildChips(){
   var c=document.getElementById('qchips');
   QS.forEach(function(q){var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;ch.onclick=function(){document.getElementById('mainQ').value=q;autoResize(document.getElementById('mainQ'));askQuestion();};c.appendChild(ch);});
+}
+
+/* ── ONBOARDING GUIDE ── */
+var GUIDE_STEPS=[
+  {icon:'👆',title:'Touch the simulation',body:'Drag your finger across the particles to attract them. Press and hold for a repulsion burst. The simulation responds to you.'},
+  {icon:'↕️',title:'Swipe up or down',body:'Swipe the simulation to explore different topics — heartbreak, Big Bang, grief, love, anger, joy, and more.'},
+  {icon:'↔️',title:'Swipe left or right',body:'Swipe to move between the 5 phases of each simulation. Each phase reveals the next layer of the answer.'},
+  {icon:'❤️',title:'Tap anywhere to like',body:'Every tap on the simulation shows a heart burst. The simulation knows you love it.'},
+  {icon:'✍️',title:'Ask your own question',body:'Type anything in the box below. SeenShown maps your question to a simulation and narrates the answer as it forms.'},
+  {icon:'⚔️',title:'Compete',body:'Tap the ⚔️ button on the right to challenge another simulation. Viewers vote for the best one.'}
+];
+var guideStep=0;
+function showGuide(){
+  if(localStorage.getItem('ss_guide_seen'))return;
+  var g=document.getElementById('guide');g.style.display='flex';
+  renderGuideStep();
+}
+function renderGuideStep(){
+  var s=GUIDE_STEPS[guideStep];
+  document.getElementById('guideSteps').innerHTML='<div style="background:rgba(38,232,176,0.06);border:1px solid rgba(38,232,176,0.18);border-radius:16px;padding:1.5rem;margin-bottom:.5rem"><div style="font-size:2.8rem;margin-bottom:.75rem">'+s.icon+'</div><div style="font-size:1rem;font-weight:700;margin-bottom:.5rem;color:var(--w)">'+s.title+'</div><div style="font-size:.82rem;color:var(--dim);line-height:1.65">'+s.body+'</div></div>';
+  /* Dots */
+  var dots=document.getElementById('guideDots');dots.innerHTML='';
+  GUIDE_STEPS.forEach(function(_,i){
+    var d=document.createElement('div');
+    d.style.cssText='width:'+(i===guideStep?'18px':'6px')+';height:6px;border-radius:3px;background:'+(i===guideStep?'var(--g)':'rgba(255,255,255,.15)')+';transition:all .2s';
+    dots.appendChild(d);
+  });
+  document.getElementById('guideBtn').textContent=guideStep<GUIDE_STEPS.length-1?'Next →':'Get Started ✨';
+}
+function guideNext(){
+  guideStep++;
+  if(guideStep>=GUIDE_STEPS.length){closeguide();return;}
+  renderGuideStep();
+}
+function closeguide(){
+  document.getElementById('guide').style.display='none';
+  localStorage.setItem('ss_guide_seen','1');
 }
 
 /* ── URL PARAMS ── */
@@ -1257,12 +1327,13 @@ if(urlDomain&&DOMAIN_ORDER.includes(urlDomain))simDomain=urlDomain;
 /* ── BOOT ── */
 (function detectSpeed(){var t=performance.now(),n=0;while(performance.now()-t<8)n++;N=n>18000?70000:n>9000?50000:35000;})();
 allocBuffers(N);
+allocVelocity(N);
 buildStrip();buildChips();
 initPhase(simDomain,0,true);
 lastTs=performance.now();
 requestAnimationFrame(loop);
 document.getElementById('lodOv').style.transition='opacity .5s';
-setTimeout(function(){document.getElementById('lodOv').style.opacity='0';setTimeout(function(){document.getElementById('lodOv').style.display='none';},600);},300);
+setTimeout(function(){document.getElementById('lodOv').style.opacity='0';setTimeout(function(){document.getElementById('lodOv').style.display='none';showGuide();},600);},300);
 updateNarr(simDomain,0);
 if(urlQ){setTimeout(function(){document.getElementById('mainQ').value=decodeURIComponent(urlQ);autoResize(document.getElementById('mainQ'));askQuestion();},500);}
 </script>

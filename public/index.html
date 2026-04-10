@@ -511,20 +511,21 @@ var QMAP=[
 ];
 function smartRoute(q){for(var i=0;i<QMAP.length;i++)if(QMAP[i].re.test(q))return QMAP[i].key;return DOMAIN_ORDER[Math.floor(Math.random()*DOMAIN_ORDER.length)];}
 
-/* ═══ ASK QUESTION ═══ */
+/* ═══ ASK QUESTION — simulation starts immediately, narration arrives after ═══ */
 async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();if(!q)return;
   resetParticles();
   simT=0;simPhase=0;customDrawFn=null;
   var btn=document.getElementById('askBtn');btn.classList.add('busy');btn.textContent='…';
-  document.getElementById('thinkOv').classList.add('show');
-  /* Clear current answer while loading */
+  /* Clear narration text — sim starts immediately */
   document.getElementById('answerText').innerHTML='';
-  document.getElementById('narrPhase').textContent='Simulating…';
+  document.getElementById('narrPhase').textContent='Forming…';
+  document.getElementById('narrDots').innerHTML='';
   var key=smartRoute(q);
   var pill=document.querySelector('.dpill[data-key="'+key+'"]');
+  /* Start simulation NOW — don't wait */
   switchDomain(key,pill,true);
-  /* Always try to get question-specific narration from Edge Function */
+  /* Fetch narration in background — sim already running */
   var gotSpecific=false;
   try{
     var res=await fetch(SB_URL+'/functions/v1/simulate',{
@@ -534,41 +535,33 @@ async function askQuestion(){
     });
     var data=await res.json();
     if(data.narration&&Array.isArray(data.narration)&&data.narration.length===3){
-      /* Validate — each phase must have label and text */
-      var valid=data.narration.every(function(p){return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>20;});
+      var valid=data.narration.every(function(p){
+        return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>20
+          &&p[1].indexOf('This simulation')<0
+          &&p[1].indexOf('this simulation')<0
+          &&p[1].indexOf('models the answer')<0;
+      });
       if(valid){NARR[key]=data.narration;gotSpecific=true;}
     }
   }catch(e){}
-  /* If Edge Function failed, build question-specific narration locally */
-  if(!gotSpecific){
-    NARR[key]=buildLocalNarr(q,key);
-  }
+  /* Build local narration if API failed or returned intro text */
+  if(!gotSpecific){NARR[key]=buildLocalNarr(q,key);}
   updateNarr();
-  document.getElementById('thinkOv').classList.remove('show');
   btn.classList.remove('busy');btn.textContent='Simulate ⚡';
   currentLikes=0;document.getElementById('likeCount').textContent='0';
   saveSimulation(q,key);
 }
 
-/* Build question-specific narration locally when Edge Function unavailable */
+/* Build narration — direct answer only, zero intro text */
 function buildLocalNarr(q,domain){
-  var base=NARR_BASE[domain]||NARR[domain]||[];
-  /* Inject the question into Phase 1 label and text to make it specific */
-  if(base.length===3){
-    return [
-      ['Phase 1 · '+q.replace(/\?$/,''),'This simulation models the answer to: "'+q+'" '+base[0][1]],
-      base[1],
-      base[2]
-    ];
-  }
+  var base=NARR_BASE[domain];
+  if(base&&base.length===3)return base;
   return [
-    ['Phase 1 · '+q.replace(/\?$/,''),'Simulating "'+q+'" — watch the particles model the answer in real time.'],
-    ['Phase 2 · Core Mechanism','The particle behaviour you are seeing is specifically designed to answer your question. Each movement represents a key aspect of the phenomenon.'],
-    ['Phase 3 · Outcome','The final state of the simulation represents the conclusion — the answer made visible through physics.']
+    ['Phase 1 · Before','Every particle represents a component of the answer. Watch the initial state.'],
+    ['Phase 2 · The Mechanism','The transformation happening now is the core process. Each particle movement maps to a real phenomenon.'],
+    ['Phase 3 · The Outcome','The final arrangement is the answer — made visible. What words describe, particles show.']
   ];
 }
-
-/* Preserve original narration as backup base */
 var NARR_BASE=JSON.parse(JSON.stringify(NARR));
 
 /* ═══ SAVE SIMULATION ═══ */
@@ -584,18 +577,33 @@ async function saveSimulation(q,domain){
   }catch(e){}
 }
 
-/* ═══ RIGHT RAIL ACTIONS ═══ */
-async function doLike(){
+/* ═══ TIKTOK HEART BURST — touch anywhere on sim canvas ═══ */
+function spawnHeartBurst(x,y){
   currentLikes++;
-  var el=document.getElementById('likeCount');
-  el.textContent=currentLikes;
-  var btn=document.getElementById('railLike');
-  btn.classList.add('liked');
-  /* Pop animation */
-  el.classList.add('popped');setTimeout(function(){el.classList.remove('popped');},400);
-  /* Award point */
-  earnPoint('❤️ +1 point for liking!');
-  /* Update Supabase */
+  document.getElementById('likeCount').textContent=currentLikes;
+  document.getElementById('railLike').classList.add('liked');
+  /* Spawn floating hearts from touch point */
+  var count=Math.floor(6+Math.random()*6);
+  for(var i=0;i<count;i++){
+    (function(i){
+      setTimeout(function(){
+        var h=document.createElement('div');
+        var size=Math.round(18+Math.random()*22);
+        var dx=(Math.random()-0.5)*60;
+        h.style.cssText='position:fixed;left:'+(x-size/2)+'px;top:'+(y-size/2)+'px;font-size:'+size+'px;pointer-events:none;z-index:500;transition:transform 1.1s ease-out,opacity 1.1s ease-out;transform:translateY(0) translateX(0) scale(0.2);opacity:1';
+        h.textContent='❤️';
+        document.body.appendChild(h);
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            h.style.transform='translateY(-'+(80+Math.random()*80)+'px) translateX('+dx+'px) scale(1)';
+            h.style.opacity='0';
+          });
+        });
+        setTimeout(function(){h.remove();},1200);
+      },i*80);
+    })(i);
+  }
+  /* Update Supabase likes */
   if(currentSimId){
     fetch(SB_URL+'/rest/v1/simulations?id=eq.'+currentSimId,{
       method:'PATCH',
@@ -603,6 +611,28 @@ async function doLike(){
       body:JSON.stringify({likes:currentLikes})
     }).catch(function(){});
   }
+}
+
+/* Tap on canvas = heart burst from that point */
+canvas.addEventListener('touchend',function(e){
+  if(e.target!==canvas)return;
+  var t=e.changedTouches[0];
+  var dy=tY-t.clientY,dx=tX-t.clientX;
+  /* Only trigger heart on short tap, not swipe */
+  if(Math.abs(dy)<14&&Math.abs(dx)<14){
+    spawnHeartBurst(t.clientX,t.clientY);
+    return;
+  }
+},{passive:true});
+
+/* Double-click on desktop = heart burst */
+canvas.addEventListener('dblclick',function(e){
+  spawnHeartBurst(e.clientX,e.clientY);
+});
+
+/* Rail like button still works — burst from centre */
+function doLike(){
+  spawnHeartBurst(window.innerWidth/2,window.innerHeight/2);
 }
 
 function doShare(){
@@ -681,14 +711,21 @@ function startCompete(){
     (DRAW[compDraw2]||DRAW.love)(compT,0);
     ctx=savedCtx;canvas=savedCanvas;W=function(){return canvas.width};H=function(){return canvas.height};
   })();
+  document.getElementById('compVoteTop').style.display='flex';
+  document.getElementById('compVoteBot').style.display='flex';
   document.getElementById('voteA').textContent='👆 Vote — '+DOMAIN_LABELS[compDraw1];
   document.getElementById('voteB').textContent='👆 Vote — '+DOMAIN_LABELS[compDraw2];
 }
 
 function castVote(side){
+  /* Hide both vote buttons — one vote only */
+  document.getElementById('compVoteTop').style.display='none';
+  document.getElementById('compVoteBot').style.display='none';
   if(side==='A'){compScoreA++;document.getElementById('scoreA').textContent='Top: '+compScoreA+' votes';}
   else{compScoreB++;document.getElementById('scoreB').textContent='Bottom: '+compScoreB+' votes';}
   earnPoint('⚔️ +3 points for voting!',3);
+  /* Show voted confirmation briefly */
+  showPtToast('✅ Vote cast — +3 points!');
 }
 
 function endCompete(){
@@ -730,22 +767,25 @@ function buildChips(){var c=document.getElementById('qchips');DEFAULT_QS.forEach
 
 document.getElementById('speedR').oninput=function(){simSpeed=parseFloat(this.value);};
 
-/* ═══ GESTURES ═══ */
+/* ═══ GESTURES — swipe changes domain, short tap advances phase ═══ */
 var tY=0,tX=0,swipeUsed=false;
-document.addEventListener('touchstart',function(e){if(e.target.closest('#bottomPanel')||e.target.closest('#rightRail')||e.target.closest('#pills')||e.target.closest('#nav'))return;tY=e.touches[0].clientY;tX=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchstart',function(e){
+  if(e.target.closest('#bottomPanel')||e.target.closest('#rightRail')||e.target.closest('#pills')||e.target.closest('#nav'))return;
+  tY=e.touches[0].clientY;tX=e.touches[0].clientX;
+},{passive:true});
 document.addEventListener('touchend',function(e){
   if(e.target.closest('#bottomPanel')||e.target.closest('#rightRail')||e.target.closest('#pills')||e.target.closest('#nav'))return;
-  var dy=tY-e.changedTouches[0].clientY,dx=tX-e.changedTouches[0].clientX;
+  var t=e.changedTouches[0];
+  var dy=tY-t.clientY,dx=tX-t.clientX;
   if(!swipeUsed){swipeUsed=true;document.getElementById('swipeHint').classList.add('hide');}
   if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)){
+    /* Swipe — change domain */
     domIdx=(domIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
     var nd=DOMAIN_ORDER[domIdx];
     var mp=document.querySelector('.dpill[data-key="'+nd+'"]');
     switchDomain(nd,mp);
-  } else if(Math.abs(dy)<14&&Math.abs(dx)<14){
-    var r=document.createElement('div');r.className='rpl';r.style.left=e.changedTouches[0].clientX+'px';r.style.top=e.changedTouches[0].clientY+'px';document.body.appendChild(r);setTimeout(function(){r.remove();},650);
-    nextPhase();
   }
+  /* Short tap handled by canvas.touchend as heart burst */
 },{passive:true});
 
 var mD=false,mY=0;

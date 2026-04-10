@@ -578,6 +578,43 @@ function shapeFireworks(n,phase){
   return out;
 }
 
+/* ── CELL + BACTERIA shapes for immune simulation ── */
+function shapeCell(n,ox,oy,r,rr,gg,bb,distressed){
+  var out=[];
+  var memN=Math.floor(n*.4);
+  for(var i=0;i<memN;i++){
+    var a=rnd(0,Math.PI*2);
+    var wobble=distressed?rnd(-r*.12,r*.12):0;
+    var d=r+wobble+rnd(-r*.025,r*.025);
+    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.85,rr:rr,gg:gg,bb:bb,r:.5+Math.random()*1.5});
+  }
+  var intN=n-memN;
+  for(var i=0;i<intN;i++){
+    var a=rnd(0,Math.PI*2),d=Math.random()*r*.82;
+    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.85,
+      rr:Math.round(rr*.55),gg:Math.round(gg*.55),bb:Math.round(bb*.55),r:.3+Math.random()*.9});
+  }
+  return out;
+}
+function shapeBacteria(n,ox,oy,r,count){
+  var out=[];
+  count=count||1;
+  var perBact=Math.floor(n/count);
+  for(var b=0;b<count;b++){
+    var bx=ox+rnd(-r*1.8,r*1.8),by=oy+rnd(-r*.9,r*.9);
+    var len=r*.75,wid=r*.22;
+    var angle=rnd(0,Math.PI);
+    for(var i=0;i<perBact;i++){
+      var t2=(i/perBact-.5)*len;
+      var w=rnd(-wid,wid);
+      var px=bx+Math.cos(angle)*t2-Math.sin(angle)*w;
+      var py=by+Math.sin(angle)*t2+Math.cos(angle)*w;
+      out.push({tx:px,ty:py,rr:60,gg:200,bb:60,r:.4+Math.random()*1.2});
+    }
+  }
+  return out;
+}
+
 /* ── OBSERVABLE UNIVERSE SHAPE — based on CMB maps ── */
 function shapeObservableUniverse(n,ox,oy,size){
   /* The observable universe is a sphere but we show it as the 2D CMB projection:
@@ -657,6 +694,56 @@ function shapeBacteria(n,ox,oy,r,count){
       var py=by+Math.sin(angle)*t+Math.cos(angle)*w;
       out.push({tx:px,ty:py,rr:80,gg:200,bb:80,r:.4+Math.random()*1.2});
     }
+  }
+  return out;
+}
+
+/* ── UNIVERSE HORN — NASA timeline shape (narrow past, wide present) ── */
+function shapeUniverseHorn(n,ox,oy,size){
+  /* Models the NASA Big Bang expansion diagram:
+     The observable universe expands like a horn — tiny at the Big Bang end,
+     vast at the present-day end. We render this as a cone/horn cross-section
+     with the CMB sphere at the left tip. */
+  var out=[];
+  var hornLen=size*.92; /* total horizontal length */
+  var maxR=size*.44;    /* maximum radius at right (present) end */
+  var minR=size*.018;   /* minimum radius at left (CMB) end */
+
+  for(var i=0;i<n;i++){
+    /* t=0 = Big Bang end (left), t=1 = present day (right) */
+    var t=Math.pow(Math.random(),.5); /* bias toward wider present end */
+    var hx=ox-hornLen*.5+t*hornLen;
+    /* Radius at this point grows with t^0.7 (matching the horn shape) */
+    var hr=minR+(maxR-minR)*Math.pow(t,.55);
+    /* Vertical position within the cross-section at this t */
+    var a=rnd(0,Math.PI*2);
+    var hy=oy+Math.sin(a)*hr*(0.85+Math.random()*.15); /* slight vertical flatten */
+    /* Dense at edges (shell-like cross section) */
+    var edgeBias=Math.random()>.7;
+    if(edgeBias){hy=oy+Math.sign(Math.sin(a))*hr*(0.9+Math.random()*.1);}
+
+    /* Colour gradient: hot orange-red at left, cool blue-white at right,
+       with dark ages (dark) in the middle third */
+    var rr,gg,bb;
+    if(t<0.1){
+      /* CMB glow — orange-red */
+      rr=255;gg=Math.round(180+t*300);bb=Math.round(50+t*100);
+    } else if(t<0.35){
+      /* Dark ages — very dim blue */
+      rr=Math.round(20+t*60);gg=Math.round(20+t*40);bb=Math.round(60+t*80);
+    } else if(t<0.55){
+      /* First stars — blue-white points */
+      rr=Math.round(140+t*115);gg=Math.round(160+t*95);bb=255;
+    } else {
+      /* Galaxy era to present — warm white with blue tint */
+      rr=Math.round(180+t*75);gg=Math.round(190+t*65);bb=Math.round(220+t*35);
+    }
+
+    /* Size: larger at present end, tiny at Big Bang end */
+    var sz2=.2+t*1.8;
+    out.push({tx:clamp(hx,ox-hornLen*.52,ox+hornLen*.52),
+              ty:clamp(hy,oy-maxR*1.05,oy+maxR*1.05),
+              rr:clamp(rr,0,255),gg:clamp(gg,0,255),bb:clamp(bb,0,255),r:sz2});
   }
   return out;
 }
@@ -761,32 +848,36 @@ function getSpec(domain,phase,n){
       return shapeFireworks(n,4);               /* grand finale */
 
     /* BIG BANG — zero→full, one dot explodes to universe */
-    case 'bigbang':
-      /* Full cosmological journey — singularity to observable universe */
+    case 'bigbang':{
+      /* Full cosmological journey — singularity to universe shape (NASA CMB timeline) */
+      /* The shape shown in NASA diagrams: narrow at left (early), widens to right (today) */
       if(phase===0){
-        /* SINGULARITY — one bright point, all energy compressed */
-        return shapePoint(n,x,y,255,240,220);
+        /* SINGULARITY — single bright point */
+        return shapePoint(n,x,y,255,245,220);
       }
       if(phase===1){
-        /* INFLATION — space itself expands faster than light */
-        var r1=Math.min(sz*.025,W()*.03,H()*.03);
-        var r2=Math.min(sz*.16,W()*.18,H()*.18);
-        var r3=Math.min(sz*.32,W()*.36,H()*.36);
-        return shapePoint(Math.floor(n*.05),x,y,255,255,240)
-          .concat(shapeRing(Math.floor(n*.3),x,y,r1,r1*.4,255,240,200))
-          .concat(shapeRing(Math.floor(n*.35),x,y,r2,r2*.3,255,180,100))
-          .concat(shapeRing(Math.ceil(n*.3),x,y,r3,r3*.2,200,140,80));
+        /* INFLATION — rapid expansion rings from point */
+        var ir1=Math.min(sz*.025,W()*.03);
+        var ir2=Math.min(sz*.12,W()*.14);
+        var ir3=Math.min(sz*.24,W()*.28);
+        return shapePoint(Math.floor(n*.06),x,y,255,255,240)
+          .concat(shapeRing(Math.floor(n*.28),x,y,ir1,ir1*.5,255,230,180))
+          .concat(shapeRing(Math.floor(n*.33),x,y,ir2,ir2*.3,255,170,90))
+          .concat(shapeRing(Math.ceil(n*.33),x,y,ir3,ir3*.2,220,130,60));
       }
       if(phase===2){
-        /* QUARK-GLUON PLASMA — hot primordial explosion */
-        return shapeExplosion(n,x,y,4,Math.min(sz*.4,W()*.42,H()*.42),255,120,30,true);
+        /* QUARK-GLUON PLASMA — hot explosion */
+        return shapeExplosion(n,x,y,4,Math.min(sz*.38,W()*.40,H()*.40),255,110,25,true);
       }
       if(phase===3){
-        /* FIRST STARS — Population III blue-white giants */
-        return shapeFirstStars(n,x,y,Math.min(sz*.44,W()*.42,H()*.42));
+        /* FIRST STARS — Population III, 400 million years */
+        return shapeFirstStars(n,x,y,Math.min(sz*.42,W()*.40,H()*.40));
       }
-      /* OBSERVABLE UNIVERSE — the CMB temperature map: the actual shape */
-      return shapeObservableUniverse(n,x,y,Math.min(sz*.46,W()*.44,H()*.44));
+      /* OBSERVABLE UNIVERSE — NASA timeline shape:
+         Horn/cone shape, narrow at left (Big Bang end) expanding to right (today)
+         This matches the image exactly: asymmetric, wider on the present-day end */
+      return shapeUniverseHorn(n,x,y,Math.min(sz*.46,W()*.44,H()*.40));
+    }
 
     /* UNIVERSE — zoom from multiverse to earth */
     case 'universe':
@@ -794,11 +885,11 @@ function getSpec(domain,phase,n){
       if(phase===1)return shapeSpiral(n,x,y,sz*.46,3,180,200,255); /* galaxy cluster */
       if(phase===2)return shapeSpiral(n,x,y,sz*.38,3,200,220,255); /* milky way */
       if(phase===3)return shapeRing(n,x,y,sz*.24,sz*.04,220,240,255); /* solar system */
-      return shapeFace(n,'🌍',x,y,sz*.48); /* Earth */
+      return shapeFace(n,'happy',x,y,sz*.48); /* Earth */
 
     /* HEARTBREAK — form (two faces) → full → zero */
     case 'heartbreak':
-      if(phase===0)return shapeTwoFaces(n,'😊','😊',x,y,sz*.38);
+      if(phase===0)return shapeTwoFaces(n,'happy','happy',x,y,sz*.38);
       if(phase===1)return shapeFracture(n,x,y,sz*.42,sz*.01);
       if(phase===2)return shapeFracture(n,x,y,sz*.44,sz*.1);
       if(phase===3)return shapeFracture(n,x,y,sz*.44,sz*.22);
@@ -807,22 +898,22 @@ function getSpec(domain,phase,n){
     /* LOVE — zero→form→full */
     case 'love':
       if(phase===0)return shapeScatter(n,x-sz*.25,y,sz*.2,220,100,100).concat(shapeScatter(Math.floor(n/2),x+sz*.25,y,sz*.2,100,120,220));
-      if(phase===1)return shapeTwoFaces(n,'😊','😊',x,y,sz*.4);
+      if(phase===1)return shapeTwoFaces(n,'happy','happy',x,y,sz*.4);
       if(phase===2)return shapeFracture(n,x,y,sz*.42,sz*.02);
-      if(phase===3)return shapeFace(n,'🥰',x,y,sz*.52);
+      if(phase===3)return shapeFace(n,'happy',x,y,sz*.52);
       return shapeExplosion(n,x,y,4,sz*.46,255,200,150,false);
 
     /* GRIEF — full face → dissolves → void → reforms */
     case 'grief':
-      if(phase===0)return shapeFace(n,'😐',x,y,sz*.5);
-      if(phase===1)return shapeFace(n,'😔',x,y,sz*.5);
+      if(phase===0)return shapeFace(n,'neutral',x,y,sz*.5);
+      if(phase===1)return shapeFace(n,'sad',x,y,sz*.5);
       if(phase===2)return shapeVoid(n,x,y,sz*.06,sz*.42,70,90,170);
       if(phase===3)return shapeVoid(n,x,y,sz*.18,sz*.46,55,75,155);
-      return shapeFace(n,'🌱',x,y,sz*.46);
+      return shapeFace(n,'happy',x,y,sz*.46);
 
     /* ANGER — tense face → explosion → wave */
     case 'anger':
-      if(phase===0)return shapeFace(n,'😤',x,y,sz*.5);
+      if(phase===0)return shapeFace(n,'angry',x,y,sz*.5);
       if(phase===1)return shapeExplosion(n,x,y,4,sz*.35,255,60,0,true);
       if(phase===2)return shapeExplosion(n,x,y,4,Math.min(sz*.48,W()*.46,H()*.46),255,100,0,true);
       if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*4)*sz*.2+rnd(-4,4);ow.push({tx:wx,ty:wy,rr:255,gg:80,bb:20,r:.5+Math.random()*2});}return ow;}
@@ -831,7 +922,7 @@ function getSpec(domain,phase,n){
     /* JOY — zero→face→explosion */
     case 'joy':
       if(phase===0)return shapePoint(n,x,y,255,220,60);
-      if(phase===1)return shapeFace(n,'😊',x,y,sz*.5);
+      if(phase===1)return shapeFace(n,'happy',x,y,sz*.5);
       if(phase===2)return shapeRing(n,x,y,sz*.26,sz*.05,255,220,80);
       if(phase===3)return shapeExplosion(n,x,y,4,sz*.55,255,230,100,false);
       return shapeScatter(n,x,y,sz*.42,255,240,180);
@@ -1074,7 +1165,7 @@ var NARR={
     ['The Singularity','One point. All matter, energy, space, and time compressed beyond measure. Temperature: 10³² Kelvin. Volume: smaller than a proton. Time itself does not yet exist as we know it.'],
     ['Cosmic Inflation','In 10⁻³⁵ seconds, space expanded by a factor of 10²⁶ — faster than light. Quantum fluctuations stretched to cosmic scales. These imperfections became every galaxy and supercluster we see today.'],
     ['Quark-Gluon Plasma','At 10⁻⁶ seconds: a superheated plasma of quarks and gluons, the raw matter of everything. Temperature 10¹³ Kelvin. Within minutes, protons and neutrons form. Within 380,000 years, the first atoms.'],
-    ['First Stars · Population III','180 million years of darkness. Hydrogen under gravity ignites the first stars — a thousand times our sun's mass, burning blue-white. They live only a million years, then explode, seeding space with carbon, oxygen, and iron.'],
+    ['First Stars · Population III','180 million years of darkness. Hydrogen under gravity ignites the first stars — a thousand times our sun mass, burning blue-white. They live only a million years, then explode, seeding space with carbon, oxygen, and iron.'],
     ['The Observable Universe','93 billion light-years across. The temperature map you see is the Cosmic Microwave Background — the oldest light, from 380,000 years after the Big Bang. Red: slightly hotter regions that became galaxy clusters. Blue: cooler voids. This is what the universe looks like from outside time. Then — everything pulls back. The next singularity is forming.']
   ],
   universe:[
@@ -1085,18 +1176,18 @@ var NARR={
     ['Phase 5 · Here','Earth. 12,742 km across. Every human being who has ever lived was born on this single rock. Every war, every love, every idea, every language — here. Pale blue dot.']
   ],
   heartbreak:[
-    ['Phase 1 · Two Whole People','Two complete human beings, each with their own warmth. Before they overlapped — before they changed each other\'s phase space.'],
-    ['Phase 2 · The Fracture Begins','A crack propagates from the centre. The shared warmth that existed only between them — that specific colour — begins to cool at the fracture line first.'],
-    ['Phase 3 · Pulling Apart','Each field retreats. The temperature drops as the distance grows. The particles don\'t know they are becoming cold. The body feels it as an ache.'],
-    ['Phase 4 · Cold Separation','Two fields, cooling rapidly. The specific warmth they generated together cannot survive without both. It requires exactly these two people to exist.'],
-    ['Phase 5 · Silence','Two separate cold fields. The warmth they produced together is thermodynamically impossible to reconstruct. Not damaged — gone. This is why it feels final even when the mind knows better.']
+    ['Two Whole People','Two complete human beings, each with their own warmth. Before they overlapped — before they changed each other in every dimension.'],
+    ['The Fracture','A crack propagates from the centre. The shared warmth that existed only between them — that specific colour — begins to cool at the fracture line first.'],
+    ['Pulling Apart','Each field retreats. The temperature drops as the distance grows. The particles do not know they are becoming cold. The body feels it as an ache.'],
+    ['Cold Separation','Two fields, cooling rapidly. The specific warmth they generated together cannot survive without both. It requires exactly these two people to exist.'],
+    ['Silence','Two separate cold fields. The warmth they produced together is thermodynamically impossible to reconstruct. Not damaged — gone. This is why it feels final even when reason says otherwise.']
   ],
   love:[
-    ['Phase 1 · Two Separate Systems','Two independent particle systems, orbiting separately. The first sign of attraction is a slight deviation from the original path — almost too small to notice. Something has changed.'],
-    ['Phase 2 · Recognition','Two people who see each other. Not as objects, but as subjects. Each recognises something in the other that resembles something in themselves.'],
+    ['Two Fields','Two independent particle systems, orbiting separately. The first sign of attraction is a slight deviation from the original path — almost too small to notice. Something has changed.'],
+    ['Recognition','Two people who see each other — not as objects but as subjects. Each recognises something in the other that resembles something in themselves.'],
     ['Phase 3 · Overlap','The fields begin to merge. Warmer than either alone. Brighter than either alone. This is emergence: two systems producing a property that neither possesses independently.'],
     ['Phase 4 · The Face of Love','The combined field settles into a single emotional signature. Oxytocin, dopamine, serotonin — measurable. But the felt quality exceeds its chemistry.'],
-    ['Phase 5 · Amplification','Two fields in mutual orbit, each amplifying the other\'s signal. The mathematics of this state is stable. Love, undisturbed, does not decay.']
+    ['Amplification','Two fields in mutual orbit, each amplifying the signal of the other. The mathematics of this state is stable. Love, undisturbed, does not decay.']
   ],
   grief:[
     ['Phase 1 · The Face Before','A person, intact. The brain holds a complete predictive model of someone loved — their voice, their weight, their responses. This model runs continuously.'],
@@ -1130,8 +1221,8 @@ var NARR={
     ['Healthy Cell','One human cell, 50 micrometres across. Its plasma membrane maintains a precise ionic balance. Nearby: three rod-shaped bacteria — Streptococcus, 2 micrometres long — drifting toward it.'],
     ['Bacterial Approach','Bacteria express surface adhesins — molecular hooks that bind to receptor proteins on the host cell. This is not random. Pathogens have evolved specific keys for specific cellular locks.'],
     ['Infection','Bacteria breach the cell membrane. The cell responds: it releases cytokines — chemical distress signals that travel through surrounding tissue, summoning the immune system.'],
-    ['T-Cell Response','Cytotoxic T-cells arrive. They recognise bacterial peptide fragments displayed on the cell's MHC-I surface markers. Perforin creates membrane pores. Granzyme B enters and triggers apoptosis in infected cells.'],
-    ['Resolution','Macrophages clear the debris. The infection is contained. The adaptive immune system records the pathogen's signature — next encounter, the response is ten times faster. This is immunological memory.']
+    ['T-Cell Response','Cytotoxic T-cells arrive. They recognise bacterial peptide fragments displayed on the cell MHC-I surface markers. Perforin creates membrane pores. Granzyme B enters and triggers apoptosis in infected cells.'],
+    ['Resolution','Macrophages clear the debris. The infection is contained. The adaptive immune system records the pathogen signature — next encounter, the response is ten times faster. This is immunological memory.']
   ],
   amr:[
     ['Phase 1 · The Colony','A bacterial colony at equilibrium. Within this population, resistance genes exist at low frequency — invisible, harmless-seeming, waiting.'],

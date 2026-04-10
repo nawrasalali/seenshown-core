@@ -30,19 +30,19 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 .dpill{flex-shrink:0;font-size:.56rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);color:var(--dim);cursor:pointer;transition:all .2s;background:rgba(2,4,14,0.6);white-space:nowrap}
 .dpill.active{color:#02040e;font-weight:700;border-color:transparent}
 
-/* RIGHT RAIL — 64px wide, vertical centre */
-#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:16px;padding:12px 8px;width:64px}
-.rail-btn{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:transform .18s}
-.rail-btn:active{transform:scale(.9)}
-.rail-icon{width:40px;height:40px;border-radius:50%;background:rgba(2,4,14,0.75);border:1.5px solid rgba(255,255,255,0.11);display:flex;align-items:center;justify-content:center;font-size:1.05rem;backdrop-filter:blur(12px);transition:border-color .2s,background .2s}
+/* RIGHT RAIL — responsive, always visible */
+#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 6px;width:60px;background:rgba(2,4,14,0.4);border-radius:16px 0 0 16px;border-left:1px solid rgba(255,255,255,0.06);border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(12px)}
+.rail-btn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}
+.rail-btn:active{transform:scale(.88)}
+.rail-icon{width:38px;height:38px;border-radius:50%;background:rgba(2,4,14,0.6);border:1.5px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;transition:border-color .2s,background .2s}
 .rail-btn.liked .rail-icon{border-color:var(--red);background:rgba(224,92,92,0.18)}
-.rail-label{font-size:.5rem;color:var(--dim);font-weight:600;text-align:center;line-height:1.2;max-width:52px}
+.rail-label{font-size:.46rem;color:var(--dim);font-weight:600;text-align:center;line-height:1.2;max-width:56px}
 .rail-label.red{color:var(--red)}
 .rail-label.gold{color:var(--gold)}
 .rail-label.green{color:var(--g)}
 
-/* BOTTOM PANEL — right:64px, lighter semi-transparent bg */
-#bottomPanel{position:fixed;bottom:0;left:0;right:64px;z-index:150;pointer-events:none}
+/* BOTTOM PANEL — always right:60px to match rail */
+#bottomPanel{position:fixed;bottom:0;left:0;right:60px;z-index:150;pointer-events:none}
 
 /* ANSWER WRAP — lighter so sim shows through */
 #answerWrap{pointer-events:all;padding:0 14px 8px;background:linear-gradient(0deg,rgba(2,4,14,0.88) 0%,rgba(2,4,14,0.55) 55%,transparent 100%);backdrop-filter:blur(2px)}
@@ -161,10 +161,16 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 @media(max-width:640px){
   .ntab:not(.active){display:none}
-  #rightRail{gap:12px;width:56px;padding:10px 6px}
-  .rail-icon{width:36px;height:36px;font-size:.95rem}
-  #bottomPanel{right:56px}
+  #rightRail{width:52px;gap:10px;padding:8px 4px}
+  .rail-icon{width:34px;height:34px;font-size:.9rem}
+  .rail-label{font-size:.42rem}
+  #bottomPanel{right:52px}
   #answerText{font-size:.82rem}
+  #pills{right:52px}
+}
+@media(max-height:580px){
+  #rightRail{gap:8px}
+  .rail-icon{width:30px;height:30px;font-size:.8rem}
 }
 </style>
 </head>
@@ -341,7 +347,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div class="ictl" id="soundBtn" onclick="toggleSound()"><span id="soundIco">🔇</span><span>Sound</span></div>
     <div class="sdiv"></div>
     <span style="font-size:.54rem;color:var(--dim);flex-shrink:0">Speed</span>
-    <input type="range" id="speedR" min="0.2" max="2.5" step="0.05" value="1.75">
+    <input type="range" id="speedR" min="0.2" max="2.5" step="0.05" value="1.0">
     <div class="sdiv"></div>
     <div class="chips" id="qchips"></div>
   </div>
@@ -366,10 +372,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="lodOv"><div style="text-align:center"><div class="lring"></div><div style="font-size:.64rem;color:var(--dim)">Forming…</div></div></div>
 
-<!-- FIRST-TIME ONBOARDING GUIDE -->
-<div id="guide" style="position:fixed;inset:0;z-index:400;background:rgba(2,4,14,0.92);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;display:none">
-  <div style="max-width:400px;width:100%;text-align:center">
-    <div style="font-size:2.2rem;margin-bottom:.8rem">✨</div>
     <div style="font-size:1.4rem;font-weight:800;color:var(--g);margin-bottom:.4rem">Welcome to SeenShown</div>
     <div style="font-size:.82rem;color:var(--dim);margin-bottom:2rem;line-height:1.6">Ask any question. Watch it form as particles.</div>
     <div id="guideSteps">
@@ -421,9 +423,9 @@ function easeOut(t){return 1-Math.pow(1-clamp(t,0,1),3);}
 function easeIn(t){return Math.pow(clamp(t,0,1),2);}
 
 /* ── STATE ── */
-var simDomain='fireworks';
+var simDomain='bigbang';
 var simPhase=0;
-var simSpeed=1.75;
+var simSpeed=1.0;   /* 100% default */
 var paused=false;
 var autoPlay=true;
 var voiceOn=false;
@@ -1274,48 +1276,108 @@ function togglePause(){
 document.getElementById('speedR').oninput=function(){simSpeed=parseFloat(this.value);};
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
 
-/* ── COMPETE ── */
-var compCtx1,compCtx2,compTimeLeft=60,compDomain1='fireworks',compDomain2='bigbang';
+/* ── COMPETE — guaranteed different domains, arrow vote buttons ── */
+var compCtx1,compCtx2,compTimeLeft=60,compDomain1='bigbang',compDomain2='heartbreak';
+/* Particle buffers for compete canvases */
+var cP1={N:0,X:null,Y:null,TX:null,TY:null,BX:null,BY:null,R:null,G:null,B:null,Sz:null,D:null,T:0};
+var cP2={N:0,X:null,Y:null,TX:null,TY:null,BX:null,BY:null,R:null,G:null,B:null,Sz:null,D:null,T:0};
+
+/* Pick two domains that are visually maximally different */
+var DOMAIN_PAIRS={
+  bigbang:['heartbreak','grief','anger','urban'],
+  heartbreak:['bigbang','joy','bigbang','neuron'],
+  love:['anger','bh','amr','urban'],
+  grief:['joy','fireworks','bigbang','love'],
+  anger:['joy','love','grief','bigbang'],
+  joy:['grief','bh','amr','urban'],
+  neuron:['heartbreak','grief','urban','amr'],
+  immune:['rumour','anger','bigbang','joy'],
+  amr:['love','joy','bigbang','universe'],
+  bh:['joy','love','fireworks','heartbreak'],
+  universe:['grief','amr','heartbreak','anger'],
+  rumour:['bh','grief','immune','chem'],
+  urban:['joy','bigbang','love','fireworks'],
+  chem:['grief','bh','heartbreak','bigbang'],
+  fireworks:['grief','bh','amr','urban']
+};
+
+function pickOpponentDomain(myDomain){
+  var pairs=DOMAIN_PAIRS[myDomain]||DOMAIN_ORDER.filter(function(d){return d!==myDomain;});
+  return pairs[Math.floor(Math.random()*pairs.length)];
+}
+
+function initCompeteParticles(cp,domain,canvas){
+  var n=Math.min(N,20000); /* lighter particle count for compete split screen */
+  cp.N=n;
+  cp.X=new Float32Array(n);cp.Y=new Float32Array(n);
+  cp.TX=new Float32Array(n);cp.TY=new Float32Array(n);
+  cp.BX=new Float32Array(n);cp.BY=new Float32Array(n);
+  cp.R=new Uint8Array(n);cp.G=new Uint8Array(n);cp.B=new Uint8Array(n);
+  cp.Sz=new Float32Array(n);cp.D=new Float32Array(n);cp.T=0;
+  /* Override W/H functions temporarily for getSpec */
+  var _W=W,_H=H;
+  W=function(){return canvas.width;};H=function(){return canvas.height;};
+  var spec=getSpec(domain,0,n);
+  W=_W;H=_H;
+  for(var i=0;i<n;i++){
+    var s=spec[i%spec.length];
+    cp.TX[i]=s.tx;cp.TY[i]=s.ty;
+    cp.R[i]=s.rr||180;cp.G[i]=s.gg||180;cp.B[i]=s.bb||180;
+    cp.Sz[i]=s.r||1;cp.D[i]=Math.random()*2000;
+    cp.BX[i]=canvas.width/2+rnd(-4,4);cp.BY[i]=canvas.height/2+rnd(-4,4);
+    cp.X[i]=cp.BX[i];cp.Y[i]=cp.BY[i];
+  }
+}
+
+function renderCompeteCanvas(ctx2d,canvas,cp,dt){
+  ctx2d.fillStyle='rgba(0,0,0,0.14)';ctx2d.fillRect(0,0,canvas.width,canvas.height);
+  cp.T+=dt;
+  for(var i=0;i<cp.N;i++){
+    var t=clamp((cp.T-cp.D[i])/4000,0,1);
+    var te=easeOut(t);
+    var fx=lerp(cp.BX[i],cp.TX[i],te)+Math.sin(cp.T*.0007+i*.14)*1.5*t;
+    var fy=lerp(cp.BY[i],cp.TY[i],te)+Math.cos(cp.T*.0008+i*.13)*1.5*t;
+    cp.X[i]=fx;cp.Y[i]=fy;
+    ctx2d.globalAlpha=Math.min(t*2,1)*.85;
+    ctx2d.fillStyle='rgb('+cp.R[i]+','+cp.G[i]+','+cp.B[i]+')';
+    ctx2d.beginPath();ctx2d.arc(fx,fy,Math.max(.3,cp.Sz[i]*(0.4+te*.7)),0,6.283);ctx2d.fill();
+  }
+  ctx2d.globalAlpha=1;
+}
+
 function startCompete(){
   if(compActive)return;
   compActive=true;compScoreA=0;compScoreB=0;compTimeLeft=60;
-  document.getElementById('cScoreA').textContent='Player A: 0';
-  document.getElementById('cScoreB').textContent='Player B: 0';
-  document.getElementById('cTimer').textContent='⏱ 60s';
+  document.getElementById('cScoreA').textContent='↑ 0';
+  document.getElementById('cScoreB').textContent='↓ 0';
+  document.getElementById('cTimer').textContent='60s';
   document.getElementById('compMode').style.display='flex';
   document.getElementById('compVT').style.display='flex';
   document.getElementById('compVB').style.display='flex';
+  document.getElementById('cvA').textContent='↑ Vote Top';
+  document.getElementById('cvB').textContent='↓ Vote Bottom';
   compDomain1=simDomain;
-  var others=DOMAIN_ORDER.filter(function(d){return d!==simDomain;});
-  compDomain2=others[Math.floor(Math.random()*others.length)];
+  compDomain2=pickOpponentDomain(simDomain); /* guaranteed different, maximally contrast */
   /* Canvases */
   var c1=document.getElementById('compCanvas1'),c2=document.getElementById('compCanvas2');
   c1.width=window.innerWidth;c2.width=window.innerWidth;
-  c1.height=(window.innerHeight-3)/2;c2.height=(window.innerHeight-3)/2;
+  c1.height=Math.floor((window.innerHeight-3)/2);c2.height=Math.floor((window.innerHeight-3)/2);
   compCtx1=c1.getContext('2d');compCtx2=c2.getContext('2d');
-  compTimerInterval=setInterval(function(){compTimeLeft--;document.getElementById('cTimer').textContent='⏱ '+compTimeLeft+'s';if(compTimeLeft<=0)endCompete();},1000);
-  /* Animate with separate simple draw — questions not shown */
-  var ct=0;
-  (function cl(){
+  initCompeteParticles(cP1,compDomain1,c1);
+  initCompeteParticles(cP2,compDomain2,c2);
+  compTimerInterval=setInterval(function(){
+    compTimeLeft--;
+    document.getElementById('cTimer').textContent=compTimeLeft+'s';
+    if(compTimeLeft<=0)endCompete();
+  },1000);
+  var lastCT=performance.now();
+  (function cl(ts){
     if(!compActive)return;
     requestAnimationFrame(cl);
-    ct+=16*simSpeed;
-    /* Simple particle draw for comp canvases */
-    [{ctx:compCtx1,c:c1,dom:compDomain1},{ctx:compCtx2,c:c2,dom:compDomain2}].forEach(function(p){
-      p.ctx.fillStyle='rgba(0,0,0,.15)';p.ctx.fillRect(0,0,p.c.width,p.c.height);
-      var cx2=p.c.width/2,cy2=p.c.height/2,r=Math.min(p.c.width,p.c.height)*.4;
-      var dc=DC[p.dom]||'#26e8b0';
-      var hex=dc.replace('#','');
-      var rr=parseInt(hex.slice(0,2),16)||100,gg=parseInt(hex.slice(2,4),16)||150,bb=parseInt(hex.slice(4,6),16)||200;
-      for(var i=0;i<200;i++){
-        var a=i/200*Math.PI*2+ct*.001,d=r*(.3+Math.sin(ct*.002+i*.5)*.7);
-        p.ctx.globalAlpha=.6+Math.sin(ct*.003+i)*.3;
-        p.ctx.fillStyle='rgb('+rr+','+gg+','+bb+')';
-        p.ctx.beginPath();p.ctx.arc(cx2+Math.cos(a)*d,cy2+Math.sin(a)*d*.6,1.5+Math.random()*2,0,6.283);p.ctx.fill();
-      }
-      p.ctx.globalAlpha=1;
-    });
-  })();
+    var dt=Math.min((ts-lastCT)*simSpeed,40);lastCT=ts;
+    renderCompeteCanvas(compCtx1,c1,cP1,dt);
+    renderCompeteCanvas(compCtx2,c2,cP2,dt);
+  })(performance.now());
 }
 function castVote(side){
   document.getElementById('compVT').style.display='none';
@@ -1330,40 +1392,94 @@ function endCompete(){
   showToast('🏆 '+(compScoreA>=compScoreB?'Player A':'Player B')+' wins!');
 }
 
-/* ── TOUCH INTERACTION ── */
-var touchStartX=0,touchStartY=0,swipeUsed=false;
+/* ── GESTURE SYSTEM — velocity discriminator ── */
+/* The key insight: we decide intent on touchstart based on VELOCITY during move.
+   A swipe has high velocity. A touch has low velocity (or none — pure tap).
+   We commit to swipe OR touch, never both on the same gesture. */
+
+var GS={
+  startX:0,startY:0,startT:0,
+  lastX:0,lastY:0,lastT:0,
+  vx:0,vy:0,             /* velocity px/ms */
+  committed:null,         /* null | 'swipe-ud' | 'swipe-lr' | 'touch' */
+  moved:false,
+  SWIPE_V_THRESH:0.35,   /* px/ms — above this = swipe intent */
+  SWIPE_MIN_PX:30,       /* minimum distance to count */
+};
+
 canvas.addEventListener('touchstart',function(e){
+  if(e.target.closest&&e.target.closest('#bottomPanel,#rightRail,#pills,#nav'))return;
   var t=e.touches[0];
-  touchStartX=t.clientX;touchStartY=t.clientY;
+  GS.startX=GS.lastX=t.clientX;
+  GS.startY=GS.lastY=t.clientY;
+  GS.startT=GS.lastT=Date.now();
+  GS.vx=0;GS.vy=0;GS.committed=null;GS.moved=false;
+  /* Start touch attraction immediately */
   touchX=t.clientX;touchY=t.clientY;
   touchStartTime=Date.now();
-  touchActive=true;touchForce=1; /* default attract */
+  touchActive=true;touchForce=1;
 },{passive:true});
+
 canvas.addEventListener('touchmove',function(e){
+  if(e.target.closest&&e.target.closest('#bottomPanel,#rightRail,#pills,#nav'))return;
   var t=e.touches[0];
-  touchX=t.clientX;touchY=t.clientY;
-  /* Long press = repel */
-  if(Date.now()-touchStartTime>600)touchForce=-1;
+  var now=Date.now();
+  var dt=Math.max(now-GS.lastT,1);
+  var dx=t.clientX-GS.lastX;
+  var dy=t.clientY-GS.lastY;
+  /* Exponential moving average of velocity */
+  GS.vx=GS.vx*0.6+(dx/dt)*0.4;
+  GS.vy=GS.vy*0.6+(dy/dt)*0.4;
+  GS.lastX=t.clientX;GS.lastY=t.clientY;GS.lastT=now;
+  GS.moved=true;
+
+  /* Commit gesture type once velocity is clear — BEFORE touchend */
+  if(!GS.committed){
+    var totalDX=t.clientX-GS.startX;
+    var totalDY=t.clientY-GS.startY;
+    var speed=Math.sqrt(GS.vx*GS.vx+GS.vy*GS.vy);
+    if(speed>GS.SWIPE_V_THRESH){
+      /* It's a swipe — stop particle interaction */
+      if(Math.abs(totalDY)>Math.abs(totalDX)){GS.committed='swipe-ud';}
+      else{GS.committed='swipe-lr';}
+      touchActive=false;touchForce=0; /* release particles */
+    }
+  }
+
+  /* If committed to touch — update particle pull position */
+  if(!GS.committed||GS.committed==='touch'){
+    touchX=t.clientX;touchY=t.clientY;
+    /* Long press = repel */
+    if(Date.now()-touchStartTime>500)touchForce=-1;
+  }
 },{passive:true});
+
 canvas.addEventListener('touchend',function(e){
   touchActive=false;touchForce=0;
   var t=e.changedTouches[0];
-  var dy=touchStartY-t.clientY,dx=touchStartX-t.clientX;
-  if(!swipeUsed&&(Math.abs(dy)>40||Math.abs(dx)>40))swipeUsed=true;
-  /* Swipe up/down = change domain */
-  if(Math.abs(dy)>50&&Math.abs(dy)>Math.abs(dx)*1.5){
-    domIdx=(domIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
+  var totalDX=t.clientX-GS.startX;
+  var totalDY=t.clientY-GS.startY;
+  var duration=Date.now()-GS.startT;
+
+  /* Execute committed swipe */
+  if(GS.committed==='swipe-ud'&&Math.abs(totalDY)>GS.SWIPE_MIN_PX){
+    var dir=totalDY<0?1:-1;
+    domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
     switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));
+    dismissGuideHint('swipe');
     return;
   }
-  /* Swipe left/right = change phase */
-  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){
-    if(dx>0)nextPhase();else prevPhase();
+  if(GS.committed==='swipe-lr'&&Math.abs(totalDX)>GS.SWIPE_MIN_PX){
+    if(totalDX<0)nextPhase();else prevPhase();
+    dismissGuideHint('phase');
     return;
   }
-  /* Short tap = heart */
-  if(Math.abs(dy)<18&&Math.abs(dx)<18){
+
+  /* Short tap (not a swipe) = heart burst */
+  if(duration<300&&Math.abs(totalDX)<20&&Math.abs(totalDY)<20){
     spawnHeartBurst(t.clientX,t.clientY,true);
+    dismissGuideHint('tap');
+    return;
   }
 },{passive:true});
 
@@ -1414,42 +1530,75 @@ function buildChips(){
   QS.forEach(function(q){var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;ch.onclick=function(){document.getElementById('mainQ').value=q;autoResize(document.getElementById('mainQ'));askQuestion();};c.appendChild(ch);});
 }
 
-/* ── ONBOARDING GUIDE ── */
-var GUIDE_STEPS=[
-  {icon:'👆',title:'Touch the simulation',body:'Drag your finger across the particles to attract them. Press and hold for a repulsion burst. The simulation responds to you.'},
-  {icon:'↕️',title:'Swipe up or down',body:'Swipe the simulation to explore different topics — heartbreak, Big Bang, grief, love, anger, joy, and more.'},
-  {icon:'↔️',title:'Swipe left or right',body:'Swipe to move between the 5 phases of each simulation. Each phase reveals the next layer of the answer.'},
-  {icon:'❤️',title:'Tap anywhere to like',body:'Every tap on the simulation shows a heart burst. The simulation knows you love it.'},
-  {icon:'✍️',title:'Ask your own question',body:'Type anything in the box below. SeenShown maps your question to a simulation and narrates the answer as it forms.'},
-  {icon:'⚔️',title:'Compete',body:'Tap the ⚔️ button on the right to challenge another simulation. Viewers vote for the best one.'}
+/* ── CONTEXTUAL GUIDE — floating chat bubbles, one at a time ── */
+var HINTS=[
+  {id:'tap',    text:'Tap anywhere ❤️',       x:'center',  y:'45%', trigger:'tap'},
+  {id:'swipe',  text:'Swipe up/down ↕ to change topic', x:'center', y:'38%', trigger:'swipe'},
+  {id:'phase',  text:'Swipe left/right ↔ for next phase', x:'center', y:'38%', trigger:'phase'},
+  {id:'ask',    text:'Ask anything ✍️',        x:'center',  y:'bottom-input', trigger:'ask'},
+  {id:'compete',text:'⚔️ Compete live',        x:'right',   y:'50%', trigger:'compete'},
 ];
-var guideStep=0;
-function showGuide(){
-  if(localStorage.getItem('ss_guide_seen'))return;
-  var g=document.getElementById('guide');g.style.display='flex';
-  renderGuideStep();
+var hintQueue=[];
+var activeHint=null;
+var hintTimer=null;
+
+function initGuide(){
+  if(localStorage.getItem('ss_v8_guide_done'))return;
+  /* Show hints one at a time, each after the previous is dismissed or times out */
+  var seen=JSON.parse(localStorage.getItem('ss_v8_hints_seen')||'[]');
+  HINTS.forEach(function(h){if(seen.indexOf(h.id)<0)hintQueue.push(h);});
+  if(hintQueue.length)setTimeout(showNextHint,2000);
 }
-function renderGuideStep(){
-  var s=GUIDE_STEPS[guideStep];
-  document.getElementById('guideSteps').innerHTML='<div style="background:rgba(38,232,176,0.06);border:1px solid rgba(38,232,176,0.18);border-radius:16px;padding:1.5rem;margin-bottom:.5rem"><div style="font-size:2.8rem;margin-bottom:.75rem">'+s.icon+'</div><div style="font-size:1rem;font-weight:700;margin-bottom:.5rem;color:var(--w)">'+s.title+'</div><div style="font-size:.82rem;color:var(--dim);line-height:1.65">'+s.body+'</div></div>';
-  /* Dots */
-  var dots=document.getElementById('guideDots');dots.innerHTML='';
-  GUIDE_STEPS.forEach(function(_,i){
-    var d=document.createElement('div');
-    d.style.cssText='width:'+(i===guideStep?'18px':'6px')+';height:6px;border-radius:3px;background:'+(i===guideStep?'var(--g)':'rgba(255,255,255,.15)')+';transition:all .2s';
-    dots.appendChild(d);
-  });
-  document.getElementById('guideBtn').textContent=guideStep<GUIDE_STEPS.length-1?'Next →':'Get Started ✨';
+
+function showNextHint(){
+  if(!hintQueue.length){localStorage.setItem('ss_v8_guide_done','1');return;}
+  activeHint=hintQueue[0];
+  showHintBubble(activeHint);
+  hintTimer=setTimeout(function(){dismissGuideHint(activeHint.id,true);},5000);
 }
-function guideNext(){
-  guideStep++;
-  if(guideStep>=GUIDE_STEPS.length){closeguide();return;}
-  renderGuideStep();
+
+function showHintBubble(hint){
+  var existing=document.getElementById('hintBubble');
+  if(existing)existing.remove();
+  var el=document.createElement('div');
+  el.id='hintBubble';
+  var top,left,transform;
+  if(hint.y==='bottom-input'){top=(window.innerHeight-160)+'px';}
+  else if(hint.y.endsWith('%')){top=hint.y;}
+  else{top='50%';}
+  if(hint.x==='center'){left='50%';transform='translateX(-50%)';}
+  else if(hint.x==='right'){left=(window.innerWidth-80)+'px';transform='translateX(-100%)';}
+  else{left='50%';transform='translateX(-50%)';}
+  el.style.cssText='position:fixed;top:'+top+';left:'+left+';transform:'+transform+';z-index:250;background:rgba(38,232,176,0.14);border:1px solid rgba(38,232,176,0.45);border-radius:20px;padding:8px 16px;font-size:.82rem;color:var(--g);font-weight:600;pointer-events:none;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(38,232,176,0.15);white-space:nowrap;animation:hintPop .3s ease';
+  el.textContent=hint.text;
+  /* Pulse dot */
+  var dot=document.createElement('div');
+  dot.style.cssText='position:fixed;top:'+top+';left:'+left+';width:10px;height:10px;border-radius:50%;background:var(--g);transform:'+transform+' translateY(-18px);pointer-events:none;z-index:249;animation:pulseDot 1.2s infinite';
+  el.appendChild(dot);
+  document.body.appendChild(el);
+  /* CSS */
+  if(!document.getElementById('hintStyle')){
+    var s=document.createElement('style');s.id='hintStyle';
+    s.textContent='@keyframes hintPop{0%{opacity:0;transform:'+transform+' scale(.85)}100%{opacity:1;transform:'+transform+' scale(1)}}@keyframes pulseDot{0%,100%{transform:'+transform+' translateY(-18px) scale(1);opacity:1}50%{transform:'+transform+' translateY(-18px) scale(1.6);opacity:.5}}';
+    document.head.appendChild(s);
+  }
 }
-function closeguide(){
-  document.getElementById('guide').style.display='none';
-  localStorage.setItem('ss_guide_seen','1');
+
+function dismissGuideHint(triggerId,autoTimeout){
+  if(!activeHint||activeHint.trigger!==triggerId&&!autoTimeout)return;
+  if(hintTimer)clearTimeout(hintTimer);
+  var el=document.getElementById('hintBubble');
+  if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(function(){if(el.parentNode)el.remove();},350);}
+  /* Mark seen */
+  var seen=JSON.parse(localStorage.getItem('ss_v8_hints_seen')||'[]');
+  if(activeHint&&seen.indexOf(activeHint.id)<0)seen.push(activeHint.id);
+  localStorage.setItem('ss_v8_hints_seen',JSON.stringify(seen));
+  hintQueue.shift();
+  activeHint=null;
+  setTimeout(showNextHint,1500);
 }
+
+function showGuide(){initGuide();} /* replaces old showGuide */
 
 /* ═══ AUTH + ECONOMY WIRING ═══ */
 

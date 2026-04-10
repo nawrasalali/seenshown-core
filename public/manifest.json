@@ -1,0 +1,39 @@
+{
+  "name": "SeenShown",
+  "short_name": "SeenShown",
+  "description": "Ask any question. Watch it form as particles.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#02040e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "entertainment"],
+  "screenshots": [
+    {
+      "src": "/screenshot-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "SeenShown — Big Bang simulation"
+    }
+  ],
+  "shortcuts": [
+    {"name": "Big Bang", "url": "/?domain=bigbang", "description": "Watch the Big Bang form"},
+    {"name": "Heartbreak", "url": "/?domain=heartbreak", "description": "See heartbreak as particles"},
+    {"name": "Ask a question", "url": "/", "description": "Ask anything"}
+  ]
+}

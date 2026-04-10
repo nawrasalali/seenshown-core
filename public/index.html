@@ -6,6 +6,19 @@
 <title>SeenShown — Watch Any Question Come Alive</title>
 <meta name="description" content="Type any question. Watch it form in real-time particles.">
 <meta name="theme-color" content="#02040e">
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SeenShown">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- PWA Install button style -->
+<style>
+#installBtn{position:fixed;bottom:auto;top:auto;display:none;align-items:center;gap:6px;background:rgba(38,232,176,0.12);border:1.5px solid rgba(38,232,176,0.5);border-radius:20px;padding:7px 14px;font-size:.72rem;font-weight:700;color:var(--g);cursor:pointer;z-index:260;backdrop-filter:blur(12px);transition:all .2s;white-space:nowrap;box-shadow:0 2px 16px rgba(0,0,0,.4)}
+#installBtn:hover{background:rgba(38,232,176,0.22);transform:scale(1.03)}
+#installBtn.show{display:flex}
+</style>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--border:rgba(38,232,176,0.15);--red:#e05c5c;--gold:#f0c040}
@@ -176,6 +189,11 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 </head>
 <body>
 <canvas id="simCanvas"></canvas>
+
+<!-- PWA INSTALL BUTTON — appears when browser fires beforeinstallprompt -->
+<div id="installBtn" onclick="installPWA()">
+  <span>📲</span><span>Install App</span>
+</div>
 
 <nav id="nav">
   <a class="nav-logo" href="/">SeenShown</a>
@@ -598,7 +616,7 @@ function shapeFireworks(n,phase){
 
 /* ── DOMAIN SHAPE SPECS — 5 phases each ── */
 function getSpec(domain,phase,n){
-  var x=cx(),y=cy()*0.55; /* Bias simulation to upper 55% */
+  var x=cx(),y=cy(); /* TRUE CENTER — sim centered on screen */
   var sz=Math.min(W(),H());
   switch(domain){
     /* FIREWORKS — New Year countdown: single dot → shells burst */
@@ -751,7 +769,7 @@ function initPhase(domain,phase,fromScratch){
     if(fromScratch&&phase===0){
       /* First ever load — origin determined by domain energy */
       if(dir==='zero_to_full'||dir==='zoom'||dir==='form'){
-        pBX[i]=cx()+rnd(-4,4);pBY[i]=cy()*.55+rnd(-4,4);
+        pBX[i]=cx()+rnd(-4,4);pBY[i]=cy()+rnd(-4,4);
       } else {
         pBX[i]=s.tx+rnd(-3,3);pBY[i]=s.ty+rnd(-3,3);
         pX[i]=pBX[i];pY[i]=pBY[i];
@@ -781,80 +799,76 @@ function snapshot(){
 var pVX,pVY;
 function allocVelocity(n){pVX=new Float32Array(n);pVY=new Float32Array(n);}
 
+/* Pre-computed noise table for fast breathing — avoids Math.sin in render loop */
+var NOISE_TBL=(function(){var t=new Float32Array(4096);for(var i=0;i<4096;i++)t[i]=Math.sin(i/4096*Math.PI*2);return t;})();
+function qsin(x){return NOISE_TBL[Math.abs(Math.round(x*651.9))%4096];}
+function qcos(x){return NOISE_TBL[(Math.abs(Math.round(x*651.9))+1024)%4096];}
+
 function render(dt){
-  ctx.fillStyle='rgba(0,0,0,0.13)';
+  /* Dim trail */
+  ctx.fillStyle='rgba(0,0,0,0.15)';
   ctx.fillRect(0,0,W(),H());
 
   formT+=dt;
   globalT+=dt;
 
-  /* Fireworks countdown — special overlay */
-  if(simDomain==='fireworks'&&simPhase===0&&formT<5500){
-    var countdown=Math.ceil((5500-formT)/1000);
-    if(countdown>0&&countdown<=5){
-      ctx.save();
-      ctx.globalAlpha=Math.min((5500-formT)/1000,1)*.9;
-      ctx.fillStyle='#fff';
-      ctx.font='bold '+Math.round(Math.min(W(),H())*.22)+'px sans-serif';
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(countdown,W()/2,H()*.4);
-      ctx.restore();
-    }
-  }
-
-  var touchR=touchActive?Math.min(W(),H())*.28:0; /* larger radius */
+  var touchR=touchActive?Math.min(W(),H())*.3:0;
   var tx=touchX,ty=touchY,tf=touchForce;
   var dtSec=dt/1000;
+  var breathAmp=simDomain==='bigbang'?3.5:1.5;
+  var gT=globalT*.0007;
 
+  /* Physics pass — update positions (no draw) */
   for(var i=0;i<N;i++){
     var delay=pDelay[i];
     var t=clamp((formT-delay)/FORM_DUR,0,1);
     var te=easeOut(t);
 
-    /* Formation travel */
     var fx=lerp(pBX[i],pTX[i],te);
     var fy=lerp(pBY[i],pTY[i],te);
 
-    /* Breathing noise — stronger for bigbang, makes it feel alive */
-    var breathAmp=simDomain==='bigbang'?4:simDomain==='fireworks'?3:1.8;
-    var formed=t>0.90;
-    var bAmt=formed?1:t;
-    var ang=globalT*.0007+i*.141;
-    fx+=Math.sin(ang)*breathAmp*bAmt;
-    fy+=Math.cos(ang*1.3)*breathAmp*bAmt;
+    /* Breathing — use lookup table, every 3rd particle for perf */
+    if(i%3===0){
+      var bAmt=t>0.88?1:t;
+      fx+=qsin(gT+i*.0345)*breathAmp*bAmt;
+      fy+=qcos(gT*1.3+i*.0345)*breathAmp*bAmt;
+    }
 
-    /* Touch — much stronger, with velocity persistence */
+    /* Touch interaction */
     if(touchActive&&t>.03){
       var ddx=fx-tx,ddy=fy-ty;
       var dist2=ddx*ddx+ddy*ddy;
       if(dist2<touchR*touchR&&dist2>0.5){
         var dist=Math.sqrt(dist2);
         var falloff=1-dist/touchR;
-        var str=falloff*falloff*22; /* quadratic falloff, stronger */
-        if(tf>0){
-          /* attract — spiral slightly */
-          pVX[i]+=-ddx/dist*str*dtSec*60;
-          pVY[i]+=-ddy/dist*str*dtSec*60;
-        } else {
-          /* repel — strong burst outward */
-          pVX[i]+=ddx/dist*str*3.5*dtSec*60;
-          pVY[i]+=ddy/dist*str*3.5*dtSec*60;
-        }
+        var str=falloff*falloff*20;
+        if(tf>0){pVX[i]+=-ddx/dist*str*dtSec*55;pVY[i]+=-ddy/dist*str*dtSec*55;}
+        else{pVX[i]+=ddx/dist*str*3*dtSec*55;pVY[i]+=ddy/dist*str*3*dtSec*55;}
       }
     }
-
-    /* Apply velocity with damping */
     fx+=pVX[i];fy+=pVY[i];
-    pVX[i]*=0.78;pVY[i]*=0.78; /* damping — velocity fades */
-
+    pVX[i]*=0.80;pVY[i]*=0.80;
     pX[i]=fx;pY[i]=fy;
+  }
 
-    var alpha=t<.025?0:Math.min(t*2.2,1);
-    var sz=pSz[i]*(0.4+te*.85);
+  /* Draw pass — batch by rounded color to reduce fillStyle changes */
+  ctx.globalAlpha=0.88;
+  var lastColor='';
+  /* Draw smallest particles first (faster ctx state) */
+  for(var i=0;i<N;i++){
+    var delay=pDelay[i];
+    var t=clamp((formT-delay)/FORM_DUR,0,1);
+    var alpha=t<.03?0:Math.min(t*2,1);
+    if(alpha<0.02)continue;
 
-    ctx.globalAlpha=alpha*.92;
-    ctx.fillStyle='rgb('+pR[i]+','+pG[i]+','+pB[i]+')';
-    ctx.beginPath();ctx.arc(fx,fy,Math.max(.3,sz),0,6.283);ctx.fill();
+    var fx=pX[i],fy=pY[i];
+    var sz=Math.max(0.4,pSz[i]*(0.35+easeOut(t)*.8));
+
+    /* Round colors to nearest 8 to batch similar colors */
+    var cr=(pR[i]>>3)<<3,cg=(pG[i]>>3)<<3,cb=(pB[i]>>3)<<3;
+    var col='rgba('+cr+','+cg+','+cb+','+alpha.toFixed(2)+')';
+    if(col!==lastColor){ctx.fillStyle=col;lastColor=col;}
+    ctx.beginPath();ctx.arc(fx,fy,sz,0,6.283);ctx.fill();
   }
   ctx.globalAlpha=1;
 }
@@ -1392,115 +1406,99 @@ function endCompete(){
   showToast('🏆 '+(compScoreA>=compScoreB?'Player A':'Player B')+' wins!');
 }
 
-/* ── GESTURE SYSTEM — velocity discriminator ── */
-/* The key insight: we decide intent on touchstart based on VELOCITY during move.
-   A swipe has high velocity. A touch has low velocity (or none — pure tap).
-   We commit to swipe OR touch, never both on the same gesture. */
+/* ── GESTURE SYSTEM — clean velocity discriminator ── */
+/* Decision tree:
+   - FAST move (velocity > threshold) = SWIPE → never touches particles
+   - SLOW drag = particle attract  
+   - Quick tap (< 250ms, < 25px) = heart
+   - Long press (> 500ms) = repel
+   Commit decision at touchend based on total distance + time */
 
-var GS={
-  startX:0,startY:0,startT:0,
-  lastX:0,lastY:0,lastT:0,
-  vx:0,vy:0,             /* velocity px/ms */
-  committed:null,         /* null | 'swipe-ud' | 'swipe-lr' | 'touch' */
-  moved:false,
-  SWIPE_V_THRESH:0.35,   /* px/ms — above this = swipe intent */
-  SWIPE_MIN_PX:30,       /* minimum distance to count */
-};
+var GT={sx:0,sy:0,st:0,mx:0,my:0,moved:false};
 
 canvas.addEventListener('touchstart',function(e){
-  if(e.target.closest&&e.target.closest('#bottomPanel,#rightRail,#pills,#nav'))return;
   var t=e.touches[0];
-  GS.startX=GS.lastX=t.clientX;
-  GS.startY=GS.lastY=t.clientY;
-  GS.startT=GS.lastT=Date.now();
-  GS.vx=0;GS.vy=0;GS.committed=null;GS.moved=false;
-  /* Start touch attraction immediately */
+  GT.sx=GT.mx=t.clientX;
+  GT.sy=GT.my=t.clientY;
+  GT.st=Date.now();
+  GT.moved=false;
+  /* Begin particle attraction immediately (may cancel if swipe) */
   touchX=t.clientX;touchY=t.clientY;
   touchStartTime=Date.now();
   touchActive=true;touchForce=1;
 },{passive:true});
 
 canvas.addEventListener('touchmove',function(e){
-  if(e.target.closest&&e.target.closest('#bottomPanel,#rightRail,#pills,#nav'))return;
   var t=e.touches[0];
-  var now=Date.now();
-  var dt=Math.max(now-GS.lastT,1);
-  var dx=t.clientX-GS.lastX;
-  var dy=t.clientY-GS.lastY;
-  /* Exponential moving average of velocity */
-  GS.vx=GS.vx*0.6+(dx/dt)*0.4;
-  GS.vy=GS.vy*0.6+(dy/dt)*0.4;
-  GS.lastX=t.clientX;GS.lastY=t.clientY;GS.lastT=now;
-  GS.moved=true;
-
-  /* Commit gesture type once velocity is clear — BEFORE touchend */
-  if(!GS.committed){
-    var totalDX=t.clientX-GS.startX;
-    var totalDY=t.clientY-GS.startY;
-    var speed=Math.sqrt(GS.vx*GS.vx+GS.vy*GS.vy);
-    if(speed>GS.SWIPE_V_THRESH){
-      /* It's a swipe — stop particle interaction */
-      if(Math.abs(totalDY)>Math.abs(totalDX)){GS.committed='swipe-ud';}
-      else{GS.committed='swipe-lr';}
-      touchActive=false;touchForce=0; /* release particles */
-    }
-  }
-
-  /* If committed to touch — update particle pull position */
-  if(!GS.committed||GS.committed==='touch'){
+  GT.mx=t.clientX;GT.my=t.clientY;
+  var totalDX=GT.mx-GT.sx;
+  var totalDY=GT.my-GT.sy;
+  var totalD=Math.sqrt(totalDX*totalDX+totalDY*totalDY);
+  GT.moved=totalD>10;
+  /* If moving fast enough to be a swipe, stop particle interaction */
+  if(totalD>22){touchActive=false;touchForce=0;}
+  else{
+    /* Slow drag — update particle pull */
     touchX=t.clientX;touchY=t.clientY;
-    /* Long press = repel */
-    if(Date.now()-touchStartTime>500)touchForce=-1;
+    if(Date.now()-GT.st>500)touchForce=-1; /* long press = repel */
   }
 },{passive:true});
 
 canvas.addEventListener('touchend',function(e){
   touchActive=false;touchForce=0;
   var t=e.changedTouches[0];
-  var totalDX=t.clientX-GS.startX;
-  var totalDY=t.clientY-GS.startY;
-  var duration=Date.now()-GS.startT;
+  var dx=GT.mx-GT.sx;
+  var dy=GT.my-GT.sy;
+  var adx=Math.abs(dx);
+  var ady=Math.abs(dy);
+  var dur=Date.now()-GT.st;
 
-  /* Execute committed swipe */
-  if(GS.committed==='swipe-ud'&&Math.abs(totalDY)>GS.SWIPE_MIN_PX){
-    var dir=totalDY<0?1:-1;
+  /* SWIPE UP/DOWN — change domain */
+  if(ady>55&&ady>adx*1.2){
+    var dir=dy<0?1:-1; /* swipe up = dy negative = go forward */
     domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
     switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));
     dismissGuideHint('swipe');
     return;
   }
-  if(GS.committed==='swipe-lr'&&Math.abs(totalDX)>GS.SWIPE_MIN_PX){
-    if(totalDX<0)nextPhase();else prevPhase();
+  /* SWIPE LEFT/RIGHT — change phase */
+  if(adx>55&&adx>ady*1.2){
+    if(dx<0)nextPhase();else prevPhase(); /* swipe left = dx neg = next */
     dismissGuideHint('phase');
     return;
   }
-
-  /* Short tap (not a swipe) = heart burst */
-  if(duration<300&&Math.abs(totalDX)<20&&Math.abs(totalDY)<20){
+  /* TAP — heart burst */
+  if(dur<280&&adx<25&&ady<25){
     spawnHeartBurst(t.clientX,t.clientY,true);
     dismissGuideHint('tap');
     return;
   }
 },{passive:true});
 
-/* Mouse drag = attract, double click = repel burst */
-var mDown=false,mStartY=0,mStartX=0;
-canvas.addEventListener('mousedown',function(e){mDown=true;mStartY=e.clientY;mStartX=e.clientX;touchX=e.clientX;touchY=e.clientY;touchActive=true;touchForce=1;});
-canvas.addEventListener('mousemove',function(e){if(mDown){touchX=e.clientX;touchY=e.clientY;}});
+/* MOUSE — desktop support */
+var MD=false,MSX=0,MSY=0;
+canvas.addEventListener('mousedown',function(e){
+  MD=true;MSX=e.clientX;MSY=e.clientY;
+  touchX=e.clientX;touchY=e.clientY;touchActive=true;touchForce=1;
+});
+canvas.addEventListener('mousemove',function(e){
+  if(!MD)return;
+  touchX=e.clientX;touchY=e.clientY;
+});
 canvas.addEventListener('mouseup',function(e){
-  mDown=false;touchActive=false;touchForce=0;
-  var dy=mStartY-e.clientY,dx=mStartX-e.clientX;
-  if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)){domIdx=(domIdx+(dy>0?1:-1)+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
-  else if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)){if(dx>0)nextPhase();else prevPhase();}
+  if(!MD)return;MD=false;touchActive=false;touchForce=0;
+  var dx=e.clientX-MSX,dy=e.clientY-MSY;
+  var adx=Math.abs(dx),ady=Math.abs(dy);
+  if(ady>55&&ady>adx*1.2){var dir=dy<0?1:-1;domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
+  else if(adx>55&&adx>ady*1.2){if(dx<0)nextPhase();else prevPhase();}
 });
 canvas.addEventListener('dblclick',function(e){
-  /* Double click = repulsion burst */
   touchX=e.clientX;touchY=e.clientY;touchForce=-1;touchActive=true;
-  setTimeout(function(){touchActive=false;touchForce=0;},800);
+  setTimeout(function(){touchActive=false;touchForce=0;},700);
   spawnHeartBurst(e.clientX,e.clientY,true);
 });
 
-/* Keyboard */
+/* KEYBOARD */
 document.addEventListener('keydown',function(e){
   var ae=document.activeElement;
   if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'))return;
@@ -1509,7 +1507,6 @@ document.addEventListener('keydown',function(e){
   if(e.key==='ArrowDown'){e.preventDefault();domIdx=(domIdx+1)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
   if(e.key==='ArrowUp'){e.preventDefault();domIdx=(domIdx-1+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
   if(e.key===' '){e.preventDefault();togglePause();}
-  if(e.key==='v')toggleVoice();
   if(e.key==='s')toggleSound();
 });
 
@@ -1530,72 +1527,52 @@ function buildChips(){
   QS.forEach(function(q){var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;ch.onclick=function(){document.getElementById('mainQ').value=q;autoResize(document.getElementById('mainQ'));askQuestion();};c.appendChild(ch);});
 }
 
-/* ── CONTEXTUAL GUIDE — floating chat bubbles, one at a time ── */
+/* ── CONTEXTUAL GUIDE — tooltips pointing to actual UI ── */
 var HINTS=[
-  {id:'tap',    text:'Tap anywhere ❤️',       x:'center',  y:'45%', trigger:'tap'},
-  {id:'swipe',  text:'Swipe up/down ↕ to change topic', x:'center', y:'38%', trigger:'swipe'},
-  {id:'phase',  text:'Swipe left/right ↔ for next phase', x:'center', y:'38%', trigger:'phase'},
-  {id:'ask',    text:'Ask anything ✍️',        x:'center',  y:'bottom-input', trigger:'ask'},
-  {id:'compete',text:'⚔️ Compete live',        x:'right',   y:'50%', trigger:'compete'},
+  {id:'tap',    text:'Tap the sim to show love ❤️',    pos:'bottom:42%;left:50%;transform:translateX(-50%)', arrow:'▼',arrowPos:'top:100%;left:50%;transform:translateX(-50%)'},
+  {id:'swipe',  text:'Swipe up/down to change topic ↕', pos:'bottom:42%;left:50%;transform:translateX(-50%)', arrow:'▼',arrowPos:'top:100%;left:50%;transform:translateX(-50%)'},
+  {id:'phase',  text:'Swipe left/right for phases ↔',   pos:'bottom:42%;left:50%;transform:translateX(-50%)', arrow:'▼',arrowPos:'top:100%;left:50%;transform:translateX(-50%)'},
+  {id:'ask',    text:'Ask any question here ✍️',        pos:'bottom:155px;left:50%;transform:translateX(-50%)', arrow:'▼',arrowPos:'top:100%;left:50%;transform:translateX(-50%)'},
+  {id:'compete',text:'Compete live ⚔️',                pos:'right:68px;top:50%;transform:translateY(-50%) translateX(-100%)', arrow:'▶',arrowPos:'top:50%;left:100%;transform:translateY(-50%)'},
 ];
-var hintQueue=[];
-var activeHint=null;
-var hintTimer=null;
+var hintQueue=[],activeHint=null,hintTimer=null;
 
 function initGuide(){
-  if(localStorage.getItem('ss_v8_guide_done'))return;
-  /* Show hints one at a time, each after the previous is dismissed or times out */
-  var seen=JSON.parse(localStorage.getItem('ss_v8_hints_seen')||'[]');
+  if(localStorage.getItem('ss_v9_done'))return;
+  var seen=JSON.parse(localStorage.getItem('ss_v9_seen')||'[]');
   HINTS.forEach(function(h){if(seen.indexOf(h.id)<0)hintQueue.push(h);});
-  if(hintQueue.length)setTimeout(showNextHint,2000);
+  if(hintQueue.length)setTimeout(showNextHint,2500);
 }
 
 function showNextHint(){
-  if(!hintQueue.length){localStorage.setItem('ss_v8_guide_done','1');return;}
+  if(!hintQueue.length){localStorage.setItem('ss_v9_done','1');return;}
   activeHint=hintQueue[0];
-  showHintBubble(activeHint);
-  hintTimer=setTimeout(function(){dismissGuideHint(activeHint.id,true);},5000);
-}
-
-function showHintBubble(hint){
-  var existing=document.getElementById('hintBubble');
-  if(existing)existing.remove();
+  var old=document.getElementById('hintBubble');if(old)old.remove();
   var el=document.createElement('div');
   el.id='hintBubble';
-  var top,left,transform;
-  if(hint.y==='bottom-input'){top=(window.innerHeight-160)+'px';}
-  else if(hint.y.endsWith('%')){top=hint.y;}
-  else{top='50%';}
-  if(hint.x==='center'){left='50%';transform='translateX(-50%)';}
-  else if(hint.x==='right'){left=(window.innerWidth-80)+'px';transform='translateX(-100%)';}
-  else{left='50%';transform='translateX(-50%)';}
-  el.style.cssText='position:fixed;top:'+top+';left:'+left+';transform:'+transform+';z-index:250;background:rgba(38,232,176,0.14);border:1px solid rgba(38,232,176,0.45);border-radius:20px;padding:8px 16px;font-size:.82rem;color:var(--g);font-weight:600;pointer-events:none;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(38,232,176,0.15);white-space:nowrap;animation:hintPop .3s ease';
-  el.textContent=hint.text;
-  /* Pulse dot */
-  var dot=document.createElement('div');
-  dot.style.cssText='position:fixed;top:'+top+';left:'+left+';width:10px;height:10px;border-radius:50%;background:var(--g);transform:'+transform+' translateY(-18px);pointer-events:none;z-index:249;animation:pulseDot 1.2s infinite';
-  el.appendChild(dot);
+  el.style.cssText='position:fixed;'+activeHint.pos+';z-index:260;background:rgba(2,4,14,0.93);border:1.5px solid rgba(38,232,176,0.85);border-radius:14px;padding:8px 14px;font-size:.8rem;color:#fff;font-weight:600;pointer-events:none;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(38,232,176,0.25),0 4px 20px rgba(0,0,0,.6);white-space:nowrap;opacity:0;transition:opacity .3s';
+  el.textContent=activeHint.text;
+  /* Arrow */
+  var arrow=document.createElement('div');
+  arrow.style.cssText='position:absolute;'+activeHint.arrowPos+';color:rgba(38,232,176,0.85);font-size:.7rem;line-height:1;pointer-events:none';
+  arrow.textContent=activeHint.arrow;
+  el.appendChild(arrow);
   document.body.appendChild(el);
-  /* CSS */
-  if(!document.getElementById('hintStyle')){
-    var s=document.createElement('style');s.id='hintStyle';
-    s.textContent='@keyframes hintPop{0%{opacity:0;transform:'+transform+' scale(.85)}100%{opacity:1;transform:'+transform+' scale(1)}}@keyframes pulseDot{0%,100%{transform:'+transform+' translateY(-18px) scale(1);opacity:1}50%{transform:'+transform+' translateY(-18px) scale(1.6);opacity:.5}}';
-    document.head.appendChild(s);
-  }
+  requestAnimationFrame(function(){el.style.opacity='1';});
+  hintTimer=setTimeout(function(){dismissGuideHint(activeHint.id,true);},5500);
 }
 
-function dismissGuideHint(triggerId,autoTimeout){
-  if(!activeHint||activeHint.trigger!==triggerId&&!autoTimeout)return;
+function dismissGuideHint(id,auto){
+  if(!activeHint)return;
+  if(!auto&&activeHint.id!==id)return;
   if(hintTimer)clearTimeout(hintTimer);
   var el=document.getElementById('hintBubble');
-  if(el){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(function(){if(el.parentNode)el.remove();},350);}
-  /* Mark seen */
-  var seen=JSON.parse(localStorage.getItem('ss_v8_hints_seen')||'[]');
-  if(activeHint&&seen.indexOf(activeHint.id)<0)seen.push(activeHint.id);
-  localStorage.setItem('ss_v8_hints_seen',JSON.stringify(seen));
-  hintQueue.shift();
-  activeHint=null;
-  setTimeout(showNextHint,1500);
+  if(el){el.style.opacity='0';setTimeout(function(){if(el&&el.parentNode)el.remove();},350);}
+  var seen=JSON.parse(localStorage.getItem('ss_v9_seen')||'[]');
+  if(seen.indexOf(activeHint.id)<0)seen.push(activeHint.id);
+  localStorage.setItem('ss_v9_seen',JSON.stringify(seen));
+  hintQueue.shift();activeHint=null;
+  setTimeout(showNextHint,1200);
 }
 
 function showGuide(){initGuide();} /* replaces old showGuide */
@@ -1765,26 +1742,24 @@ function joinRoom(){
   LIVE_API.join(id,simDomain);
 }
 
-/* ── OVERRIDE askQuestion TO OFFER SAVE ── */
+/* ── OVERRIDE askQuestion TO OFFER SAVE — clean direct wrap ── */
 var _origAskQuestion=null;
 function wrapAskQuestion(){
   if(_origAskQuestion)return;
   _origAskQuestion=askQuestion;
-  askQuestion=async function(){
+  /* Replace global askQuestion with gated version */
+  window.askQuestion=askQuestion=async function(){
     var q=(document.getElementById('mainQ').value||'').trim();
-    /* Check if free user can create */
-    var canCreate=true;
-    if(window.SS_AUTH){
-      var check=window.SS_AUTH.canCreate();
-      if(!check.ok){showUpgradeModal(check.reason);return;}
-    } else {
-      /* Anonymous — check localStorage */
-      var anon=getAnonSimCount();
-      if(anon>=5){showUpgradeModal('limit');return;}
+    if(!q)return;
+    /* Gate: check sim limit for anonymous users */
+    var anon=getAnonSimCount();
+    if(anon>=5&&(!window.SS||!window.SS.isSubscriber)){
+      showUpgradeModal('limit');return;
     }
+    /* Run the original simulation */
     await _origAskQuestion();
-    /* After simulation runs, offer save */
-    if(q){setTimeout(function(){offerSaveModal(q,simDomain);},7000);}
+    /* Offer save modal 8 seconds after sim starts forming */
+    if(q){setTimeout(function(){offerSaveModal(q,simDomain);},8000);}
   };
 }
 
@@ -1801,7 +1776,7 @@ wrapAskQuestion();
 if(liveParam){setTimeout(function(){if(window.LIVE_API)LIVE_API.join(liveParam,simDomain);},1200);}
 
 /* ── BOOT ── */
-(function detectSpeed(){var t=performance.now(),n=0;while(performance.now()-t<8)n++;N=n>18000?70000:n>9000?50000:35000;})();
+(function detectSpeed(){var t=performance.now(),n=0;while(performance.now()-t<6)n++;/* Cap at 25K for 60fps on mobile — quality over quantity */N=n>20000?25000:n>10000?18000:12000;})();
 allocBuffers(N);
 allocVelocity(N);
 buildStrip();buildChips();

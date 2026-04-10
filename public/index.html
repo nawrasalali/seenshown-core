@@ -289,7 +289,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   <div id="answerTicker" onclick="togglePhasesPanel()"
     style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.52);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:7px 0;min-height:34px;position:relative">
     <div id="tickerTrack"
-      style="display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:tickerScroll 32s linear infinite">
+      style="display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:tickerScroll 90s linear infinite">
     </div>
     <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.58rem;color:rgba(38,232,176,0.45);pointer-events:none">tap ▼</div>
   </div>
@@ -561,9 +561,9 @@ function getSpec(domain,phase,n){
     case 'bigbang':
       if(phase===0)return shapePoint(n,x,y);
       if(phase===1)return shapePoint(Math.floor(n*.05),x,y).concat(shapeRing(Math.ceil(n*.95),x,y,sz*.04,2,255,240,200));
-      if(phase===2)return shapeExplosion(n,x,y,4,sz*.72,255,180,80,true);
+      if(phase===2)return shapeExplosion(n,x,y,4,Math.min(sz*.42,W()*.46,H()*.46),255,180,80,true); /* clamped to screen */
       if(phase===3)return shapeSpiral(n,x,y,sz*.44,3,120,160,255);
-      return shapeScatter(n,x,y,sz*.5,200,210,255);
+      return shapeScatter(n,x,y,Math.min(sz*.38,W()*.42,H()*.42),200,210,255); /* universe scatter — clamped */
 
     /* UNIVERSE — zoom from multiverse to earth */
     case 'universe':
@@ -601,7 +601,7 @@ function getSpec(domain,phase,n){
     case 'anger':
       if(phase===0)return shapeFace(n,'😤',x,y,sz*.5);
       if(phase===1)return shapeExplosion(n,x,y,4,sz*.35,255,60,0,true);
-      if(phase===2)return shapeExplosion(n,x,y,4,sz*.65,255,100,0,true);
+      if(phase===2)return shapeExplosion(n,x,y,4,Math.min(sz*.48,W()*.46,H()*.46),255,100,0,true);
       if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*4)*sz*.2+rnd(-4,4);ow.push({tx:wx,ty:wy,rr:255,gg:80,bb:20,r:.5+Math.random()*2});}return ow;}
       return shapeRing(n,x,y,sz*.3,sz*.08,180,70,30);
 
@@ -778,6 +778,12 @@ function render(dt){
     }
     fx+=pVX[i];fy+=pVY[i];
     pVX[i]*=0.80;pVY[i]*=0.80;
+    /* Soft screen boundary — particles within 8px of edge bounce back gently */
+    var margin=8;
+    if(fx<margin){fx=margin;pVX[i]=Math.abs(pVX[i])*.3;}
+    if(fx>W()-margin){fx=W()-margin;pVX[i]=-Math.abs(pVX[i])*.3;}
+    if(fy<margin){fy=margin;pVY[i]=Math.abs(pVY[i])*.3;}
+    if(fy>H()-margin){fy=H()-margin;pVY[i]=-Math.abs(pVY[i])*.3;}
     pX[i]=fx;pY[i]=fy;
   }
 
@@ -1466,7 +1472,7 @@ function buildTicker(narrs,loading){
   /* Reset animation */
   track.style.animation='none';
   void track.offsetWidth;
-  var dur=Math.max(20,narrs.length*8)+'s';
+  var dur=Math.max(60,narrs.length*14)+'s'; /* slow news ticker — comfortable reading speed */
   track.style.animation='tickerScroll '+dur+' linear infinite';
 }
 

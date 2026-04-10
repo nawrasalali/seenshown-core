@@ -1102,29 +1102,71 @@ function switchDomain(key,pill){
 
 /* ════ QUESTION ROUTING ════ */
 var QMAP=[
-  {re:/heartbreak|breakup|break.*up|end.*relationship|lost.*love|she left|he left/i,key:'heartbreak'},
-  {re:/love|falling in love|romance|attraction|bond.*person/i,key:'love'},
-  {re:/grief|grieving|mourning|loss.*person|someone died|bereavement/i,key:'grief'},
-  {re:/anger|angry|rage|furious|frustrat/i,key:'anger'},
-  {re:/joy|happy|happiness|euphoria|pleasure/i,key:'joy'},
-  {re:/neuron|brain|action potential|synap|nerve|myelin|thought|memory/i,key:'neuron'},
-  {re:/cancer|tumor|t.cell|immune|immunolog|natural killer|lymph|perforin/i,key:'immune'},
-  {re:/antibiotic|bacteria|amr|resistance.*drug|drug.*resist|penicillin|superbug/i,key:'amr'},
-  {re:/black hole|event horizon|singularity|hawking|accretion|spacetime/i,key:'bh'},
-  {re:/big bang|bigbang|universe.*begin|origin.*universe|inflation.*universe|cosmic.*microwave/i,key:'bigbang'},
-  {re:/universe.*scale|cosmic.*zoom|how big|milky way|galaxy.*scale|observable universe/i,key:'universe'},
-  {re:/rumour|rumor|gossip|misinform|fake news|viral.*spread|social.*spread/i,key:'rumour'},
-  {re:/traffic|gridlock|congest|urban.*flow|transport.*system/i,key:'urban'},
-  {re:/chem|react|molecule|atom|bond|enzyme|catalyst|acid|equilibrium/i,key:'chem'},
+  /* HEARTBREAK */
+  {re:/heartbreak|heart.?break|breakup|break.*up|end.*relation|lost.*love|she left|he left|dumped|split up|separat.*partner|divorce|left me/i,key:'heartbreak'},
+  /* LOVE */
+  {re:/\blove\b|falling in love|romance|romantic|attraction|crush|infatuat|bond.*person|affection|attachment.*person/i,key:'love'},
+  /* GRIEF */
+  {re:/grief|grieving|mourning|loss.*person|someone died|bereavement|death.*loved|missing.*died|cope.*loss|losing.*parent|losing.*child/i,key:'grief'},
+  /* ANGER */
+  {re:/anger|angry|rage|furious|frustrat|resentment|hatred|wrath|aggress|irritat|temper/i,key:'anger'},
+  /* JOY */
+  {re:/\bjoy\b|happy|happiness|euphoria|pleasure|delight|elation|bliss|contentment|gratitude|excitement/i,key:'joy'},
+  /* NEUROSCIENCE — brain, neurons, cognition, psychology */
+  {re:/neuron|synap|nerve|myelin|brain.*work|how.*brain|action potential|dopamine|serotonin|thought.*form|memory|form.*memory|how.*remember|why.*forget|conscious|sleep.*brain|why.*dream|dream|anxiety.*brain|depression.*brain|adhd|alzheimer|dementia|mental.*work|cogniti|learn.*brain|how.*learn|addiction|addicted|habit.*brain|ptsd|trauma.*brain|ocd|bipolar/i,key:'neuron'},
+  /* IMMUNE / VIROLOGY / INFECTION — covid, virus, bacteria attacking cells */
+  {re:/virus|viral|covid|covid.?19|corona|influenza|flu.*infect|infect.*cell|pathogen|vaccin|antibod|immune.*system|how.*body.*fight|cell.*attack|t.?cell|b.?cell|white blood|lymphocyte|cytokine|spike.*protein|mrna|hiv|aids|ebola|how.*get sick|why.*get sick|how.*illness|how.*disease|bacteria.*infect|bacterial.*infect|how.*infection|flu.*spread|spread.*body|germ|cold.*virus|respiratory|cancer.*cell|how.*cancer|tumor.*grow|metastas|cancer.*spread/i,key:'immune'},
+  /* AMR / BACTERIA / ANTIBIOTICS */
+  {re:/antibiotic|bacteria.*resist|drug.*resist|amr|superbug|mrsa|penicillin|how.*antibiotic|antimicrobial/i,key:'amr'},
+  /* BLACK HOLE */
+  {re:/black hole|event horizon|singularity|hawking|accretion|spacetime.*curve|gravitational.*collapse|neutron star|pulsar/i,key:'bh'},
+  /* BIG BANG */
+  {re:/big bang|bigbang|universe.*begin|origin.*universe|inflation.*universe|cosmic.*microwave|how.*universe.*start|what.*before.*universe|birth.*universe/i,key:'bigbang'},
+  /* UNIVERSE SCALE */
+  {re:/how big.*universe|universe.*scale|cosmic.*zoom|milky way|galaxy|observable universe|how many star|how many planet|size.*universe|universe.*size|multiverse|dark matter|dark energy/i,key:'universe'},
+  /* SOCIAL / RUMOUR / MISINFORMATION */
+  {re:/rumour|rumor|gossip|misinform|fake news|viral.*spread|social.*spread|how.*news.*spread|information.*spread|propaganda|conspiracy.*spread|meme.*spread/i,key:'rumour'},
+  /* URBAN / TRAFFIC */
+  {re:/traffic|gridlock|congest|urban.*flow|transport.*system|rush hour|how.*traffic|why.*traffic|road.*jam/i,key:'urban'},
+  /* CHEMISTRY */
+  {re:/chem|react|molecule|atom|\bbond\b|enzyme|catalyst|acid|equilibrium|how.*chemical|what.*molecule|protein.*fold|dna.*replicate|how.*drug.*work|pharmacol/i,key:'chem'},
 ];
-function smartRoute(q){for(var i=0;i<QMAP.length;i++)if(QMAP[i].re.test(q))return QMAP[i].key;return DOMAIN_ORDER[Math.floor(Math.random()*DOMAIN_ORDER.length)];}
+
+/* AI-assisted routing for questions that don't match any pattern */
+async function aiRoute(q){
+  try{
+    var res=await fetch(SB_URL+'/functions/v1/simulate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY},
+      body:JSON.stringify({question:q,domain:'__route__',routeOnly:true})
+    });
+    var d=await res.json();
+    if(d.domain&&DOMAIN_ORDER.includes(d.domain))return d.domain;
+  }catch(e){}
+  /* Semantic fallback — no API, pure keyword logic */
+  var q2=q.toLowerCase();
+  if(/feel|emotion|heart|love|sad|grief|mourn|miss/.test(q2))return'grief';
+  if(/virus|infect|attack.*cell|cell.*attack|pathogen|covid|flu|sick|disease|immun/.test(q2))return'immune';
+  if(/space|star|galaxy|cosmos|astro|universe|planet|orbit/.test(q2))return'bigbang';
+  if(/social|people|society|spread|network|community|crowd/.test(q2))return'rumour';
+  if(/city|urban|transport|road|car|vehicle|traffic/.test(q2))return'urban';
+  if(/chemical|molecule|atom|reaction|compound|drug|medicine/.test(q2))return'chem';
+  if(/brain|mind|mental|psycho|thought|cognit|neural/.test(q2))return'neuron';
+  return'immune'; /* default for unknown science questions */
+}
+
+async function smartRoute(q){
+  for(var i=0;i<QMAP.length;i++)if(QMAP[i].re.test(q))return QMAP[i].key;
+  /* No pattern match — use AI to determine best domain */
+  return await aiRoute(q);
+}
 
 /* ════ ASK QUESTION ════ */
 async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();if(!q)return;
   currentQuestion=q;
   var btn=document.getElementById('askBtn');btn.classList.add('busy');btn.textContent='…';
-  var key=smartRoute(q);
+  var key=await smartRoute(q);
   var pill=document.querySelector('.dpill[data-key="'+key+'"]');
   /* Start sim immediately */
   simDomain=key;simPhase=0;simT=0;particles=[];

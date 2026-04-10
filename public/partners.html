@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SeenShown — Partner Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--card:#080d1a;--border:rgba(38,232,176,0.12);--gold:#f0c040;--blue:#4a9eff;--red:#e05c5c}
+body{background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding-bottom:40px}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:rgba(2,4,14,0.97);border-bottom:1px solid var(--border)}
+.nav-logo{font-size:1rem;font-weight:800;color:var(--g);text-decoration:none}
+.nav-links{display:flex;gap:4px}
+.nav-links a{color:var(--dim);font-size:.78rem;font-weight:500;padding:5px 11px;border-radius:6px;transition:all .18s;text-decoration:none}
+.nav-links a:hover{color:#fff}
+.nav-links a.active{color:var(--g);background:rgba(38,232,176,0.08)}
+.page{padding:72px 24px 40px;max-width:1200px;margin:0 auto}
+.page-title{font-size:1.5rem;font-weight:800;margin-bottom:.2rem}
+.page-sub{font-size:.8rem;color:var(--dim);margin-bottom:2rem}
+.metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1.5rem}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem}
+.metric-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:.4rem}
+.metric-val{font-size:1.8rem;font-weight:900;line-height:1;color:var(--g)}
+.metric-val.gold{color:var(--gold)}
+.metric-sub{font-size:.65rem;color:var(--dim);margin-top:.3rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+.grid-full{margin-bottom:.75rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.3rem}
+.card-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+.card-title span{color:var(--w);font-weight:700;text-transform:none;letter-spacing:0}
+.ref-box{background:rgba(38,232,176,0.05);border:1px solid rgba(38,232,176,0.18);border-radius:10px;padding:1.1rem;margin-bottom:1rem}
+.ref-link{font-size:.76rem;color:var(--g);font-family:monospace;word-break:break-all;margin-bottom:.7rem;line-height:1.5}
+.ref-btns{display:flex;gap:.5rem;flex-wrap:wrap}
+.ref-btn{padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:rgba(38,232,176,0.08);color:var(--g);font-size:.74rem;font-weight:600;cursor:pointer;transition:all .18s}
+.ref-btn:hover{background:rgba(38,232,176,0.18)}
+/* QR */
+.qr-box{background:rgba(255,255,255,0.97);border-radius:10px;padding:10px;display:inline-block;margin-top:.75rem}
+.qr-box canvas{display:block}
+/* Performance bars */
+.perf-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.7rem}
+.perf-label{font-size:.74rem;color:var(--dim);min-width:100px}
+.perf-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.perf-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.perf-val{font-size:.74rem;font-weight:700;min-width:40px;text-align:right}
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:.75rem}
+.tbl th{text-align:left;color:var(--dim);font-weight:600;font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;padding:.5rem .75rem;border-bottom:1px solid var(--border)}
+.tbl td{padding:.6rem .75rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tbl tr:hover td{background:rgba(255,255,255,0.02)}
+.status-pill{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase}
+.pill-active{background:rgba(38,232,176,0.1);color:var(--g)}
+.pill-pending{background:rgba(240,192,64,0.1);color:var(--gold)}
+/* Resources */
+.res-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:border-color .18s;margin-bottom:.5rem}
+.res-card:hover{border-color:var(--g)}
+.res-icon{font-size:1.4rem;flex-shrink:0}
+.res-title{font-size:.8rem;font-weight:600;margin-bottom:.15rem}
+.res-desc{font-size:.68rem;color:var(--dim)}
+/* Empty */
+.empty{text-align:center;padding:1.5rem;color:var(--dim);font-size:.76rem}
+.loading{display:flex;align-items:center;gap:.5rem;color:var(--dim);font-size:.76rem;padding:.5rem 0}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.1);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;bottom:2rem;right:2rem;background:rgba(38,232,176,0.12);border:1px solid var(--border);border-radius:10px;padding:.8rem 1.2rem;font-size:.8rem;color:var(--g);opacity:0;transition:opacity .3s;pointer-events:none;z-index:1000}
+#toast.show{opacity:1}
+/* Not registered state */
+.reg-gate{text-align:center;padding:3rem 2rem;max-width:480px;margin:0 auto}
+.reg-gate h2{font-size:1.3rem;font-weight:800;margin-bottom:.5rem}
+.reg-gate p{font-size:.82rem;color:var(--dim);line-height:1.7;margin-bottom:1.5rem}
+.reg-gate a{background:var(--g);color:#02040e;border:none;border-radius:8px;padding:12px 24px;font-weight:700;font-size:.9rem;text-decoration:none;display:inline-block}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}.nav-links a:not(.active){display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">SeenShown</a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/community.html">Community</a>
+    <a href="/investors.html">Investors</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a class="active" href="/partners.html">Partners</a>
+  </div>
+</nav>
+
+<div class="page" id="main-content" style="display:none">
+  <div class="page-title">Partner Dashboard</div>
+  <div class="page-sub">Track referrals, commissions, and resources — all in one place.</div>
+
+  <!-- METRIC STRIP -->
+  <div class="metric-strip">
+    <div class="metric">
+      <div class="metric-label">Total Clicks</div>
+      <div class="metric-val" id="m-clicks">0</div>
+      <div class="metric-sub">on your referral link</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Conversions</div>
+      <div class="metric-val" id="m-convs">0</div>
+      <div class="metric-sub">signed up via your link</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Active Subs</div>
+      <div class="metric-val" id="m-active">0</div>
+      <div class="metric-sub">paying subscribers</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">This Month</div>
+      <div class="metric-val gold" id="m-month">$0</div>
+      <div class="metric-sub">commission earned</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Total Earned</div>
+      <div class="metric-val gold" id="m-total">$0</div>
+      <div class="metric-sub">all time</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- REFERRAL LINK + QR -->
+    <div class="card">
+      <div class="card-title">🔗 Your Referral Link</div>
+      <div class="ref-box">
+        <div style="font-size:.65rem;color:var(--dim);margin-bottom:.35rem">User referral link (20% for 12 months)</div>
+        <div class="ref-link" id="user-ref-link">Loading…</div>
+        <div class="ref-btns">
+          <div class="ref-btn" onclick="copyLink('user')">📋 Copy</div>
+          <div class="ref-btn" onclick="shareLink('user')">📤 Share</div>
+        </div>
+      </div>
+      <div class="ref-box">
+        <div style="font-size:.65rem;color:var(--dim);margin-bottom:.35rem">Investor referral link (2% commission at close)</div>
+        <div class="ref-link" id="inv-ref-link">Loading…</div>
+        <div class="ref-btns">
+          <div class="ref-btn" onclick="copyLink('inv')">📋 Copy</div>
+          <div class="ref-btn" onclick="shareLink('inv')">📤 Share</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="card">
+      <div class="card-title">📊 Performance</div>
+      <div id="perf-section">
+        <div class="perf-row">
+          <span class="perf-label">Click → Signup</span>
+          <div class="perf-bar-wrap"><div class="perf-bar-fill" id="bar-signup" style="width:0%;background:var(--g)"></div></div>
+          <span class="perf-val" id="pct-signup" style="color:var(--g)">0%</span>
+        </div>
+        <div class="perf-row">
+          <span class="perf-label">Signup → Paid</span>
+          <div class="perf-bar-wrap"><div class="perf-bar-fill" id="bar-paid" style="width:0%;background:var(--gold)"></div></div>
+          <span class="perf-val" id="pct-paid" style="color:var(--gold)">0%</span>
+        </div>
+        <div class="perf-row">
+          <span class="perf-label">30-day retention</span>
+          <div class="perf-bar-wrap"><div class="perf-bar-fill" id="bar-ret" style="width:0%;background:var(--blue)"></div></div>
+          <span class="perf-val" id="pct-ret" style="color:var(--blue)">0%</span>
+        </div>
+        <div style="margin-top:1rem;padding:.75rem;background:rgba(38,232,176,0.05);border-radius:8px">
+          <div style="font-size:.65rem;color:var(--dim);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.07em">Pipeline — Clicked but not signed up</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--w)" id="pipeline-count">0</div>
+          <div style="font-size:.68rem;color:var(--dim)">potential conversions remaining</div>
+        </div>
+        <div style="margin-top:.75rem;padding:.75rem;background:rgba(240,192,64,0.05);border-radius:8px">
+          <div style="font-size:.65rem;color:var(--dim);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.07em">Investor Referrals</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--gold)" id="inv-ref-count">0</div>
+          <div style="font-size:.68rem;color:var(--dim)">investors referred · $0 commission pending</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYOUT HISTORY -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-title">💳 Payout History <span id="payout-count">—</span></div>
+      <div id="payout-table">
+        <div class="empty">No payouts yet. Earn commissions by referring subscribers.<br><br>
+        <a href="/community.html" style="color:var(--g)">Learn how referrals work →</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESOURCES -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-title">📦 Partner Resources</div>
+      <div class="res-card" onclick="copyEmbed()">
+        <div class="res-icon">🔗</div>
+        <div><div class="res-title">Embed Code</div><div class="res-desc">Embed a live SeenShown simulation on your website</div></div>
+      </div>
+      <div class="res-card" onclick="downloadPitch()">
+        <div class="res-icon">📊</div>
+        <div><div class="res-title">Pitch Deck</div><div class="res-desc">SeenShown overview for universities, training companies, or partners</div></div>
+      </div>
+      <div class="res-card" onclick="window.open('mailto:partners@seenshown.com')">
+        <div class="res-icon">✉️</div>
+        <div><div class="res-title">Partner Support</div><div class="res-desc">partners@seenshown.com · Response within 24 hours</div></div>
+      </div>
+      <div class="res-card" onclick="window.open('/investors.html')">
+        <div class="res-icon">💼</div>
+        <div><div class="res-title">Investor Referral Page</div><div class="res-desc">Share the investor page and earn 2% of any investment at close</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOT REGISTERED STATE -->
+<div class="page" id="gate-content">
+  <div class="reg-gate">
+    <div style="font-size:3rem;margin-bottom:1rem">🤝</div>
+    <h2>Become a Referral Partner</h2>
+    <p>Earn 20% of every subscription you refer for 12 months. No cap, no minimum. Free to join — your tracking link is emailed within 24 hours.</p>
+    <a href="/community.html#referral">Register as a Partner →</a>
+    <div style="margin-top:1rem;font-size:.72rem;color:var(--dim)">Already registered? Your dashboard will activate once your link is sent.</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var SB='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
+var H={'apikey':KEY,'Authorization':'Bearer '+KEY};
+
+/* ── Check if registered partner ── */
+var partnerEmail=localStorage.getItem('ss_partner_email');
+var partnerRef=localStorage.getItem('ss_partner_ref')||('ref_'+Math.random().toString(36).slice(2,8));
+
+function showDashboard(){
+  document.getElementById('gate-content').style.display='none';
+  document.getElementById('main-content').style.display='block';
+  var userLink='https://seenshown.com/?ref='+partnerRef;
+  var invLink='https://seenshown.com/investors.html?ref='+partnerRef;
+  document.getElementById('user-ref-link').textContent=userLink;
+  document.getElementById('inv-ref-link').textContent=invLink;
+  loadStats();
+}
+
+async function loadStats(){
+  /* Simulated stats — real data comes once auth+tracking is wired */
+  var clicks=parseInt(localStorage.getItem('ss_ref_clicks')||'0');
+  var convs=0,active=0;
+  document.getElementById('m-clicks').textContent=clicks;
+  document.getElementById('m-convs').textContent=convs;
+  document.getElementById('m-active').textContent=active;
+  document.getElementById('m-month').textContent='$0';
+  document.getElementById('m-total').textContent='$0';
+  /* Performance bars */
+  var signupPct=clicks>0?Math.round(convs/clicks*100):0;
+  var paidPct=convs>0?Math.round(active/convs*100):0;
+  document.getElementById('bar-signup').style.width=signupPct+'%';
+  document.getElementById('pct-signup').textContent=signupPct+'%';
+  document.getElementById('bar-paid').style.width=paidPct+'%';
+  document.getElementById('pct-paid').textContent=paidPct+'%';
+  document.getElementById('bar-ret').style.width='0%';
+  document.getElementById('pct-ret').textContent='0%';
+  document.getElementById('pipeline-count').textContent=Math.max(0,clicks-convs);
+  document.getElementById('inv-ref-count').textContent='0';
+  document.getElementById('payout-count').textContent='No payouts yet';
+}
+
+function copyLink(type){
+  var el=type==='user'?document.getElementById('user-ref-link'):document.getElementById('inv-ref-link');
+  navigator.clipboard&&navigator.clipboard.writeText(el.textContent);
+  showToast('✅ Link copied!');
+  /* Track click */
+  var clicks=parseInt(localStorage.getItem('ss_ref_clicks')||'0')+1;
+  localStorage.setItem('ss_ref_clicks',clicks);
+}
+
+function shareLink(type){
+  var url=type==='user'?document.getElementById('user-ref-link').textContent:document.getElementById('inv-ref-link').textContent;
+  if(navigator.share){navigator.share({title:'Try SeenShown',text:'Watch any question become a live particle simulation',url:url});}
+  else{navigator.clipboard&&navigator.clipboard.writeText(url);showToast('✅ Link copied!');}
+}
+
+function copyEmbed(){
+  var code='<iframe src="https://seenshown.com/?ref='+partnerRef+'&embed=1" width="100%" height="600" frameborder="0" allow="autoplay"></iframe>';
+  navigator.clipboard&&navigator.clipboard.writeText(code);
+  showToast('✅ Embed code copied!');
+}
+
+function downloadPitch(){showToast('📊 Pitch deck coming soon — email partners@seenshown.com');}
+
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},3500);
+}
+
+/* Boot — show dashboard if partner email stored, otherwise gate */
+if(partnerEmail){showDashboard();}
+else{
+  /* Check URL params for partner email */
+  var ep=new URLSearchParams(window.location.search).get('email');
+  if(ep){localStorage.setItem('ss_partner_email',ep);partnerEmail=ep;showDashboard();}
+  else{document.getElementById('gate-content').style.display='block';}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SeenShown — My Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--card:#080d1a;--border:rgba(38,232,176,0.12);--gold:#f0c040;--blue:#4a9eff;--red:#e05c5c}
+body{background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding-bottom:40px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:rgba(2,4,14,0.97);border-bottom:1px solid var(--border)}
+.nav-logo{font-size:1rem;font-weight:800;color:var(--g);text-decoration:none}
+.nav-links{display:flex;gap:4px}
+.nav-links a{color:var(--dim);font-size:.78rem;font-weight:500;padding:5px 11px;border-radius:6px;transition:all .18s;text-decoration:none}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,0.06)}
+.nav-links a.active{color:var(--g);background:rgba(38,232,176,0.08)}
+
+/* PAGE */
+.page{padding:72px 24px 40px;max-width:1200px;margin:0 auto}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.page-title{font-size:1.5rem;font-weight:800}
+.page-sub{font-size:.8rem;color:var(--dim);margin-top:.2rem}
+.upgrade-btn{background:var(--g);color:#02040e;border:none;border-radius:8px;padding:9px 18px;font-weight:700;font-size:.82rem;cursor:pointer;text-decoration:none;display:inline-block}
+
+/* METRIC STRIP */
+.metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1.5rem}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem}
+.metric-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:.4rem}
+.metric-val{font-size:1.8rem;font-weight:900;line-height:1;color:var(--g)}
+.metric-val.gold{color:var(--gold)}
+.metric-val.blue{color:var(--blue)}
+.metric-val.white{color:var(--w)}
+.metric-sub{font-size:.65rem;color:var(--dim);margin-top:.3rem}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+.grid-full{margin-bottom:.75rem}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.3rem}
+.card-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+.card-title span{color:var(--w);font-weight:700;text-transform:none;letter-spacing:0}
+
+/* PLAN CARD */
+.plan-card{background:linear-gradient(135deg,rgba(38,232,176,0.08),rgba(124,79,212,0.06));border:1px solid rgba(38,232,176,0.25);border-radius:12px;padding:1.3rem}
+.plan-name{font-size:1.1rem;font-weight:800;color:var(--g);margin-bottom:.3rem}
+.plan-desc{font-size:.78rem;color:var(--dim);line-height:1.6;margin-bottom:1rem}
+.plan-features{font-size:.76rem;color:var(--dim);line-height:1.9}
+.plan-features strong{color:var(--w)}
+.plan-bar-wrap{margin-top:.8rem}
+.plan-bar-label{display:flex;justify-content:space-between;font-size:.68rem;color:var(--dim);margin-bottom:.3rem}
+.plan-bar{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.plan-bar-fill{height:100%;background:var(--g);border-radius:3px;transition:width .6s ease}
+
+/* REFERRAL */
+.ref-box{background:rgba(38,232,176,0.05);border:1px solid rgba(38,232,176,0.18);border-radius:10px;padding:1rem}
+.ref-link{font-size:.76rem;color:var(--g);font-family:monospace;word-break:break-all;margin-bottom:.75rem;line-height:1.5}
+.ref-btns{display:flex;gap:.5rem}
+.ref-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:rgba(38,232,176,0.08);color:var(--g);font-size:.74rem;font-weight:600;cursor:pointer;transition:all .18s;text-align:center}
+.ref-btn:hover{background:rgba(38,232,176,0.18)}
+.earn-row{display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:.76rem}
+.earn-row:last-child{border-bottom:none}
+.earn-label{color:var(--dim)}
+.earn-val{color:var(--g);font-weight:700}
+
+/* SIM HISTORY */
+.sim-item{display:flex;align-items:center;gap:.75rem;padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background .15s}
+.sim-item:last-child{border-bottom:none}
+.sim-item:hover{background:rgba(255,255,255,0.02);margin:0 -.5rem;padding:.65rem .5rem;border-radius:8px}
+.sim-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sim-question{font-size:.78rem;color:var(--w);flex:1;line-height:1.4}
+.sim-domain{font-size:.62rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.sim-time{font-size:.62rem;color:var(--dim);white-space:nowrap}
+.sim-likes{font-size:.68rem;color:var(--red);margin-left:.5rem}
+
+/* STREAK */
+.streak-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:.75rem}
+.streak-day{aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,0.04)}
+.streak-day.active{background:var(--g)}
+.streak-day.today{background:var(--g);box-shadow:0 0 8px rgba(38,232,176,0.5)}
+.streak-labels{display:flex;justify-content:space-between;font-size:.58rem;color:var(--dim);margin-bottom:.3rem}
+
+/* TRENDING */
+.trend-item{display:flex;align-items:center;gap:.6rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer}
+.trend-item:last-child{border-bottom:none}
+.trend-rank{font-size:.7rem;font-weight:800;color:var(--dim);min-width:18px}
+.trend-q{font-size:.76rem;color:var(--w);flex:1;line-height:1.35}
+.trend-likes{font-size:.65rem;color:var(--red)}
+
+/* EMPTY */
+.empty{text-align:center;padding:2rem;color:var(--dim);font-size:.78rem}
+.empty-icon{font-size:2rem;margin-bottom:.5rem;opacity:.4;display:block}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:.5rem;color:var(--dim);font-size:.76rem;padding:.5rem 0}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.1);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+#toast{position:fixed;bottom:2rem;right:2rem;background:rgba(38,232,176,0.12);border:1px solid var(--border);border-radius:10px;padding:.8rem 1.2rem;font-size:.8rem;color:var(--g);opacity:0;transition:opacity .3s;pointer-events:none;z-index:1000}
+#toast.show{opacity:1}
+
+/* POINTS BAR */
+.pts-bar-wrap{margin-top:.75rem}
+.pts-bar{height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;margin:.4rem 0}
+.pts-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--g));border-radius:4px;transition:width .8s ease}
+.pts-note{font-size:.65rem;color:var(--dim);line-height:1.5}
+
+@media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr}.nav-links a:not(.active){display:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">SeenShown</a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/social.html">Social</a>
+    <a href="/community.html">Community</a>
+    <a href="/investors.html">Investors</a>
+    <a class="active" href="/dashboard.html">Dashboard</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">My Dashboard</div>
+      <div class="page-sub" id="user-greeting">Welcome back to SeenShown</div>
+    </div>
+    <a class="upgrade-btn" href="/community.html#tiers">Upgrade Plan →</a>
+  </div>
+
+  <!-- METRIC STRIP -->
+  <div class="metric-strip">
+    <div class="metric">
+      <div class="metric-label">Sims Run</div>
+      <div class="metric-val" id="m-sims">0</div>
+      <div class="metric-sub">total simulations</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Points Earned</div>
+      <div class="metric-val gold" id="m-points">0</div>
+      <div class="metric-sub">convert at 1000 pts</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Referrals</div>
+      <div class="metric-val" id="m-refs">0</div>
+      <div class="metric-sub">users you referred</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Earnings</div>
+      <div class="metric-val gold" id="m-earn">$0</div>
+      <div class="metric-sub">total commissions</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Streak</div>
+      <div class="metric-val white" id="m-streak">0</div>
+      <div class="metric-sub">days active</div>
+    </div>
+  </div>
+
+  <!-- ROW 1 -->
+  <div class="grid-2">
+
+    <!-- MY PLAN -->
+    <div class="plan-card" id="plan-card">
+      <div class="card-title">📋 My Plan</div>
+      <div class="plan-name" id="plan-name">Spark — Free</div>
+      <div class="plan-desc" id="plan-desc">You are on the free plan. Upgrade to unlock unlimited custom simulations, voice narration, and export.</div>
+      <div class="plan-features" id="plan-features">
+        <strong>Unlimited</strong> fast simulations<br>
+        <strong>5/day</strong> custom AI questions<br>
+        <strong>All 14 domains</strong> · Public sharing
+      </div>
+      <div class="plan-bar-wrap">
+        <div class="plan-bar-label">
+          <span>Daily simulations used</span>
+          <span id="sims-used-label">0 / 5</span>
+        </div>
+        <div class="plan-bar"><div class="plan-bar-fill" id="sims-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- REFERRAL & EARN -->
+    <div class="card">
+      <div class="card-title">🔗 Share & Earn</div>
+      <div class="ref-box">
+        <div style="font-size:.68rem;color:var(--dim);margin-bottom:.4rem">Your referral link</div>
+        <div class="ref-link" id="ref-link">seenshown.com/?ref=loading…</div>
+        <div class="ref-btns">
+          <div class="ref-btn" onclick="copyRef()">📋 Copy Link</div>
+          <div class="ref-btn" onclick="shareRef()">📤 Share</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <div class="earn-row"><span class="earn-label">Users referred</span><span class="earn-val" id="e-users">0</span></div>
+        <div class="earn-row"><span class="earn-label">Active subscribers</span><span class="earn-val" id="e-subs">0</span></div>
+        <div class="earn-row"><span class="earn-label">Commission rate</span><span class="earn-val">20% for 12 months</span></div>
+        <div class="earn-row"><span class="earn-label">This month</span><span class="earn-val" id="e-month">$0.00</span></div>
+        <div class="earn-row"><span class="earn-label">Total earned</span><span class="earn-val" id="e-total">$0.00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="grid-3">
+
+    <!-- MY POINTS -->
+    <div class="card">
+      <div class="card-title">💰 My Points <span id="pts-badge">0 pts</span></div>
+      <div style="font-size:2.8rem;font-weight:900;color:var(--gold);line-height:1;margin-bottom:.4rem" id="pts-big">0</div>
+      <div style="font-size:.72rem;color:var(--dim);margin-bottom:.75rem">points = $<span id="pts-dollars">0.00</span> redeemable value</div>
+      <div class="pts-bar-wrap">
+        <div class="pts-bar"><div class="pts-bar-fill" id="pts-bar" style="width:0%"></div></div>
+        <div class="pts-note"><span id="pts-to-go">1000</span> points until first payout · <strong style="color:var(--gold)">$10.00</strong></div>
+      </div>
+      <div style="margin-top:1rem;font-size:.72rem;color:var(--dim);line-height:1.8">
+        ❤️ Like a sim = 1 pt<br>
+        🔗 Share = 2 pts<br>
+        ⭐ Vote = 5 pts<br>
+        ⚔️ Compete vote = 3 pts
+      </div>
+    </div>
+
+    <!-- STREAK -->
+    <div class="card">
+      <div class="card-title">🔥 Activity Streak</div>
+      <div style="font-size:2.8rem;font-weight:900;color:var(--w);line-height:1;margin-bottom:.2rem" id="streak-big">0</div>
+      <div style="font-size:.72rem;color:var(--dim);margin-bottom:1rem">days active</div>
+      <div class="streak-labels">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+      </div>
+      <div class="streak-grid" id="streak-grid">
+        <!-- injected by JS -->
+      </div>
+      <div style="font-size:.72rem;color:var(--dim);line-height:1.7;margin-top:.5rem">
+        Run a simulation each day to grow your streak. Streaks above 7 days earn bonus points.
+      </div>
+    </div>
+
+    <!-- TRENDING NOW -->
+    <div class="card">
+      <div class="card-title">🔥 Trending Now</div>
+      <div id="trending-list">
+        <div class="loading"><div class="spin"></div> Loading…</div>
+      </div>
+      <div style="margin-top:.75rem">
+        <a href="/" style="font-size:.72rem;color:var(--g);text-decoration:none">Run a simulation → </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 3 — SIM HISTORY -->
+  <div class="grid-full">
+    <div class="card">
+      <div class="card-title">🧬 My Simulations <span id="sim-count-badge">—</span></div>
+      <div id="sim-history">
+        <div class="loading"><div class="spin"></div> Loading your simulations…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+var SB='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
+var H={'apikey':KEY,'Authorization':'Bearer '+KEY};
+
+var DC={heartbreak:'#e8a0c0',love:'#ff88aa',grief:'#8899bb',anger:'#ff3300',joy:'#ffdd44',neuron:'#60c0f0',immune:'#ff8c42',amr:'#26e8b0',bh:'#7C4FD4',bigbang:'#ffeecc',universe:'#4466ff',rumour:'#f0c040',urban:'#6090ff',chem:'#40d0f0'};
+
+/* ── LOCAL STATE (until auth is live) ── */
+var localPoints=parseInt(localStorage.getItem('ss_points')||'0');
+var localSims=parseInt(localStorage.getItem('ss_sims_today')||'0');
+var localStreak=parseInt(localStorage.getItem('ss_streak')||'0');
+var refCode='ref_'+(Math.random().toString(36).slice(2,8));
+if(!localStorage.getItem('ss_ref'))localStorage.setItem('ss_ref',refCode);
+else refCode=localStorage.getItem('ss_ref');
+
+/* ── POINTS ── */
+function renderPoints(){
+  var pts=localPoints;
+  document.getElementById('m-points').textContent=pts;
+  document.getElementById('pts-big').textContent=pts;
+  document.getElementById('pts-badge').textContent=pts+' pts';
+  document.getElementById('pts-dollars').textContent=(pts*0.01).toFixed(2);
+  var pct=Math.min(pts/1000*100,100);
+  document.getElementById('pts-bar').style.width=pct+'%';
+  document.getElementById('pts-to-go').textContent=Math.max(0,1000-pts);
+}
+
+/* ── PLAN ── */
+function renderPlan(){
+  var simsToday=localSims;
+  var pct=Math.min(simsToday/5*100,100);
+  document.getElementById('sims-bar').style.width=pct+'%';
+  document.getElementById('sims-used-label').textContent=simsToday+' / 5';
+}
+
+/* ── REFERRAL ── */
+function renderReferral(){
+  var url='https://seenshown.com/?ref='+refCode;
+  document.getElementById('ref-link').textContent=url;
+}
+
+function copyRef(){
+  var url='https://seenshown.com/?ref='+refCode;
+  navigator.clipboard&&navigator.clipboard.writeText(url);
+  showToast('✅ Referral link copied!');
+}
+
+function shareRef(){
+  var url='https://seenshown.com/?ref='+refCode;
+  if(navigator.share){navigator.share({title:'Try SeenShown',text:'Watch any question become a live particle simulation',url:url});}
+  else{copyRef();}
+}
+
+/* ── STREAK ── */
+function renderStreak(){
+  document.getElementById('m-streak').textContent=localStreak;
+  document.getElementById('streak-big').textContent=localStreak;
+  var grid=document.getElementById('streak-grid');
+  grid.innerHTML='';
+  for(var i=6;i>=0;i--){
+    var d=document.createElement('div');
+    d.className='streak-day'+(i===0?' today':i<localStreak?' active':'');
+    grid.appendChild(d);
+  }
+}
+
+/* ── SIMULATIONS — from Supabase ── */
+async function loadSims(){
+  try{
+    var res=await fetch(SB+'/rest/v1/simulations?select=id,title,domain,likes,created_at&order=created_at.desc&limit=20',{headers:H});
+    var data=await res.json();
+    if(!Array.isArray(data)||data.length===0){
+      document.getElementById('sim-history').innerHTML='<div class="empty"><span class="empty-icon">🧬</span>No simulations yet — <a href="/" style="color:var(--g)">run your first one</a></div>';
+      document.getElementById('sim-count-badge').textContent='0';
+      document.getElementById('m-sims').textContent='0';
+      return;
+    }
+    document.getElementById('sim-count-badge').textContent=data.length+' total';
+    document.getElementById('m-sims').textContent=data.length;
+    document.getElementById('sim-history').innerHTML=data.map(function(s){
+      var col=DC[s.domain]||'#26e8b0';
+      var timeAgo=getTimeAgo(s.created_at);
+      return '<div class="sim-item" onclick="replaySim(\''+encodeURIComponent(s.title||'')+'\',\''+s.domain+'\')">'
+        +'<div class="sim-dot" style="background:'+col+'"></div>'
+        +'<div style="flex:1"><div class="sim-question">'+(s.title||s.domain||'Untitled')+'</div>'
+        +'<div class="sim-domain">'+s.domain+'</div></div>'
+        +'<div style="display:flex;align-items:center;gap:.4rem">'
+        +(s.likes?'<span class="sim-likes">❤️ '+s.likes+'</span>':'')
+        +'<span class="sim-time">'+timeAgo+'</span></div></div>';
+    }).join('');
+  }catch(e){
+    document.getElementById('sim-history').innerHTML='<div class="empty"><span class="empty-icon">⚠️</span>Could not load simulations</div>';
+  }
+}
+
+/* ── TRENDING — top liked sims ── */
+async function loadTrending(){
+  try{
+    var res=await fetch(SB+'/rest/v1/simulations?select=title,domain,likes&order=likes.desc&limit=8&likes=gt.0',{headers:H});
+    var data=await res.json();
+    if(!Array.isArray(data)||data.length===0){
+      document.getElementById('trending-list').innerHTML='<div class="empty" style="padding:.5rem 0"><span style="display:block;font-size:1.5rem;opacity:.4;margin-bottom:.3rem">🔥</span>No trending sims yet</div>';
+      return;
+    }
+    document.getElementById('trending-list').innerHTML=data.map(function(s,i){
+      var col=DC[s.domain]||'#26e8b0';
+      return '<div class="trend-item" onclick="replaySim(\''+encodeURIComponent(s.title||'')+'\',\''+s.domain+'\')"><span class="trend-rank">'+(i+1)+'</span><span class="trend-q" style="border-left:2px solid '+col+';padding-left:.5rem">'+(s.title||s.domain)+'</span><span class="trend-likes">❤️ '+(s.likes||0)+'</span></div>';
+    }).join('');
+  }catch(e){
+    document.getElementById('trending-list').innerHTML='<div class="empty" style="padding:.5rem 0">Could not load trending</div>';
+  }
+}
+
+/* ── REPLAY ── */
+function replaySim(q,domain){
+  window.location.href='/?domain='+domain+'&q='+q;
+}
+
+/* ── TIME AGO ── */
+function getTimeAgo(ts){
+  if(!ts)return '—';
+  var diff=Date.now()-new Date(ts).getTime();
+  var mins=Math.floor(diff/60000);
+  if(mins<1)return 'just now';
+  if(mins<60)return mins+'m ago';
+  var hrs=Math.floor(mins/60);
+  if(hrs<24)return hrs+'h ago';
+  return Math.floor(hrs/24)+'d ago';
+}
+
+/* ── TOAST ── */
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},3500);
+}
+
+/* ── BOOT ── */
+function boot(){
+  document.getElementById('user-greeting').textContent='Welcome back · '+new Date().toLocaleDateString('en-AU',{weekday:'long',month:'long',day:'numeric'});
+  renderPoints();
+  renderPlan();
+  renderReferral();
+  renderStreak();
+  loadSims();
+  loadTrending();
+}
+boot();
+</script>
+</body>
+</html>

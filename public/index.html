@@ -35,24 +35,24 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 .inv-btn{font-size:.62rem;background:var(--g);color:#02040e;padding:4px 9px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block}
 
 /* PILLS */
-#pills{position:fixed;top:46px;left:0;right:56px;z-index:100;display:flex;gap:4px;padding:6px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
+#pills{position:fixed;top:46px;left:0;right:68px;z-index:100;display:flex;gap:4px;padding:6px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
 #pills::-webkit-scrollbar{display:none}
 .dpill{flex-shrink:0;font-size:.56rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);color:var(--dim);cursor:pointer;transition:all .2s;background:rgba(2,4,14,0.6);white-space:nowrap}
 .dpill.active{color:#02040e;font-weight:700;border-color:transparent}
 
 /* RIGHT RAIL — responsive, always visible */
-#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 6px;width:56px}
+#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:18px;padding:12px 6px;width:68px}
 .rail-btn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}
 .rail-btn:active{transform:scale(.88)}
-.rail-icon{width:38px;height:38px;border-radius:50%;background:rgba(2,4,14,0.6);border:1.5px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;transition:border-color .2s,background .2s}
+.rail-icon{width:52px;height:52px;border-radius:50%;background:rgba(2,4,14,0.55);border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:border-color .2s,background .2s}
 .rail-btn.liked .rail-icon{border-color:var(--red);background:rgba(224,92,92,0.18)}
-.rail-label{font-size:.46rem;color:var(--dim);font-weight:600;text-align:center;line-height:1.2;max-width:56px}
+.rail-label{font-size:.58rem;color:var(--dim);font-weight:700;text-align:center;line-height:1.2;max-width:66px}
 .rail-label.red{color:var(--red)}
 .rail-label.gold{color:var(--gold)}
 .rail-label.green{color:var(--g)}
 
 /* BOTTOM PANEL — right:56px matches rail width */
-#bottomPanel{position:fixed;bottom:0;left:0;right:56px;z-index:150;pointer-events:none}
+#bottomPanel{position:fixed;bottom:0;left:0;right:68px;z-index:150;pointer-events:none}
 
 
 
@@ -115,6 +115,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+#answerTicker{position:relative}
 
 @media(max-width:640px){
   .ntab:not(.active){display:none}
@@ -142,12 +143,12 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   <a class="nav-logo" href="/">SeenShown</a>
   <div class="nav-tabs" style="overflow-x:auto;scrollbar-width:none;flex:1;margin:0 6px;-webkit-overflow-scrolling:touch">
     <span class="ntab active">Home</span>
-    <a class="ntab" href="/social.html">Social</a>
-    <a class="ntab" href="/community.html">Community</a>
-    <a class="ntab" href="/investors.html">Invest</a>
-    <a class="ntab" href="/investor-portal.html">My&nbsp;SAFE</a>
-    <a class="ntab" href="/dashboard.html">Dashboard</a>
-    <a class="ntab" href="/partners.html">Partners</a>
+    <a class="ntab" href="/social.html" target="_blank">Social</a>
+    <a class="ntab" href="/community.html" target="_blank">Community</a>
+    <a class="ntab" href="/investors.html" target="_blank">Invest</a>
+    <a class="ntab" href="/investor-portal.html" target="_blank">My&nbsp;SAFE</a>
+    <a class="ntab" href="/dashboard.html" target="_blank">Dashboard</a>
+    <a class="ntab" href="/partners.html" target="_blank">Partners</a>
   </div>
   <div class="nav-right">
     <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
@@ -286,12 +287,16 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="bottomPanel">
   <!-- TICKER BAR — scrolling answer, tap to expand -->
-  <div id="answerTicker" onclick="togglePhasesPanel()"
-    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.52);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:7px 0;min-height:34px;position:relative">
+  <div id="answerTicker"
+    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.52);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
+    ontouchstart="tickerTouchStart(event)"
+    ontouchmove="tickerTouchMove(event)"
+    ontouchend="tickerTouchEnd(event)"
+    onclick="if(!tickerDragging)togglePhasesPanel()">
     <div id="tickerTrack"
       style="display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:tickerScroll 200s linear infinite">
     </div>
-    <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.58rem;color:rgba(38,232,176,0.45);pointer-events:none">tap ▼</div>
+    <div id="tickerPauseInd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.56rem;color:rgba(38,232,176,0.45);pointer-events:none;white-space:nowrap">tap ▼</div>
   </div>
   <!-- EXPANDED PHASES PANEL -->
   <div id="phasesPanel"
@@ -391,7 +396,7 @@ var PHASE_DUR=5000;
 var globalT=0;
 var lastTs=0;
 var formT=0;
-var FORM_DUR=5000;
+var FORM_DUR=4000; /* faster transition = more continuous feel */
 var N=0; /* set by detectSpeed() */
 var reinitScheduled=false;
 
@@ -460,26 +465,55 @@ function shapeSpiral(n,ox,oy,maxR,arms,rr,gg,bb){
   }
   return out;
 }
+/* Clean geometric face — no emoji rendering issues */
 function shapeFace(n,emoji,ox,oy,size){
-  var off=document.createElement('canvas'),sz=Math.min(size,280);
-  off.width=sz;off.height=sz;
-  var oc=off.getContext('2d');
-  oc.clearRect(0,0,sz,sz);
-  oc.font='bold '+(sz*.82)+'px serif';
-  oc.textAlign='center';oc.textBaseline='middle';
-  oc.fillText(emoji,sz/2,sz/2);
-  var d=oc.getImageData(0,0,sz,sz).data,lit=[];
-  for(var p=0;p<d.length;p+=4){
-    if(d[p+3]>30)lit.push({px:(p/4%sz)/sz-.5,py:Math.floor(p/4/sz)/sz-.5,rr:d[p]||220,gg:d[p+1]||200,bb:d[p+2]||180});
-  }
-  if(!lit.length)return shapeExplosion(n,ox,oy,20,size*.5,255,200,100);
+  /* Determine face variant from emoji character */
+  var happy=['😊','🥰','😄','😁','🌱'];
+  var sad=['😔','😢','😞','😐'];
+  var angry=['😤','😠','😡'];
+  var isHappy=happy.indexOf(emoji)>=0;
+  var isSad=sad.indexOf(emoji)>=0;
+  var isAngry=angry.indexOf(emoji)>=0;
+  var r=size*.38;
   var out=[];
-  for(var i=0;i<n;i++){var s=lit[Math.floor(Math.random()*lit.length)];out.push({tx:ox+s.px*size+rnd(-1.5,1.5),ty:oy+s.py*size+rnd(-1.5,1.5),rr:s.rr,gg:s.gg,bb:s.bb,r:.4+Math.random()*1.6});}
-  return out;
+  var perPart=Math.floor(n/6);
+  /* HEAD CIRCLE */
+  var rr=isHappy?255:isSad?140:220,gg=isHappy?220:isSad?160:160,bb=isHappy?140:isSad?220:80;
+  for(var i=0;i<perPart*2;i++){
+    var a=rnd(0,Math.PI*2),d=r*(0.88+Math.random()*.12);
+    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d,rr:rr,gg:gg,bb:bb,r:.4+Math.random()*1.4});
+  }
+  /* EYES — two bright clusters */
+  var eyeY=oy-r*.22;
+  var eyeRR=isHappy?255:isSad?160:255,eyeGG=isHappy?255:isSad?200:80,eyeBB=isHappy?100:isSad?255:80;
+  for(var side=-1;side<=1;side+=2){
+    var ex=ox+side*r*.3;
+    for(var i=0;i<perPart*.7;i++){
+      var a=rnd(0,Math.PI*2),d=r*.065*Math.random();
+      out.push({tx:ex+Math.cos(a)*d,ty:eyeY+Math.sin(a)*d,rr:eyeRR,gg:eyeGG,bb:eyeBB,r:.6+Math.random()*1.8});
+    }
+  }
+  /* MOUTH */
+  var mouthPts=[];
+  var mouthSegs=Math.floor(perPart*.8);
+  for(var i=0;i<mouthSegs;i++){
+    var t=i/mouthSegs,a=t*Math.PI;
+    var mx=ox+(t-.5)*r*.52;
+    var curve=isHappy?1:isSad?-1:0;
+    var my=oy+r*.3+curve*Math.sin(a)*r*.18;
+    out.push({tx:mx+rnd(-2,2),ty:my+rnd(-2,2),rr:rr*.8,gg:gg*.8,bb:bb*.8,r:.5+Math.random()*1.2});
+  }
+  /* FILL with skin-tone particles */
+  var fillN=n-out.length;
+  for(var i=0;i<fillN;i++){
+    var a=rnd(0,Math.PI*2),d=Math.random()*r*.82;
+    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.9,rr:rr,gg:Math.round(gg*.9),bb:Math.round(bb*.7),r:.3+Math.random()*.8});
+  }
+  return out.slice(0,n);
 }
 function shapeTwoFaces(n,e1,e2,ox,oy,size){
-  var h=Math.floor(n/2);
-  return shapeFace(h,e1,ox-size*.52,oy,size*.9).concat(shapeFace(n-h,e2,ox+size*.52,oy,size*.9));
+  var half=Math.floor(n/2);
+  return shapeFace(half,e1,ox-size*.48,oy,size*.9).concat(shapeFace(n-half,e2,ox+size*.48,oy,size*.9));
 }
 function shapeRing(n,ox,oy,r,thick,rr,gg,bb){
   var out=[];
@@ -539,6 +573,89 @@ function shapeFireworks(n,phase){
     for(var i=0;i<bN;i++){
       var a=rnd(0,Math.PI*2),d=Math.pow(Math.random(),.4)*maxR;
       out.push({tx:bx+Math.cos(a)*d,ty:by+Math.sin(a)*d,rr:sc[0],gg:sc[1],bb:sc[2],r:.5+Math.random()*2.5});
+    }
+  }
+  return out;
+}
+
+/* ── OBSERVABLE UNIVERSE SHAPE — based on CMB maps ── */
+function shapeObservableUniverse(n,ox,oy,size){
+  /* The observable universe is a sphere but we show it as the 2D CMB projection:
+     flat ellipse with temperature variation hotspots (red=hotter, blue=colder regions)
+     This matches actual Planck satellite CMB maps */
+  var out=[];
+  /* Overall oblate ellipse */
+  var a=size*.48,b=size*.3; /* semi-major, semi-minor */
+  for(var i=0;i<n;i++){
+    var angle=rnd(0,Math.PI*2);
+    var r=Math.pow(Math.random(),.35); /* bias toward edges — shell-like */
+    var px=ox+Math.cos(angle)*a*r;
+    var py=oy+Math.sin(angle)*b*r;
+    /* CMB temperature variations — hot spots and cold spots */
+    var temp=Math.sin(px*.012)*Math.cos(py*.015)+Math.sin(px*.007+py*.009)*.6;
+    var rr=Math.round(clamp(140+temp*80,60,255));
+    var gg=Math.round(clamp(160+temp*20,80,220));
+    var bb=Math.round(clamp(220-temp*80,80,255));
+    out.push({tx:px,ty:py,rr:rr,gg:gg,bb:bb,r:.3+Math.random()*(r>.85?.8:1.4)});
+  }
+  return out;
+}
+
+function shapeCollapse(n,ox,oy,size,t_progress){
+  /* Big Crunch — everything falling back inward
+     t_progress 0=full size, 1=singularity */
+  var out=[];
+  var r=size*(1-t_progress*.9);
+  for(var i=0;i<n;i++){
+    var a=rnd(0,Math.PI*2),d=Math.pow(Math.random(),.4)*r;
+    /* Heat increases as collapse deepens */
+    var heat=t_progress;
+    out.push({
+      tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.72,
+      rr:Math.round(clamp(100+heat*155,100,255)),
+      gg:Math.round(clamp(100+heat*60,60,200)),
+      bb:Math.round(clamp(255-heat*200,30,255)),
+      r:.3+Math.random()*(1+heat*2)
+    });
+  }
+  return out;
+}
+
+/* ── BACTERIA + CELL shapes for immune simulation ── */
+function shapeCell(n,ox,oy,r,rr,gg,bb,irregular){
+  /* A cell — circle with membrane detail */
+  var out=[];
+  /* Membrane — ring of particles */
+  var memN=Math.floor(n*.35);
+  for(var i=0;i<memN;i++){
+    var a=rnd(0,Math.PI*2);
+    var wobble=irregular?rnd(-r*.12,r*.12):0;
+    var d=r+wobble+rnd(-r*.03,r*.03);
+    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.85,rr:rr,gg:gg,bb:bb,r:.5+Math.random()*1.5});
+  }
+  /* Interior */
+  var intN=n-memN;
+  for(var i=0;i<intN;i++){
+    var a=rnd(0,Math.PI*2),d=Math.random()*r*.8;
+    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.85,rr:Math.round(rr*.6),gg:Math.round(gg*.6),bb:Math.round(bb*.6),r:.3+Math.random()*.9});
+  }
+  return out;
+}
+function shapeBacteria(n,ox,oy,r,count){
+  /* Rod-shaped bacteria — elongated irregular shapes */
+  var out=[];
+  count=count||1;
+  var perBact=Math.floor(n/count);
+  for(var b=0;b<count;b++){
+    var bx=ox+rnd(-r*2,r*2),by=oy+rnd(-r,r);
+    var len=r*.8,wid=r*.25;
+    var angle=rnd(0,Math.PI);
+    for(var i=0;i<perBact;i++){
+      var t=(i/perBact-.5)*len;
+      var w=rnd(-wid,wid);
+      var px=bx+Math.cos(angle)*t-Math.sin(angle)*w;
+      var py=by+Math.sin(angle)*t+Math.cos(angle)*w;
+      out.push({tx:px,ty:py,rr:80,gg:200,bb:80,r:.4+Math.random()*1.2});
     }
   }
   return out;
@@ -647,31 +764,29 @@ function getSpec(domain,phase,n){
     case 'bigbang':
       /* Full cosmological journey — singularity to observable universe */
       if(phase===0){
-        /* THE SINGULARITY — one point, everything */
+        /* SINGULARITY — one bright point, all energy compressed */
         return shapePoint(n,x,y,255,240,220);
       }
       if(phase===1){
-        /* FIRST FLASH — Planck epoch ends, space itself expands
-           Inner core of hot dense plasma + rapid expansion ring */
-        var r1=Math.min(sz*.03,W()*.04,H()*.04);
-        var r2=Math.min(sz*.18,W()*.2,H()*.2);
-        return shapePoint(Math.floor(n*.08),x,y,255,255,240)
-          .concat(shapeRing(Math.floor(n*.42),x,y,r1,r1*.5,255,220,180))
-          .concat(shapeRing(Math.ceil(n*.5),x,y,r2,r2*.4,255,160,80));
+        /* INFLATION — space itself expands faster than light */
+        var r1=Math.min(sz*.025,W()*.03,H()*.03);
+        var r2=Math.min(sz*.16,W()*.18,H()*.18);
+        var r3=Math.min(sz*.32,W()*.36,H()*.36);
+        return shapePoint(Math.floor(n*.05),x,y,255,255,240)
+          .concat(shapeRing(Math.floor(n*.3),x,y,r1,r1*.4,255,240,200))
+          .concat(shapeRing(Math.floor(n*.35),x,y,r2,r2*.3,255,180,100))
+          .concat(shapeRing(Math.ceil(n*.3),x,y,r3,r3*.2,200,140,80));
       }
       if(phase===2){
-        /* QUARK-GLUON PLASMA — 10^-6 seconds, hot violent explosion
-           Constrained to screen bounds */
+        /* QUARK-GLUON PLASMA — hot primordial explosion */
         return shapeExplosion(n,x,y,4,Math.min(sz*.4,W()*.42,H()*.42),255,120,30,true);
       }
       if(phase===3){
-        /* FIRST STARS (Population III) — 180 million years
-           Huge, hot, blue-white giants scattered across dark primordial space */
-        return shapeFirstStars(n,x,y,Math.min(sz*.46,W()*.44,H()*.44));
+        /* FIRST STARS — Population III blue-white giants */
+        return shapeFirstStars(n,x,y,Math.min(sz*.44,W()*.42,H()*.42));
       }
-      /* COSMIC WEB — the universe today
-         Filaments of dark matter, galaxy superclusters at nodes, vast voids between */
-      return shapeCosmicWeb(n,x,y,Math.min(sz*.46,W()*.43,H()*.43));
+      /* OBSERVABLE UNIVERSE — the CMB temperature map: the actual shape */
+      return shapeObservableUniverse(n,x,y,Math.min(sz*.46,W()*.44,H()*.44));
 
     /* UNIVERSE — zoom from multiverse to earth */
     case 'universe':
@@ -729,13 +844,33 @@ function getSpec(domain,phase,n){
       if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*6)*sz*.16+rnd(-3,3);ow.push({tx:wx,ty:wy,rr:100,gg:220,bb:255,r:.4+Math.random()*2});}return ow;}
       return shapeNeural(n,x,y,sz*.48);
 
-    /* IMMUNE */
-    case 'immune':
-      if(phase===0)return shapeScatter(n,x,y,sz*.42,200,80,100);
-      if(phase===1)return shapeRing(n,x,y,sz*.36,sz*.04,255,120,60);
-      if(phase===2)return shapeRing(n,x,y,sz*.22,sz*.04,38,232,176);
-      if(phase===3)return shapeExplosion(n,x,y,4,sz*.3,150,255,180,false);
-      return shapeGrid(n,x,y,sz*.38,38,200,160);
+    /* IMMUNE — bacterial infection and immune response */
+    case 'immune':{
+      var cSz=sz*.16; /* cell radius */
+      if(phase===0){
+        /* HEALTHY CELL — one normal cell, distant bacteria */
+        return shapeCell(Math.floor(n*.6),x-sz*.08,y,cSz,100,160,255,false)
+          .concat(shapeBacteria(Math.ceil(n*.4),x+sz*.38,y,cSz*.5,3));
+      }
+      if(phase===1){
+        /* BACTERIA APPROACH — bacteria moving toward cell */
+        return shapeCell(Math.floor(n*.55),x-sz*.08,y,cSz,100,160,255,false)
+          .concat(shapeBacteria(Math.ceil(n*.45),x+sz*.15,y,cSz*.6,5));
+      }
+      if(phase===2){
+        /* INFECTION — bacteria attached, cell membrane irregular, cell distressed */
+        return shapeCell(Math.floor(n*.5),x,y,cSz*1.15,255,100,80,true)
+          .concat(shapeBacteria(Math.ceil(n*.5),x,y,cSz*.4,8));
+      }
+      if(phase===3){
+        /* T-CELL RESPONSE — killer T-cells arrive (bright blue-white cells) */
+        return shapeCell(Math.floor(n*.3),x,y,cSz*1.1,255,100,80,true)
+          .concat(shapeBacteria(Math.ceil(n*.25),x,y,cSz*.4,4))
+          .concat(shapeCell(Math.ceil(n*.45),x,y,sz*.38,38,232,176,false));
+      }
+      /* RESOLUTION — healthy cell restored, bacteria eliminated */
+      return shapeCell(n,x,y,cSz*1.05,100,200,255,false);
+    }
 
     /* AMR — full→zero */
     case 'amr':
@@ -797,7 +932,7 @@ function initPhase(domain,phase,fromScratch){
   var dir=DOMAIN_ENERGY[domain]&&DOMAIN_ENERGY[domain].dir||'zero_to_full';
   /* Phase 0 from scratch gets staggered birth, all other phases = CONTINUOUS
      — particles leave from exactly where they are now, no restart */
-  var maxDelay=fromScratch&&phase===0?3500:1200;
+  var maxDelay=fromScratch&&phase===0?2800:800; /* shorter stagger = more fluid */
   for(var i=0;i<n;i++){
     var s=spec[i%spec.length];
     pTX[i]=s.tx;pTY[i]=s.ty;
@@ -936,11 +1071,11 @@ var NARR={
     ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
-    ['The Singularity','One point. All matter, energy, space, and time compressed beyond measure. Temperature: 10³² Kelvin. Volume: smaller than a proton. The laws of physics do not yet apply.'],
-    ['The First Flash','Space itself begins to exist. Not matter moving through space — space expanding. In 10⁻³⁵ seconds, the universe inflates by a factor of 10²⁶. Every particle of light born in the same instant.'],
-    ['Quark-Gluon Plasma','One microsecond old. The universe is a superheated soup of quarks and gluons — the building blocks of everything. Temperature: 10¹³ Kelvin. It looks like nothing that exists today.'],
-    ['The First Stars','180 million years of darkness. Then gravity wins. Hydrogen collapses into the first stars — Population III giants, a thousand times the mass of our sun, burning blue-white, lasting only a million years before exploding and seeding space with carbon, oxygen, and iron.'],
-    ['The Cosmic Web','13.8 billion years later. Dark matter forms a vast filamentary web — strands hundreds of millions of light-years long, with galaxy superclusters at every node and vast empty voids between. This is the universe as it exists today.']
+    ['The Singularity','One point. All matter, energy, space, and time compressed beyond measure. Temperature: 10³² Kelvin. Volume: smaller than a proton. Time itself does not yet exist as we know it.'],
+    ['Cosmic Inflation','In 10⁻³⁵ seconds, space expanded by a factor of 10²⁶ — faster than light. Quantum fluctuations stretched to cosmic scales. These imperfections became every galaxy and supercluster we see today.'],
+    ['Quark-Gluon Plasma','At 10⁻⁶ seconds: a superheated plasma of quarks and gluons, the raw matter of everything. Temperature 10¹³ Kelvin. Within minutes, protons and neutrons form. Within 380,000 years, the first atoms.'],
+    ['First Stars · Population III','180 million years of darkness. Hydrogen under gravity ignites the first stars — a thousand times our sun's mass, burning blue-white. They live only a million years, then explode, seeding space with carbon, oxygen, and iron.'],
+    ['The Observable Universe','93 billion light-years across. The temperature map you see is the Cosmic Microwave Background — the oldest light, from 380,000 years after the Big Bang. Red: slightly hotter regions that became galaxy clusters. Blue: cooler voids. This is what the universe looks like from outside time. Then — everything pulls back. The next singularity is forming.']
   ],
   universe:[
     ['Phase 1 · The Multiverse','An infinite field. If string theory is correct, there are 10⁵⁰⁰ possible universes — each with different physical constants, different laws of physics. Ours is one that permits stars, carbon, and life.'],
@@ -992,11 +1127,11 @@ var NARR={
     ['Phase 5 · The Full Brain','Every thought you have ever had has left a trace in this structure. Every memory is a specific set of synaptic weights. The brain you have today is shaped by every experience you have ever had.']
   ],
   immune:[
-    ['Phase 1 · The Threat','Cancer cells — growing without instruction, without limit. The body produces abnormal cells continuously. The question is not whether they form, but whether they are found in time.'],
-    ['Phase 2 · Patrol','Cytotoxic T-cells circulate continuously. They read every cell they pass, checking MHC-I complexes for mutant peptide antigens. A cancer cell cannot hide what it has become.'],
-    ['Phase 3 · Convergence','Recognition. The T-cell binds. Perforin polymerises into membrane pores. Granzyme B enters. The cancer cell has 10 minutes. The T-cell has already moved on.'],
-    ['Phase 4 · Apoptosis','Cell suicide, precisely induced. The cancer cell dismantles itself from the inside. DNA cuts at specific sites. No inflammation. No bystander damage. Surgical precision.'],
-    ['Phase 5 · Clean Field','Macrophages clear the debris. The tissue returns to normal. This happens thousands of times per day in a healthy immune system — silently, without any signal to consciousness.']
+    ['Healthy Cell','One human cell, 50 micrometres across. Its plasma membrane maintains a precise ionic balance. Nearby: three rod-shaped bacteria — Streptococcus, 2 micrometres long — drifting toward it.'],
+    ['Bacterial Approach','Bacteria express surface adhesins — molecular hooks that bind to receptor proteins on the host cell. This is not random. Pathogens have evolved specific keys for specific cellular locks.'],
+    ['Infection','Bacteria breach the cell membrane. The cell responds: it releases cytokines — chemical distress signals that travel through surrounding tissue, summoning the immune system.'],
+    ['T-Cell Response','Cytotoxic T-cells arrive. They recognise bacterial peptide fragments displayed on the cell's MHC-I surface markers. Perforin creates membrane pores. Granzyme B enters and triggers apoptosis in infected cells.'],
+    ['Resolution','Macrophages clear the debris. The infection is contained. The adaptive immune system records the pathogen's signature — next encounter, the response is ten times faster. This is immunological memory.']
   ],
   amr:[
     ['Phase 1 · The Colony','A bacterial colony at equilibrium. Within this population, resistance genes exist at low frequency — invisible, harmless-seeming, waiting.'],
@@ -1087,11 +1222,15 @@ function updateNarr(domain,phase){
     setTimeout(function(){fill.style.transition='width '+(PHASE_DUR/1000)+'s linear';fill.style.width=pct+'%';},50);
   }
   if(document.getElementById('phaseNum'))document.getElementById('phaseNum').textContent=(phase+1)+' / '+narrs.length;
-  /* Phase flash */
+  /* Process step label — show as particle cloud forms the step */
   var flash=document.getElementById('phaseFlash');
-  flash.textContent=(ph[0].split('·')[1]||ph[0]).trim();
+  var stepName=(ph[0].split('·')[1]||ph[0]).trim().toUpperCase();
+  flash.textContent=stepName;
   flash.style.opacity='1';
-  setTimeout(function(){flash.style.opacity='0';},2000);
+  flash.style.letterSpacing='.12em';
+  /* Hold for 1.5s then fade — particles still forming during this time */
+  clearTimeout(flash._fadeTimer);
+  flash._fadeTimer=setTimeout(function(){flash.style.opacity='0';},2200);
   /* Dots */
   var dots=document.getElementById('narrDots');if(dots){dots.innerHTML='';
   for(var i=0;i<narrs.length;i++){
@@ -1111,10 +1250,10 @@ function updateNarr(domain,phase){
   var narrsLen=narrs?narrs.length:1;
   phaseAutoTimer=setTimeout(function(){
     snapshot();
-    simPhase=(simPhase+1)%narrsLen; /* loop back to phase 0 after last */
+    simPhase=(simPhase+1)%narrsLen;
     initPhase(simDomain,simPhase,false);
     updateNarr(simDomain,simPhase);
-  },7000);
+  },8000); /* 8s per phase — enough to read + watch */
 }
 
 function toggleAutoPlay(){
@@ -1563,33 +1702,114 @@ document.addEventListener('keydown',function(e){
 
 /* ── TICKER — news bar with all phase answers ── */
 var tickerPaused=false;
+/* Ticker state */
+var tickerIsPaused=false;
+var tickerSwipeX=0;
+var tickerScrollLeft=0;
+
 function buildTicker(narrs,loading){
+  var ticker=document.getElementById('answerTicker');
   var track=document.getElementById('tickerTrack');
   if(!track)return;
   if(loading){
-    track.innerHTML='<span style="display:inline-flex;align-items:center;padding:0 20px;font-size:.76rem;color:var(--dim);gap:6px"><span style="width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(38,232,176,.3);border-top-color:var(--g);animation:spin .7s linear infinite;display:inline-block"></span>Generating answer…</span>';
+    track.innerHTML='<span style="display:inline-flex;align-items:center;padding:0 20px;font-size:.76rem;color:var(--dim);gap:6px"><span style="width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(38,232,176,.3);border-top-color:var(--g);animation:spin .7s linear infinite;display:inline-block"></span>Thinking…</span>';
     track.style.animation='none';
+    tickerIsPaused=false;
     return;
   }
   if(!narrs||!narrs.length){track.innerHTML='';return;}
-  /* Build ticker content — doubled for seamless loop */
   var segs=narrs.map(function(ph,i){
     var label=(ph[0]||'').split('·').pop().trim()||('Phase '+(i+1));
     var text=ph[1]||'';
-    return '<span style="display:inline-flex;align-items:center;gap:6px;padding:0 28px 0 4px;flex-shrink:0">'
-      +'<span style="width:5px;height:5px;border-radius:50%;background:var(--g);opacity:.7;flex-shrink:0"></span>'
-      +'<span style="font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g);opacity:.8;flex-shrink:0">'+label+'</span>'
-      +'<span style="font-size:.78rem;color:rgba(255,255,255,.88)">'+text+'</span>'
-      +'<span style="color:rgba(38,232,176,.25);font-size:1rem;padding:0 4px">·</span>'
+    return '<span style="display:inline-flex;align-items:center;gap:7px;padding:0 36px 0 6px;flex-shrink:0">'
+      +'<span style="width:6px;height:6px;border-radius:50%;background:var(--g);opacity:.8;flex-shrink:0"></span>'
+      +'<span style="font-size:.52rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g);opacity:.9;flex-shrink:0;white-space:nowrap">'+label+'</span>'
+      +'<span style="font-size:.8rem;color:rgba(255,255,255,.92);white-space:nowrap">'+text+'</span>'
+      +'<span style="color:rgba(38,232,176,.2);font-size:1rem;padding:0 6px;flex-shrink:0">·</span>'
       +'</span>';
   }).join('');
-  /* Double for seamless scroll */
   track.innerHTML=segs+segs;
-  /* Reset animation */
+  /* 2s delay before starting — give user time to read first */
   track.style.animation='none';
+  track.style.transform='translateX(0)';
+  tickerIsPaused=false;
   void track.offsetWidth;
-  var dur=Math.max(180,narrs.length*40)+'s'; /* very slow — each phase readable for ~40s */
-  track.style.animation='tickerScroll '+dur+' linear infinite';
+  setTimeout(function(){
+    if(tickerIsPaused)return;
+    var dur=Math.max(180,narrs.length*40)+'s';
+    track.style.animation='tickerScroll '+dur+' linear infinite';
+  },2000);
+}
+
+function tickerTap(){
+  /* Tap = pause/resume toggle */
+  var track=document.getElementById('tickerTrack');
+  if(!track)return;
+  tickerIsPaused=!tickerIsPaused;
+  if(tickerIsPaused){
+    /* Capture current position by reading computed transform */
+    var style=window.getComputedStyle(track);
+    var matrix=new DOMMatrix(style.transform);
+    track.style.animation='none';
+    track.style.transform='translateX('+matrix.m41+'px)';
+    tickerScrollLeft=matrix.m41;
+    /* Show pause indicator */
+    var ind=document.getElementById('tickerPauseInd');
+    if(ind)ind.textContent='⏸ paused — swipe to read';
+  } else {
+    /* Resume from current scroll position */
+    var track2=document.getElementById('tickerTrack');
+    track2.style.animation='none';
+    track2.style.transform='translateX('+tickerScrollLeft+'px)';
+    void track2.offsetWidth;
+    /* Calculate remaining duration proportional to position */
+    var narrs=NARR[simDomain];
+    var dur=Math.max(180,narrs&&narrs.length?narrs.length*40:180);
+    track2.style.animation='tickerScroll '+dur+'s linear infinite';
+    var ind=document.getElementById('tickerPauseInd');
+    if(ind)ind.textContent='tap ▼';
+  }
+}
+
+/* Ticker touch swipe for manual reading */
+var tickerTouchStartX=0,tickerTouchStartScroll=0,tickerDragging=false;
+function tickerTouchStart(e){
+  tickerTouchStartX=e.touches[0].clientX;
+  tickerDragging=false;
+  if(!tickerIsPaused){
+    /* Auto-pause on swipe */
+    var track=document.getElementById('tickerTrack');
+    if(track){
+      var style=window.getComputedStyle(track);
+      var matrix=new DOMMatrix(style.transform);
+      track.style.animation='none';
+      track.style.transform='translateX('+matrix.m41+'px)';
+      tickerScrollLeft=matrix.m41;
+      tickerIsPaused=true;
+    }
+  }
+}
+function tickerTouchMove(e){
+  e.stopPropagation();
+  var dx=e.touches[0].clientX-tickerTouchStartX;
+  if(Math.abs(dx)>5)tickerDragging=true;
+  if(!tickerDragging)return;
+  var track=document.getElementById('tickerTrack');
+  if(track){
+    var newX=tickerScrollLeft+dx;
+    track.style.transform='translateX('+newX+'px)';
+  }
+}
+function tickerTouchEnd(e){
+  if(!tickerDragging){tickerTap();return;}
+  /* Update scroll position after swipe */
+  var track=document.getElementById('tickerTrack');
+  if(track){
+    var style=window.getComputedStyle(track);
+    var matrix=new DOMMatrix(style.transform);
+    tickerScrollLeft=matrix.m41;
+  }
+  tickerDragging=false;
 }
 
 function togglePhasesPanel(){

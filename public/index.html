@@ -1009,7 +1009,7 @@ var wordTimers=[];
 function streamWords(text,onWord){
   if(wordStreamTimer)clearInterval(wordStreamTimer);
   wordTimers.forEach(clearTimeout);wordTimers=[];
-  var el=document.getElementById('answerText');el.innerHTML='';
+  var el=document.getElementById('answerText');if(!el)return;el.innerHTML='';
   var words=text.split(' ');
   words.forEach(function(w){var s=document.createElement('span');s.className='word';s.textContent=w+' ';el.appendChild(s);});
   var spans=el.querySelectorAll('.word');
@@ -1027,44 +1027,35 @@ var autoPlayOn=true;
 function updateNarr(domain,phase){
   var narrs=NARR[domain];if(!narrs)return;
   var ph=narrs[phase]||narrs[0];
-  document.getElementById('narrPhaseLabel').textContent=ph[0];
+  if(document.getElementById('narrPhaseLabel'))document.getElementById('narrPhaseLabel').textContent=ph[0];
   var pct=((phase+1)/narrs.length*100).toFixed(0);
   /* Reset progress bar animation */
-  var fill=document.getElementById('phaseProgressFill');
+  var fill=document.getElementById('phaseProgressFill');if(!fill){
+  // fill exists
   fill.style.transition='none';fill.style.width='0%';
   setTimeout(function(){fill.style.transition='width '+(PHASE_DUR/1000)+'s linear';fill.style.width=pct+'%';},50);
-  document.getElementById('phaseNum').textContent=(phase+1)+' / '+narrs.length;
+  }
+  if(document.getElementById('phaseNum'))document.getElementById('phaseNum').textContent=(phase+1)+' / '+narrs.length;
   /* Phase flash */
   var flash=document.getElementById('phaseFlash');
   flash.textContent=(ph[0].split('·')[1]||ph[0]).trim();
   flash.style.opacity='1';
   setTimeout(function(){flash.style.opacity='0';},2000);
   /* Dots */
-  var dots=document.getElementById('narrDots');dots.innerHTML='';
+  var dots=document.getElementById('narrDots');if(dots)dots.innerHTML='';
   for(var i=0;i<narrs.length;i++){
     var d=document.createElement('div');d.className='ndot'+(i===phase?' on':'');
     (function(idx){d.onclick=function(){jumpToPhase(idx);};})(i);
     dots.appendChild(d);
   }
   /* Stream text + update ticker */
-  streamWords(ph[1]);
-  buildTicker(narrs);
+  if(typeof streamWords==='function')streamWords(ph[1]);
+  if(typeof buildTicker==='function')buildTicker(narrs);
   /* Voice — word by word */
   if(voiceOn)startVoice(ph[1]);
   /* Sound */
   if(soundOn)playEmotionalSound(domain);
-  /* Auto advance — fireworks countdown phase gets 6s, others 5s */
-  if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
-  var phaseDurMs=(domain==='fireworks'&&phase===0)?6200:PHASE_DUR;
-  if(autoPlayOn&&narrs&&phase<narrs.length-1){
-    phaseAutoTimer=setTimeout(function(){
-      if(!autoPlayOn)return;
-      snapshot();
-      simPhase++;
-      initPhase(simDomain,simPhase,false);
-      updateNarr(simDomain,simPhase);
-    },phaseDurMs);
-  }
+  /* No auto-advance — sim runs continuously, all phases visible in ticker */
 }
 
 function toggleAutoPlay(){
@@ -1861,7 +1852,7 @@ requestAnimationFrame(loop);
 document.getElementById('lodOv').style.transition='opacity .5s';
 setTimeout(function(){document.getElementById('lodOv').style.opacity='0';setTimeout(function(){document.getElementById('lodOv').style.display='none';showGuide();},600);},300);
 updateNarr(simDomain,0);
-if(urlQ){setTimeout(function(){document.getElementById('mainQ').value=decodeURIComponent(urlQ);autoResize(document.getElementById('mainQ'));askQuestion();},500);}
+if(urlQ){setTimeout(function(){var el=document.getElementById('mainQ');if(el){el.value=decodeURIComponent(urlQ);autoResizeMQ(el);askQuestion();}},500);}
 </script>
 </body>
 </html>

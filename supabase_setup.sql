@@ -66,3 +66,16 @@ ALTER TABLE investor_registrations
 -- Add email to point_transactions
 ALTER TABLE point_transactions
   ADD COLUMN IF NOT EXISTS email TEXT;
+
+-- Comments on simulations
+CREATE TABLE IF NOT EXISTS simulation_comments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  sim_id UUID REFERENCES simulations(id),
+  user_name TEXT,
+  text TEXT NOT NULL,
+  likes INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE simulation_comments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read comments" ON simulation_comments FOR SELECT USING (true);
+CREATE POLICY "Anyone can post comments" ON simulation_comments FOR INSERT WITH CHECK (true);

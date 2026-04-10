@@ -27,7 +27,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 /* NAV */
 #nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:46px;background:rgba(2,4,14,0.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.05)}
 .nav-logo{font-size:1rem;font-weight:800;color:var(--g);text-decoration:none;letter-spacing:-.02em}
-.nav-tabs{display:flex;gap:1px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tabs{display:flex;gap:1px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1;margin:0 6px}.nav-tabs::-webkit-scrollbar{display:none}
 .ntab{padding:4px 9px;border-radius:6px;font-size:.7rem;color:var(--dim);cursor:pointer;border:none;background:transparent;text-decoration:none;display:inline-block;transition:color .18s}
 .ntab.active{color:var(--g);background:rgba(38,232,176,0.08)}
 .nav-right{display:flex;align-items:center;gap:6px}
@@ -35,24 +35,24 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 .inv-btn{font-size:.62rem;background:var(--g);color:#02040e;padding:4px 9px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block}
 
 /* PILLS */
-#pills{position:fixed;top:46px;left:0;right:68px;z-index:100;display:flex;gap:4px;padding:6px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
+#pills{position:fixed;top:46px;left:0;right:72px;z-index:100;display:flex;gap:4px;padding:6px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
 #pills::-webkit-scrollbar{display:none}
 .dpill{flex-shrink:0;font-size:.56rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);color:var(--dim);cursor:pointer;transition:all .2s;background:rgba(2,4,14,0.6);white-space:nowrap}
 .dpill.active{color:#02040e;font-weight:700;border-color:transparent}
 
 /* RIGHT RAIL — responsive, always visible */
-#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:18px;padding:12px 6px;width:68px}
+#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:20px;padding:14px 8px;width:72px}
 .rail-btn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}
 .rail-btn:active{transform:scale(.88)}
-.rail-icon{width:52px;height:52px;border-radius:50%;background:rgba(2,4,14,0.55);border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:border-color .2s,background .2s}
+.rail-icon{width:56px;height:56px;border-radius:50%;background:rgba(2,4,14,0.5);border:1.5px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1.65rem;transition:border-color .2s,background .2s;-webkit-backdrop-filter:blur(8px)}
 .rail-btn.liked .rail-icon{border-color:var(--red);background:rgba(224,92,92,0.18)}
-.rail-label{font-size:.58rem;color:var(--dim);font-weight:700;text-align:center;line-height:1.2;max-width:66px}
+.rail-label{font-size:.6rem;color:rgba(255,255,255,.72);font-weight:700;text-align:center;line-height:1.2;max-width:70px;letter-spacing:.01em}
 .rail-label.red{color:var(--red)}
 .rail-label.gold{color:var(--gold)}
 .rail-label.green{color:var(--g)}
 
 /* BOTTOM PANEL — right:56px matches rail width */
-#bottomPanel{position:fixed;bottom:0;left:0;right:68px;z-index:150;pointer-events:none}
+#bottomPanel{position:fixed;bottom:0;left:0;right:72px;z-index:150;pointer-events:none}
 
 
 
@@ -118,12 +118,13 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 #answerTicker{position:relative}
 
 @media(max-width:640px){
-  .ntab:not(.active){display:none}
-  #rightRail{width:52px;gap:10px;padding:8px 4px}
-  .rail-icon{width:34px;height:34px;font-size:.9rem}
-  .rail-label{font-size:.42rem}
-  #bottomPanel{right:52px}
-  #pills{right:52px}
+  /* NAV: all tabs visible, scrollable */
+  .ntab{font-size:.64rem;padding:3px 7px}
+  #rightRail{width:64px;gap:14px;padding:10px 4px}
+  .rail-icon{width:48px;height:48px;font-size:1.4rem}
+  .rail-label{font-size:.52rem}
+  #bottomPanel{right:64px}
+  #pills{right:64px}
 }
 @media(max-height:580px){
   #rightRail{gap:8px}
@@ -267,13 +268,13 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div class="rail-icon">❤️</div>
     <div class="rail-label red" id="likeCount">0</div>
   </div>
-  <div class="rail-btn" onclick="doShare()">
-    <div class="rail-icon">🔗</div>
-    <div class="rail-label">Share</div>
+  <div class="rail-btn" onclick="openComments()">
+    <div class="rail-icon">💬</div>
+    <div class="rail-label" id="commentCount">Comment</div>
   </div>
-  <div class="rail-btn" onclick="doVote()">
-    <div class="rail-icon">⭐</div>
-    <div class="rail-label gold" id="voteCount">Vote</div>
+  <div class="rail-btn" onclick="doShare()">
+    <div class="rail-icon">↗️</div>
+    <div class="rail-label">Share</div>
   </div>
   <div class="rail-btn" onclick="startCompete()">
     <div class="rail-icon">⚔️</div>
@@ -286,6 +287,11 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 </div>
 
 <div id="bottomPanel">
+  <!-- QUESTION BAR — fixed, shows current question -->
+  <div id="questionBar" style="pointer-events:none;padding:5px 14px 3px;background:rgba(2,4,14,0.75);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,0.04);display:none">
+    <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(38,232,176,.55);margin-bottom:2px">Question</div>
+    <div id="questionBarText" style="font-size:.78rem;color:rgba(255,255,255,.85);line-height:1.3;font-weight:500"></div>
+  </div>
   <!-- TICKER BAR — scrolling answer, tap to expand -->
   <div id="answerTicker"
     style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.52);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
@@ -304,6 +310,13 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div id="phasesList" style="padding:6px 14px 2px"></div>
     <div onclick="closePhasesPanel()"
       style="text-align:center;font-size:.6rem;color:var(--dim);padding:7px;cursor:pointer;pointer-events:all;border-top:1px solid rgba(255,255,255,0.05)">▲ Close</div>
+  </div>
+  <!-- SAVE / POST mini-icons — appear after simulation runs -->
+  <div id="simActions" style="display:none;pointer-events:all;padding:4px 14px 0;display:none;gap:10px;align-items:center;background:rgba(2,4,14,0.96)">
+    <button onclick="doSaveOnly()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px;font-size:.72rem;color:var(--w);cursor:pointer;font-weight:600">💾 Save</button>
+    <button onclick="doSaveAndPost()" style="display:flex;align-items:center;gap:5px;background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);border-radius:20px;padding:5px 12px;font-size:.72rem;color:var(--g);cursor:pointer;font-weight:600">🌍 Post</button>
+    <button onclick="doSaveAndRegenerate()" style="display:flex;align-items:center;gap:5px;background:rgba(124,79,212,0.1);border:1px solid rgba(124,79,212,0.3);border-radius:20px;padding:5px 12px;font-size:.72rem;color:#c4a0ff;cursor:pointer;font-weight:600">🔄 Redo</button>
+    <span id="simActionsClose" onclick="hideSimActions()" style="margin-left:auto;color:var(--dim);font-size:.8rem;cursor:pointer;padding:2px 6px">✕</span>
   </div>
   <!-- INPUT — bigger, ⚡ inside -->
   <div id="qRow"
@@ -331,6 +344,27 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 </div>
 
 <div id="lodOv"><div style="text-align:center"><div class="lring"></div><div style="font-size:.64rem;color:var(--dim)">Forming…</div></div></div>
+
+<!-- COMMENTS SHEET — TikTok style bottom sheet -->
+<div id="commentsSheet" style="position:fixed;bottom:-100%;left:0;right:0;z-index:400;background:#0a0f1e;border-radius:20px 20px 0 0;border-top:1px solid rgba(255,255,255,0.1);transition:bottom .35s cubic-bezier(.4,0,.2,1);max-height:75vh;display:flex;flex-direction:column">
+  <div style="padding:12px 16px 8px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <div style="font-size:.88rem;font-weight:700" id="commentsTitle">Comments</div>
+    <button onclick="closeComments()" style="background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:28px;height:28px;color:var(--dim);font-size:.9rem;cursor:pointer">✕</button>
+  </div>
+  <!-- Drag handle -->
+  <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;cursor:pointer"></div>
+  <!-- Comments list -->
+  <div id="commentsList" style="flex:1;overflow-y:auto;padding:8px 16px;-webkit-overflow-scrolling:touch"></div>
+  <!-- Comment input -->
+  <div style="padding:10px 14px 20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:8px;flex-shrink:0;background:#0a0f1e">
+    <div style="width:36px;height:36px;border-radius:50%;background:rgba(38,232,176,0.15);border:1.5px solid rgba(38,232,176,0.3);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">👤</div>
+    <input id="commentInput" type="text" placeholder="Add a comment…" maxlength="200"
+      style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:8px 14px;color:var(--w);font-size:.84rem;outline:none;font-family:inherit"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();submitComment()}">
+    <button onclick="submitComment()" style="background:var(--g);border:none;border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;flex-shrink:0">↑</button>
+  </div>
+</div>
+<div id="commentsBackdrop" onclick="closeComments()" style="position:fixed;inset:0;z-index:399;background:rgba(0,0,0,0);pointer-events:none;transition:background .35s"></div>
 
 
   </div>
@@ -465,51 +499,58 @@ function shapeSpiral(n,ox,oy,maxR,arms,rr,gg,bb){
   }
   return out;
 }
-/* Clean geometric face — no emoji rendering issues */
-function shapeFace(n,emoji,ox,oy,size){
-  /* Determine face variant from emoji character */
-  var happy=['😊','🥰','😄','😁','🌱'];
-  var sad=['😔','😢','😞','😐'];
-  var angry=['😤','😠','😡'];
-  var isHappy=happy.indexOf(emoji)>=0;
-  var isSad=sad.indexOf(emoji)>=0;
-  var isAngry=angry.indexOf(emoji)>=0;
-  var r=size*.38;
-  var out=[];
-  var perPart=Math.floor(n/6);
-  /* HEAD CIRCLE */
-  var rr=isHappy?255:isSad?140:220,gg=isHappy?220:isSad?160:160,bb=isHappy?140:isSad?220:80;
-  for(var i=0;i<perPart*2;i++){
-    var a=rnd(0,Math.PI*2),d=r*(0.88+Math.random()*.12);
-    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d,rr:rr,gg:gg,bb:bb,r:.4+Math.random()*1.4});
-  }
-  /* EYES — two bright clusters */
-  var eyeY=oy-r*.22;
-  var eyeRR=isHappy?255:isSad?160:255,eyeGG=isHappy?255:isSad?200:80,eyeBB=isHappy?100:isSad?255:80;
-  for(var side=-1;side<=1;side+=2){
-    var ex=ox+side*r*.3;
-    for(var i=0;i<perPart*.7;i++){
-      var a=rnd(0,Math.PI*2),d=r*.065*Math.random();
-      out.push({tx:ex+Math.cos(a)*d,ty:eyeY+Math.sin(a)*d,rr:eyeRR,gg:eyeGG,bb:eyeBB,r:.6+Math.random()*1.8});
+/* Emoji face — canvas rendering with geometric fallback */
+var _faceCache={};
+function _buildFaceLit(emoji,sz){
+  var off=document.createElement('canvas');
+  off.width=sz;off.height=sz;
+  var oc=off.getContext('2d');
+  oc.clearRect(0,0,sz,sz);
+  oc.font='bold '+(sz*.78)+'px sans-serif';
+  oc.textAlign='center';oc.textBaseline='middle';
+  oc.fillText(emoji,sz/2,sz*.52);
+  var d=oc.getImageData(0,0,sz,sz).data,lit=[];
+  var step=Math.max(1,Math.floor(sz/90));
+  for(var p=0;p<d.length;p+=4*step){
+    if(d[p+3]>35){
+      var px=(p/4)%sz,py=Math.floor(p/4/sz);
+      lit.push({px:(px/sz)-.5,py:(py/sz)-.5,rr:Math.max(d[p],60),gg:Math.max(d[p+1],60),bb:Math.max(d[p+2],60)});
     }
   }
-  /* MOUTH */
-  var mouthPts=[];
-  var mouthSegs=Math.floor(perPart*.8);
-  for(var i=0;i<mouthSegs;i++){
-    var t=i/mouthSegs,a=t*Math.PI;
-    var mx=ox+(t-.5)*r*.52;
-    var curve=isHappy?1:isSad?-1:0;
-    var my=oy+r*.3+curve*Math.sin(a)*r*.18;
-    out.push({tx:mx+rnd(-2,2),ty:my+rnd(-2,2),rr:rr*.8,gg:gg*.8,bb:bb*.8,r:.5+Math.random()*1.2});
+  return lit;
+}
+function _geomFaceLit(emoji){
+  /* Geometric fallback when canvas emoji blocked */
+  var happy=['😊','🥰','😄','🌱','🌍'];
+  var sad=['😔','😢','😞','😐'];
+  var isH=happy.indexOf(emoji)>=0,isS=sad.indexOf(emoji)>=0;
+  var lit=[];
+  var rr=isH?255:isS?160:220,gg=isH?220:isS?180:140,bb=isH?120:isS?220:80;
+  /* Head outline */
+  for(var i=0;i<200;i++){var a=i/200*Math.PI*2;lit.push({px:Math.cos(a)*.42,py:Math.sin(a)*.42,rr:rr,gg:gg,bb:bb});}
+  /* Fill */
+  for(var i=0;i<400;i++){var a=rnd(0,Math.PI*2),d=Math.random()*.4;lit.push({px:Math.cos(a)*d,py:Math.sin(a)*d,rr:rr,gg:Math.round(gg*.9),bb:Math.round(bb*.8)});}
+  /* Eyes */
+  for(var s=-1;s<=1;s+=2){for(var i=0;i<40;i++){var a2=rnd(0,Math.PI*2),d2=.06*Math.random();lit.push({px:s*.28+Math.cos(a2)*d2,py:-.18+Math.sin(a2)*d2,rr:20,gg:20,bb:40});}}
+  /* Smile */
+  var c=isH?1:isS?-1:0;
+  for(var i=0;i<60;i++){var t=i/60;lit.push({px:(t-.5)*.5,py:.25+c*Math.sin(t*Math.PI)*.14,rr:Math.round(rr*.75),gg:Math.round(gg*.7),bb:Math.round(bb*.7)});}
+  return lit;
+}
+function shapeFace(n,emoji,ox,oy,size){
+  var key=emoji;
+  if(!_faceCache[key]){
+    var sz=Math.min(Math.max(Math.round(size*1.8),180),380);
+    var lit=_buildFaceLit(emoji,sz);
+    _faceCache[key]=lit.length>20?lit:_geomFaceLit(emoji);
   }
-  /* FILL with skin-tone particles */
-  var fillN=n-out.length;
-  for(var i=0;i<fillN;i++){
-    var a=rnd(0,Math.PI*2),d=Math.random()*r*.82;
-    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d*.9,rr:rr,gg:Math.round(gg*.9),bb:Math.round(bb*.7),r:.3+Math.random()*.8});
+  var lit=_faceCache[key];
+  var out=[];
+  for(var i=0;i<n;i++){
+    var s=lit[Math.floor(Math.random()*lit.length)];
+    out.push({tx:ox+s.px*size+rnd(-2,2),ty:oy+s.py*size+rnd(-2,2),rr:s.rr,gg:s.gg,bb:s.bb,r:.4+Math.random()*1.8});
   }
-  return out.slice(0,n);
+  return out;
 }
 function shapeTwoFaces(n,e1,e2,ox,oy,size){
   var half=Math.floor(n/2);
@@ -849,47 +890,42 @@ function getSpec(domain,phase,n){
 
     /* BIG BANG — zero→full, one dot explodes to universe */
     case 'bigbang':{
-      /* Full cosmological journey — singularity to universe shape (NASA CMB timeline) */
-      /* The shape shown in NASA diagrams: narrow at left (early), widens to right (today) */
+      /* Scientific Big Bang: singularity → inflation → plasma → horn → collapse */
       if(phase===0){
-        /* SINGULARITY — single bright point */
+        /* SINGULARITY — one point, all energy */
         return shapePoint(n,x,y,255,245,220);
       }
       if(phase===1){
-        /* INFLATION — rapid expansion rings from point */
-        var ir1=Math.min(sz*.025,W()*.03);
-        var ir2=Math.min(sz*.12,W()*.14);
-        var ir3=Math.min(sz*.24,W()*.28);
-        return shapePoint(Math.floor(n*.06),x,y,255,255,240)
-          .concat(shapeRing(Math.floor(n*.28),x,y,ir1,ir1*.5,255,230,180))
-          .concat(shapeRing(Math.floor(n*.33),x,y,ir2,ir2*.3,255,170,90))
-          .concat(shapeRing(Math.ceil(n*.33),x,y,ir3,ir3*.2,220,130,60));
+        /* INFLATION — space expands from point outward in rings */
+        var ir=Math.min(sz*.28,W()*.32,H()*.32);
+        var out1=[];
+        out1.push.apply(out1,shapePoint(Math.floor(n*.06),x,y,255,255,240));
+        out1.push.apply(out1,shapeRing(Math.floor(n*.35),x,y,ir*.25,ir*.04,255,220,160));
+        out1.push.apply(out1,shapeRing(Math.ceil(n*.59),x,y,ir,ir*.06,200,130,60));
+        return out1;
       }
       if(phase===2){
-        /* QUARK-GLUON PLASMA — hot explosion */
-        return shapeExplosion(n,x,y,4,Math.min(sz*.38,W()*.40,H()*.40),255,110,25,true);
+        /* QUARK-GLUON PLASMA — hot explosion fills screen */
+        return shapeExplosion(n,x,y,4,Math.min(sz*.38,W()*.40,H()*.40),255,100,20,true);
       }
       if(phase===3){
-        /* FIRST STARS — Population III, 400 million years */
-        return shapeFirstStars(n,x,y,Math.min(sz*.42,W()*.40,H()*.40));
+        /* THE UNIVERSE HORN — NASA timeline shape expanding from left */
+        return shapeUniverseHorn(n,x,y,Math.min(sz*.46,W()*.43,H()*.40));
       }
-      /* OBSERVABLE UNIVERSE — NASA timeline shape:
-         Horn/cone shape, narrow at left (Big Bang end) expanding to right (today)
-         This matches the image exactly: asymmetric, wider on the present-day end */
-      return shapeUniverseHorn(n,x,y,Math.min(sz*.46,W()*.44,H()*.40));
+      /* COLLAPSE BACK TO SINGULARITY — all matter falls inward */
+      return shapeCollapse(n,x,y,Math.min(sz*.44,W()*.41,H()*.38),.6);
     }
-
-    /* UNIVERSE — zoom from multiverse to earth */
+        /* UNIVERSE — zoom from multiverse to earth */
     case 'universe':
       if(phase===0)return shapeScatter(n,x,y,sz*.52,150,160,220); /* multiverse */
       if(phase===1)return shapeSpiral(n,x,y,sz*.46,3,180,200,255); /* galaxy cluster */
       if(phase===2)return shapeSpiral(n,x,y,sz*.38,3,200,220,255); /* milky way */
       if(phase===3)return shapeRing(n,x,y,sz*.24,sz*.04,220,240,255); /* solar system */
-      return shapeFace(n,'happy',x,y,sz*.48); /* Earth */
+      return shapeFace(n,'😊',x,y,sz*.48); /* Earth */
 
     /* HEARTBREAK — form (two faces) → full → zero */
     case 'heartbreak':
-      if(phase===0)return shapeTwoFaces(n,'happy','happy',x,y,sz*.38);
+      if(phase===0)return shapeTwoFaces(n,'😊','😊',x,y,sz*.38);
       if(phase===1)return shapeFracture(n,x,y,sz*.42,sz*.01);
       if(phase===2)return shapeFracture(n,x,y,sz*.44,sz*.1);
       if(phase===3)return shapeFracture(n,x,y,sz*.44,sz*.22);
@@ -898,22 +934,22 @@ function getSpec(domain,phase,n){
     /* LOVE — zero→form→full */
     case 'love':
       if(phase===0)return shapeScatter(n,x-sz*.25,y,sz*.2,220,100,100).concat(shapeScatter(Math.floor(n/2),x+sz*.25,y,sz*.2,100,120,220));
-      if(phase===1)return shapeTwoFaces(n,'happy','happy',x,y,sz*.4);
+      if(phase===1)return shapeTwoFaces(n,'😊','😊',x,y,sz*.4);
       if(phase===2)return shapeFracture(n,x,y,sz*.42,sz*.02);
-      if(phase===3)return shapeFace(n,'happy',x,y,sz*.52);
+      if(phase===3)return shapeFace(n,'😊',x,y,sz*.52);
       return shapeExplosion(n,x,y,4,sz*.46,255,200,150,false);
 
     /* GRIEF — full face → dissolves → void → reforms */
     case 'grief':
-      if(phase===0)return shapeFace(n,'neutral',x,y,sz*.5);
-      if(phase===1)return shapeFace(n,'sad',x,y,sz*.5);
+      if(phase===0)return shapeFace(n,'😐',x,y,sz*.5);
+      if(phase===1)return shapeFace(n,'😔',x,y,sz*.5);
       if(phase===2)return shapeVoid(n,x,y,sz*.06,sz*.42,70,90,170);
       if(phase===3)return shapeVoid(n,x,y,sz*.18,sz*.46,55,75,155);
-      return shapeFace(n,'happy',x,y,sz*.46);
+      return shapeFace(n,'😊',x,y,sz*.46);
 
     /* ANGER — tense face → explosion → wave */
     case 'anger':
-      if(phase===0)return shapeFace(n,'angry',x,y,sz*.5);
+      if(phase===0)return shapeFace(n,'😤',x,y,sz*.5);
       if(phase===1)return shapeExplosion(n,x,y,4,sz*.35,255,60,0,true);
       if(phase===2)return shapeExplosion(n,x,y,4,Math.min(sz*.48,W()*.46,H()*.46),255,100,0,true);
       if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*4)*sz*.2+rnd(-4,4);ow.push({tx:wx,ty:wy,rr:255,gg:80,bb:20,r:.5+Math.random()*2});}return ow;}
@@ -922,7 +958,7 @@ function getSpec(domain,phase,n){
     /* JOY — zero→face→explosion */
     case 'joy':
       if(phase===0)return shapePoint(n,x,y,255,220,60);
-      if(phase===1)return shapeFace(n,'happy',x,y,sz*.5);
+      if(phase===1)return shapeFace(n,'😊',x,y,sz*.5);
       if(phase===2)return shapeRing(n,x,y,sz*.26,sz*.05,255,220,80);
       if(phase===3)return shapeExplosion(n,x,y,4,sz*.55,255,230,100,false);
       return shapeScatter(n,x,y,sz*.42,255,240,180);
@@ -1162,62 +1198,62 @@ var NARR={
     ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
-    ['The Singularity','One point. All matter, energy, space, and time compressed beyond measure. Temperature: 10³² Kelvin. Volume: smaller than a proton. Time itself does not yet exist as we know it.'],
-    ['Cosmic Inflation','In 10⁻³⁵ seconds, space expanded by a factor of 10²⁶ — faster than light. Quantum fluctuations stretched to cosmic scales. These imperfections became every galaxy and supercluster we see today.'],
-    ['Quark-Gluon Plasma','At 10⁻⁶ seconds: a superheated plasma of quarks and gluons, the raw matter of everything. Temperature 10¹³ Kelvin. Within minutes, protons and neutrons form. Within 380,000 years, the first atoms.'],
-    ['First Stars · Population III','180 million years of darkness. Hydrogen under gravity ignites the first stars — a thousand times our sun mass, burning blue-white. They live only a million years, then explode, seeding space with carbon, oxygen, and iron.'],
-    ['The Observable Universe','93 billion light-years across. The temperature map you see is the Cosmic Microwave Background — the oldest light, from 380,000 years after the Big Bang. Red: slightly hotter regions that became galaxy clusters. Blue: cooler voids. This is what the universe looks like from outside time. Then — everything pulls back. The next singularity is forming.']
+    ['Step 1: Singularity','All matter, energy, space and time exist in a single point of infinite density. Temperature: 10 to the 32 Kelvin. Volume: smaller than a proton. Time itself does not yet flow. This is t=0.'],
+    ['Step 2: Cosmic Inflation','In 10 to the minus 35 seconds, space expands by a factor of 10 to the 26 — faster than light. Not matter moving, but space itself multiplying. Quantum fluctuations are stretched to cosmic scale and will become every galaxy.'],
+    ['Step 3: Quark-Gluon Plasma','At one microsecond old, the universe is a superheated plasma of quarks and gluons. Temperature: 10 to the 13 Kelvin. In minutes, quarks bind into protons and neutrons. In 380,000 years, the first atoms form and the universe becomes transparent.'],
+    ['Step 4: The Observable Universe','The NASA horn shape: narrow at the Big Bang end (left), expanding to the present day (right). 93 billion light-years across today. Dark matter filaments hold galaxies at every node. Dark energy drives the accelerating expansion you see at the right edge.'],
+    ['Step 5: Heat Death','Expansion accelerates forever. Galaxies drift apart. Stars burn out. In 10 to the 100 years: only black holes remain. They evaporate via Hawking radiation. The universe reaches maximum entropy — heat death. Everything returns to the quantum void from which it came.']
   ],
-  universe:[
-    ['Phase 1 · The Multiverse','An infinite field. If string theory is correct, there are 10⁵⁰⁰ possible universes — each with different physical constants, different laws of physics. Ours is one that permits stars, carbon, and life.'],
-    ['Phase 2 · Galaxy Clusters','Galaxy clusters — the largest structures in the universe — span hundreds of millions of light-years. They are connected by filaments of dark matter in a web that looks, under analysis, like a neural network.'],
-    ['Phase 3 · The Milky Way','Our galaxy: 200 billion suns, 100,000 light-years across, 4 billion years before it collides with Andromeda. Every star visible to the naked eye is in this single galaxy.'],
-    ['Phase 4 · Our Solar System','Eight planets, one average star, in the outer spiral arm of the Milky Way. Our sun is 4.6 billion years old. It will become a red giant and consume the Earth in another 5 billion years.'],
-    ['Phase 5 · Here','Earth. 12,742 km across. Every human being who has ever lived was born on this single rock. Every war, every love, every idea, every language — here. Pale blue dot.']
+    universe:[
+    ['Step 1: Quantum Vacuum','Before anything: quantum vacuum fluctuations — virtual particle pairs blinking in and out of existence. This is the ground state of physics. Nothing, yet seething with probabilistic energy. The Big Bang is one of these fluctuations that did not annihilate.'],
+    ['Step 2: Galaxy Formation','Gravity amplifies tiny density variations from inflation. Gas clouds collapse. First galaxies form 400 million years after the Big Bang — small, irregular, chaotic. Over 13 billion years they merge, sort, and organise into the large-scale structure.'],
+    ['Step 3: The Milky Way','Our galaxy: a barred spiral 100,000 light-years across, 200 billion stars. Our sun sits in the Orion Arm, 26,000 light-years from a supermassive black hole called Sagittarius A, which contains 4 million solar masses.'],
+    ['Step 4: Solar System Formation','4.6 billion years ago, a molecular cloud collapses — perhaps triggered by a nearby supernova shockwave. The sun ignites. Remaining dust and gas form a protoplanetary disk. Collisions and accretion build eight planets over 100 million years.'],
+    ['Step 5: Earth — One Rock','Pale blue dot. 12,742 km across. 4.5 billion years old. Every human who has ever lived was born on this single object orbiting an average star in the outer arm of one of 2 trillion galaxies. The universe required 13.8 billion years to produce you.']
   ],
-  heartbreak:[
-    ['Two Whole People','Two complete human beings, each with their own warmth. Before they overlapped — before they changed each other in every dimension.'],
-    ['The Fracture','A crack propagates from the centre. The shared warmth that existed only between them — that specific colour — begins to cool at the fracture line first.'],
-    ['Pulling Apart','Each field retreats. The temperature drops as the distance grows. The particles do not know they are becoming cold. The body feels it as an ache.'],
-    ['Cold Separation','Two fields, cooling rapidly. The specific warmth they generated together cannot survive without both. It requires exactly these two people to exist.'],
-    ['Silence','Two separate cold fields. The warmth they produced together is thermodynamically impossible to reconstruct. Not damaged — gone. This is why it feels final even when reason says otherwise.']
+    heartbreak:[
+    ['Step 1: Two Complete Systems','Two human beings, each with a complete neural model of the world. Before contact: two separate oscillating fields, each self-sustaining, each complete.'],
+    ['Step 2: Entanglement','The brain builds predictive models of people close to us — their voice, weight, responses, patterns. After sufficient time together, the model of the other person runs continuously, even in their absence. The fields have merged.'],
+    ['Step 3: Fracture Propagation','Separation begins at a boundary condition. The merged field must split. Unlike physical objects, neural models do not simply stop — they continue predicting, and every prediction now fails. The failure is felt as loss, thousands of times per day.'],
+    ['Step 4: Field Separation','As physical distance increases, the predictive model diverges further from reality. The brain attempts to update the model but lacks new data. The gap between expectation and reality is the precise mechanism of grief. Not sadness — mismatch.'],
+    ['Step 5: Integration','The brain cannot delete what it loved. With time, the failed predictions reduce in frequency. The field does not heal — it reorganises around the absence. Love remains encoded in synaptic weights permanently. Heartbreak is the scar of an attachment that was real.']
   ],
-  love:[
-    ['Two Fields','Two independent particle systems, orbiting separately. The first sign of attraction is a slight deviation from the original path — almost too small to notice. Something has changed.'],
-    ['Recognition','Two people who see each other — not as objects but as subjects. Each recognises something in the other that resembles something in themselves.'],
-    ['Phase 3 · Overlap','The fields begin to merge. Warmer than either alone. Brighter than either alone. This is emergence: two systems producing a property that neither possesses independently.'],
-    ['Phase 4 · The Face of Love','The combined field settles into a single emotional signature. Oxytocin, dopamine, serotonin — measurable. But the felt quality exceeds its chemistry.'],
-    ['Amplification','Two fields in mutual orbit, each amplifying the signal of the other. The mathematics of this state is stable. Love, undisturbed, does not decay.']
+    love:[
+    ['Step 1: Initial Attraction','The ventral tegmental area releases dopamine when a person is encountered who represents novelty, warmth, and potential survival advantage. This is not a choice — it is a chemical evaluation running 250 milliseconds below conscious thought.'],
+    ['Step 2: Recognition','Sustained exposure builds neural prediction models. The orbicularis oculi — the eye muscle — contracts involuntarily in genuine recognition. This cannot be faked. The body signals trust before the mind confirms it.'],
+    ['Step 3: Pair Bonding','Oxytocin — released through touch, eye contact, and sustained proximity — binds to receptors that reduce threat detection and increase trust. The amygdala quiets. The other person begins to feel safe in a way that is measurably different from all others.'],
+    ['Step 4: Merged Fields','Two independently oscillating neural fields begin to synchronise. Heart rate variability, breathing, even neural oscillation patterns shift toward alignment. This is measurable. Two people in love are physically different from two people who are not.'],
+    ['Step 5: Stable Orbit','Long-term love activates serotonin pathways rather than dopamine — a shift from excitement to deep contentment. The merged field becomes self-sustaining. Love at this stage does not require novelty to persist. It is a new equilibrium state.']
   ],
-  grief:[
-    ['Phase 1 · The Face Before','A person, intact. The brain holds a complete predictive model of someone loved — their voice, their weight, their responses. This model runs continuously.'],
-    ['Phase 2 · The Face After','The same face, but wrong. The model still predicts — and every prediction fails. Grief is not sadness. It is the gap between prediction and reality, felt thousands of times per day.'],
-    ['Phase 3 · The Void','Absence becomes a presence. The dark centre pulling inward — this is what loss feels like when it is acute. The brain cannot delete what it loved. It can only learn to carry it.'],
-    ['Phase 4 · The Ring','The particles orbit the void rather than being consumed. This is integration, not healing. The wound does not close — the field reorganises around it and continues.'],
-    ['Phase 5 · New Growth','A different face. The same person, but changed. Grief carried long enough becomes part of the person who carries it. The loss stays. So does the love. Both are permanent.']
+    grief:[
+    ['Step 1: Intact Prediction Model','The brain maintains a complete predictive model of every significant person. It runs continuously — anticipating their response, planning future interactions, simulating their presence. This model does not stop when they die.'],
+    ['Step 2: The First Failure','The model predicts. Reality does not match. The mismatch activates the anterior cingulate cortex — the same region that registers physical pain. Grief and pain use the same neural infrastructure. This is why it is described as a physical sensation.'],
+    ['Step 3: Void Formation','The brain cannot delete the model. Every environment, smell, sound, and time of day that was associated with the person triggers a prediction — and a failure. The absence becomes a presence. The void has a shape made of everything that once fitted there.'],
+    ['Step 4: Reorganisation','The brain begins to build a new model: one that incorporates the absence. This takes, on average, two years. The wound does not close — the architecture around it changes. Grief carried long enough becomes wisdom, because it is paid for.'],
+    ['Step 5: New Growth','The person who emerges from grief is not the same as the one who entered it. New neural pathways have formed around the loss. The love is still encoded. The loss is still encoded. Both are permanent features of the landscape of self.']
   ],
-  anger:[
-    ['Phase 1 · Tension','The amygdala fires 250 milliseconds before conscious awareness. Cortisol and adrenaline flood the bloodstream before the thought forms. Every particle is already accelerating.'],
-    ['Phase 2 · Eruption','The prefrontal cortex goes offline. Executive function drops by 40%. The explosion is what it looks like inside — genuine, total, without rational constraint.'],
-    ['Phase 3 · Rage','Every particle at maximum velocity. The body is optimised for physical danger, in a world that rarely requires it. The energy has nowhere useful to go.'],
-    ['Phase 4 · The Wave','Anger moves in waves — through the body, through conversations, through relationships. Each wave reinforces the pathway that produced it. Anger practised becomes anger habit.'],
-    ['Phase 5 · Dissipation','The parasympathetic system gradually wins. Cortisol clears in 20 minutes. The particles slow. But every pathway that fired has been reinforced — the next anger arrives faster.']
+    anger:[
+    ['Step 1: Amygdala Firing','The amygdala detects threat and fires 250 milliseconds before conscious awareness. Cortisol and adrenaline flood the bloodstream. The heart rate increases 20 beats per minute. All of this happens before you know you are angry.'],
+    ['Step 2: Prefrontal Shutdown','The prefrontal cortex — the region responsible for rational evaluation — reduces blood flow by up to 40 percent. Executive function drops. The brain prioritises fast threat response over accurate evaluation. You are, neurologically, less intelligent when angry.'],
+    ['Step 3: Peak Activation','Full sympathetic nervous system activation. Blood flows to large muscle groups. Peripheral vision narrows. Digestion stops. The body is optimised for combat or flight in a world that almost never requires either. The energy has nowhere useful to go.'],
+    ['Step 4: Wave Propagation','Anger travels in waves through conversation, through relationship, through institutions. Each wave reinforces the neural pathway that produced it — Hebbian learning applied to rage. Anger practised is anger strengthened. It becomes the default response faster each time.'],
+    ['Step 5: Cortisol Clearance','The parasympathetic system begins to win approximately 20 minutes after peak activation. Cortisol clears. Heart rate drops. Rational evaluation returns. But every pathway that fired has been reinforced. The next trigger will reach the same intensity faster.']
   ],
-  joy:[
-    ['Phase 1 · The First Signal','A small dopaminergic signal from the ventral tegmental area. Joy begins as anticipation — the brain predicts something good before it arrives. The prediction itself is part of the pleasure.'],
-    ['Phase 2 · The Joyful Face','This is joy when it is real, not performed. The orbicularis oculi — the muscle around the eye — fires involuntarily. The body cannot convincingly fake this contraction.'],
-    ['Phase 3 · The Ring Expands','Joy radiates outward. It is one of the few emotions that naturally seeks to include others. Happy people cause happiness in those around them — it is contagious in the literal sense.'],
-    ['Phase 4 · The Flood','Dopamine, serotonin, endorphins, and oxytocin at simultaneous peaks. The nucleus accumbens saturates. Peak joy is neurochemically indistinguishable from certain states of madness.'],
-    ['Phase 5 · Afterglow','Serotonin — the background contentment signal — expands slowly after the peak. This is why good moments leave warmth behind them. The chemistry outlasts the cause.']
+    joy:[
+    ['Step 1: Anticipation Signal','The ventral tegmental area releases dopamine before the good thing arrives — not in response to it. The prediction itself generates pleasure. This is why anticipation is sometimes better than the event. The brain rewards itself for accurate positive forecasting.'],
+    ['Step 2: The Duchenne Smile','Real joy activates the orbicularis oculi — the muscle around the eye. This contraction is involuntary. It cannot be consciously faked. When it fires alongside the zygomatic major (the mouth smile), the result is a Duchenne smile — universally recognised across cultures as genuine.'],
+    ['Step 3: Social Propagation','Joy is one of the few emotions that naturally seeks to include others. Mirror neurons activate in observers. Heart rate synchronises. The emotional state transfers. A laughing person in a room changes the neurochemistry of everyone in it.'],
+    ['Step 4: Peak Neurochemistry','At peak joy: dopamine, serotonin, endorphins, and oxytocin are simultaneously elevated. The nucleus accumbens — the brain reward centre — saturates. This exact neurochemical state is indistinguishable from certain states of mania. Joy at peak is biologically extreme.'],
+    ['Step 5: Serotonin Afterglow','After the peak, serotonin — the background contentment signal — expands slowly and persists for hours. This is the biochemical reason good experiences leave warmth long after they end. The chemistry outlasts the cause. Memory of joy contains real residual neurochemistry.']
   ],
-  neuron:[
-    ['Phase 1 · One Neuron, At Rest','A single cell. Resting membrane potential: −70mV. 86 billion neurons in the human brain, each capable of firing 1,000 times per second. This is one of them, waiting.'],
-    ['Phase 2 · The Action Potential','Voltage-gated Na⁺ channels open at the axon hillock. The membrane flips to +40mV in under 1 millisecond. The signal begins its journey — this is a thought, beginning.'],
-    ['Phase 3 · The Network','What fires together, wires together. Every idea you have ever had is a specific pattern across 86 billion nodes, each connected to thousands of others. You are the pattern.'],
-    ['Phase 4 · The Pulse','120 metres per second down myelinated axons. The signal arrives at the synapse — a 20-nanometre gap — and converts from electrical to chemical to electrical again.'],
-    ['Phase 5 · The Full Brain','Every thought you have ever had has left a trace in this structure. Every memory is a specific set of synaptic weights. The brain you have today is shaped by every experience you have ever had.']
+    neuron:[
+    ['Step 1: Resting State','A single neuron, at rest. Resting membrane potential: minus 70 millivolts. Maintained by sodium-potassium pumps moving 3 sodium ions out for every 2 potassium ions in, consuming 70 percent of the neuron energy budget. 86 billion neurons, each doing this, always.'],
+    ['Step 2: Action Potential','A stimulus depolarises the membrane. Voltage-gated sodium channels open at the axon hillock — the threshold is minus 55 millivolts. In under 1 millisecond, the membrane flips to positive 40 millivolts. A wave of electrical charge propagates down the axon at 120 metres per second.'],
+    ['Step 3: Synaptic Transmission','The signal reaches the synaptic terminal. Calcium ions enter. Vesicles fuse with the membrane and release neurotransmitter molecules into the 20-nanometre synaptic cleft. The signal converts from electrical to chemical, crosses the gap, and converts back to electrical in under 1 millisecond.'],
+    ['Step 4: Neural Network','What fires together, wires together — Hebbs Rule. Every thought you have ever had is a specific pattern of activation across 86 billion nodes, each connected to 7,000 others on average. Learning is the physical strengthening of specific connections. You are the pattern, not the neurons.'],
+    ['Step 5: Neuroplasticity','The brain you have today was shaped by every experience you have ever had. Connections used frequently are myelinated — wrapped in fatty insulation that increases transmission speed by 100 times. Unused connections are pruned. The architecture is never fixed. Every moment changes it.']
   ],
-  immune:[
+    immune:[
     ['Healthy Cell','One human cell, 50 micrometres across. Its plasma membrane maintains a precise ionic balance. Nearby: three rod-shaped bacteria — Streptococcus, 2 micrometres long — drifting toward it.'],
     ['Bacterial Approach','Bacteria express surface adhesins — molecular hooks that bind to receptor proteins on the host cell. This is not random. Pathogens have evolved specific keys for specific cellular locks.'],
     ['Infection','Bacteria breach the cell membrane. The cell responds: it releases cytokines — chemical distress signals that travel through surrounding tissue, summoning the immune system.'],
@@ -1225,40 +1261,41 @@ var NARR={
     ['Resolution','Macrophages clear the debris. The infection is contained. The adaptive immune system records the pathogen signature — next encounter, the response is ten times faster. This is immunological memory.']
   ],
   amr:[
-    ['Phase 1 · The Colony','A bacterial colony at equilibrium. Within this population, resistance genes exist at low frequency — invisible, harmless-seeming, waiting.'],
-    ['Phase 2 · The Antibiotic','Not a cure. A filter. The antibiotic wave kills 99.99% of the colony. The 0.01% with resistance genes did not develop resistance in response — they already had it.'],
-    ['Phase 3 · The Survivors','A handful remain. Everything else is gone. These bacteria reproduced. Natural selection did not create the solution — it revealed the one that already existed.'],
-    ['Phase 4 · Replication','20 minutes per generation. 10 hours to a billion descendants. All resistant. The antibiotic that once cured this infection no longer works.'],
-    ['Phase 5 · Red Colony','An entirely resistant population, indistinguishable in appearance from the original. We are developing new antibiotics more slowly than resistance evolves.']
+    ['Step 1: Bacterial Colony','A colony of 10 billion bacteria in equilibrium. Within this population, approximately 1 in 100 million carries a random genetic mutation conferring resistance to a specific antibiotic. These resistant bacteria are invisible — they look and behave identically to susceptible ones.'],
+    ['Step 2: Antibiotic Exposure','An antibiotic is introduced. It is not a cure. It is a selective filter. Within 48 hours, 99.9999 percent of susceptible bacteria are killed. The 1 in 100 million resistant bacteria did not develop resistance in response — they already had it. Natural selection reveals, not creates.'],
+    ['Step 3: Selective Pressure','The antibiotic has inadvertently performed perfect selective breeding. Every susceptible competitor is eliminated. The resistant bacteria face no competition for nutrients, no immune system activity (it was treating only bacteria, not the host). Ideal growth conditions.'],
+    ['Step 4: Resistance Replication','Bacteria divide every 20 minutes. In 10 hours: 1 billion descendants, all resistant. Resistance genes are also transferred horizontally between unrelated bacterial species via plasmids — small circular DNA loops that function as resistance libraries, shared freely across the bacterial world.'],
+    ['Step 5: Post-Antibiotic Era','The resistant colony is indistinguishable from the original, except it cannot be treated. We currently develop new antibiotics more slowly than resistance evolves. The World Health Organisation projects 10 million deaths per year from antibiotic-resistant infections by 2050, exceeding cancer.']
   ],
-  bh:[
-    ['Phase 1 · Before The Collapse','A massive star, exhausting its nuclear fuel. Without radiation pressure to counter gravity, it will collapse inward in seconds. The particles you see are the star, intact.'],
-    ['Phase 2 · Accretion Disk','Matter spiralling inward, heated to millions of Kelvin by friction and compression. The disk emits X-rays visible across the galaxy. This is the light that escapes.'],
-    ['Phase 3 · Photon Sphere','At 1.5 Schwarzschild radii, light orbits. Below this, nothing returns. Above it, light from behind the black hole curves completely around it — the object has no backside.'],
-    ['Phase 4 · Einstein Ring','When the mass aligns precisely between Earth and a distant star, the star\'s light bends around it in a perfect circle. Predicted 1915. Photographed 2019.'],
-    ['Phase 5 · Event Horizon','The boundary of no return. Not a surface — a geometric fact. All paths through spacetime lead inward. Nothing escapes, including information.']
+    bh:[
+    ['Step 1: Stellar Death','A star 20 times the mass of our sun exhausts its nuclear fuel. For its entire life, radiation pressure from nuclear fusion balanced gravitational collapse. Without it, gravity wins in seconds. The core collapses to nuclear density — the equivalent of squeezing the sun into a sphere 10 km across.'],
+    ['Step 2: Accretion Disk','Matter from surrounding space spirals inward. Conservation of angular momentum spins it into a disk. Friction heats the disk to millions of Kelvin. It radiates X-rays detectable across the galaxy. This is the only light that escapes. Everything else crosses the event horizon.'],
+    ['Step 3: Event Horizon','At the Schwarzschild radius, escape velocity equals the speed of light. This is not a surface — it is a geometric boundary. Inside it, all paths through spacetime lead toward the singularity. Not toward the centre of a sphere — toward a point in time. The future becomes the singularity.'],
+    ['Step 4: Hawking Radiation','Virtual particle pairs appear and annihilate constantly near the event horizon. Occasionally, one falls in and one escapes. The black hole pays for this with mass — it slowly evaporates. A stellar black hole takes 10 to the 67 years to evaporate. The universe is 10 to the 10 years old.'],
+    ['Step 5: Final Evaporation','As the black hole shrinks, Hawking radiation intensifies. The final evaporation is explosive — releasing energy equivalent to millions of hydrogen bombs in a fraction of a second. What remains: uncertain. String theory suggests a remnant. Quantum gravity has no confirmed answer.']
   ],
-  rumour:[
-    ['Phase 1 · One Person Knows','A single node in a network of 8 billion. Within three hops, connections reach 3 billion others. The conditions for exponential spread are permanently present.'],
-    ['Phase 2 · The First Cluster','Early spread is invisible. R₀ is growing below the threshold of detection. When it exceeds 1.0, the collapse of the original state becomes inevitable.'],
-    ['Phase 3 · Cascade','Exponential growth looks like nothing, then everything. Hub nodes become super-spreaders. One message, one billion minds, in hours.'],
-    ['Phase 4 · Mutation','The message mutates as it travels. Details change with each transmission. The emotional charge survives. The facts do not.'],
-    ['Phase 5 · Exhaustion','The cascade collapses not when truth wins, but when attention fails. Information, like all energy, dissipates. The story dies of exhaustion, not correction.']
+    rumour:[
+    ['Step 1: Patient Zero','A single node in a network of 8 billion people. The information has specific properties that determine whether it spreads: emotional charge, identity relevance, moral content, and surprise. Neutral accurate information spreads slowly. Emotionally charged inaccurate information spreads six times faster — measured across Twitter over 10 years by MIT.'],
+    ['Step 2: First Transmission','Each person who shares reaches an average of 250 connections. The first three hops of a rumour reach 16 million people — if each person shares with just three others. R-naught above 1.0 means exponential growth has begun. Below 1.0 it dies. Rumours that spread have found the threshold.'],
+    ['Step 3: Exponential Cascade','Exponential growth is invisible until suddenly it is not. At transmission 10: 59,000 people. At transmission 20: 3.5 billion. The entire observable network is saturated before any central authority can respond. Modern network topology makes this faster than any previous point in human history.'],
+    ['Step 4: Mutation','The message mutates with each transmission. Details are dropped, exaggerated, or distorted — not through malice but through cognitive compression. The emotional charge is preserved with high fidelity. The factual content degrades rapidly. At the end of a long chain, only the feeling survives.'],
+    ['Step 5: Correction Failure','Corrections spread 3 times slower than the original rumour, reach 6 times fewer people, and are shared with less confidence. The brain treats a correction as new information, not as an update to the original. The rumour is stored as a memory. The correction is stored separately. Both exist simultaneously.']
   ],
-  urban:[
-    ['Phase 1 · Ordered Flow','A city at optimal capacity. Every junction clearing in sequence. This state is productive, efficient, and inherently fragile — one failure propagates instantly.'],
-    ['Phase 2 · The Flow Lines','Traffic behaves as fluid dynamics. Laminar flow at low density, turbulent at high. The lines are vehicles at their natural speed, before any junction fails.'],
-    ['Phase 3 · The Bottleneck','One junction reaches capacity. Upstream queues grow faster than they clear. The phase transition has begun — and it happens faster than any human can respond to.'],
-    ['Phase 4 · The Void of Gridlock','The hollow centre is not emptiness — it is the junction where nothing moves. Vehicles from four directions cannot enter because they cannot exit.'],
-    ['Phase 5 · Cascade Failure','Congestion propagates to adjacent junctions, then further. The network fails from a single point — not because of the volume, but because of the topology of connections.']
+    urban:[
+    ['Step 1: Laminar Flow','At low vehicle density, traffic behaves as laminar fluid — smooth, predictable, efficient. Each vehicle moves at near-optimal speed. The network operates below capacity. A city of 3 million can move 2.5 million person-trips per day at this phase without congestion.'],
+    ['Step 2: Approaching Capacity','As density increases, minor fluctuations propagate upstream — shockwaves in a fluid. A single driver braking 50 km upstream creates a traffic jam that persists for hours after the cause has cleared. The jam moves backward through traffic at 15 km per hour. This is phantom traffic.'],
+    ['Step 3: Phase Transition','At approximately 20 vehicles per km, traffic undergoes a phase transition from free flow to congested flow. This transition is sudden, not gradual — like water freezing. The road that was flowing moments ago becomes gridlocked. The transition point is unpredictable and irreversible without intervention.'],
+    ['Step 4: Gridlock Propagation','One blocked junction prevents vehicles from entering from four directions. Those vehicles block their upstream junctions. The cascade propagates at the speed of braking — approximately 15 km per hour. A single intersection failure can gridlock 40 city blocks in 12 minutes.'],
+    ['Step 5: Network Recovery','Recovery requires external intervention: traffic management, signal timing changes, emergency route clearing. Natural recovery through self-organisation takes 3-4 times longer than the congestion took to form. City traffic networks are resilient to randomness but fragile to correlated failures.']
   ],
-  chem:[
-    ['Phase 1 · Separation','Molecules A and B, separated. At this distance, they cannot react — the activation energy barrier prevents it. They need a collision of sufficient kinetic energy.'],
-    ['Phase 2 · Diffusion','Molecules drift randomly through solution — Brownian motion, driven by thermal energy. Most collisions lack sufficient energy to react. But with enough molecules and time — inevitable.'],
-    ['Phase 3 · The Reaction Zone','A collision with enough energy occurs. Bonds break and reform simultaneously in microseconds. The transition state exists for less than a single vibration.'],
-    ['Phase 4 · Product Formation','Products appear, releasing energy as they form. The energy released may catalyse further reactions. Fire, life, and explosions all follow this principle.'],
-    ['Phase 5 · Equilibrium','Products accumulate; reactants deplete. Forward and reverse rates equalise. Le Chatelier\'s principle governs the balance. The lowest-energy configuration.']
+    chem:[
+    ['Step 1: Molecular Separation','Two molecular species, A and B, exist in solution. At this distance, the activation energy barrier prevents reaction — the electron clouds repel before atoms can form bonds. Temperature determines whether any given collision has sufficient kinetic energy to overcome this barrier.'],
+    ['Step 2: Brownian Motion','Molecules move randomly through solution — thermal energy produces constant, chaotic motion called Brownian motion. The collision frequency for a 1-molar solution is 10 to the 30 collisions per second per litre. Most have insufficient energy to react. Probability governs chemistry.'],
+    ['Step 3: Transition State','A collision with sufficient activation energy occurs. For a fraction of a picosecond — 10 to the minus 12 seconds — the atoms exist in a transition state: old bonds breaking and new bonds forming simultaneously. This state cannot be isolated. It is a moment, not a molecule.'],
+    ['Step 4: Product Formation','Products form and release energy — the difference between the energy of reactants and products, called enthalpy. This energy drives further reactions, heats the environment, or does work. Fire, life, explosions, and metabolism all run on this principle. Chemistry is controlled energy release.'],
+    ['Step 5: Equilibrium','Products accumulate, reactants deplete. The forward reaction rate slows; the reverse reaction rate accelerates. At equilibrium, both proceed at equal rates — a dynamic balance. Le Chateliers principle: disturb the equilibrium and the system shifts to restore it. Every chemical system seeks its lowest energy state.']
   ]
+  
 };
 
 /* ── QUESTION ROUTING ── */
@@ -1462,6 +1499,9 @@ async function askQuestion(){
   /* Gate anon users */
   var anonCount=parseInt(localStorage.getItem('ss_anon_sims')||'0');
   if(anonCount>=5&&(!window.SS||!window.SS.isSubscriber)){showUpgradeModal('limit');return;}
+  /* Show question in bar immediately */
+  showQuestionBar(q);
+  hideSimActions();
   /* Visual — busy state on submit icon */
   var icon=document.getElementById('submitIcon');
   if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='…';}
@@ -1556,7 +1596,73 @@ function doShare(){
   earnPoint('🔗 +2 pts',2);
 }
 function doVote(){currentVotes=(currentVotes||0)+1;var el=document.getElementById('voteCount');el.textContent=currentVotes+' votes';earnPoint('⭐ +5 pts',5);}
-function doEarn(){showToast('💰 '+userPoints+' pts = $'+(userPoints*.01).toFixed(2)+' · Redeem at 1000 pts');}
+function doEarn(){showToast('💰 '+userPoints+' pts = $'+(userPoints*.10).toFixed(2)+' · 1 pt = $0.10 · Redeem at 1000 pts');}
+
+/* ── COMMENTS — TikTok style ── */
+var _commentsOpen=false;
+var _comments=[];
+function openComments(){
+  _commentsOpen=true;
+  var sheet=document.getElementById('commentsSheet');
+  var backdrop=document.getElementById('commentsBackdrop');
+  if(!sheet)return;
+  sheet.style.bottom='0';
+  if(backdrop){backdrop.style.background='rgba(0,0,0,.5)';backdrop.style.pointerEvents='all';}
+  loadComments();
+}
+function closeComments(){
+  _commentsOpen=false;
+  var sheet=document.getElementById('commentsSheet');
+  var backdrop=document.getElementById('commentsBackdrop');
+  if(sheet)sheet.style.bottom='-100%';
+  if(backdrop){backdrop.style.background='rgba(0,0,0,0)';backdrop.style.pointerEvents='none';}
+}
+function loadComments(){
+  var list=document.getElementById('commentsList');
+  if(!list)return;
+  if(!currentSimId){list.innerHTML='<div style="color:var(--dim);font-size:.78rem;padding:.5rem;text-align:center">Create a simulation first to see comments</div>';return;}
+  list.innerHTML='<div style="color:var(--dim);font-size:.74rem;padding:.5rem;text-align:center">Loading…</div>';
+  fetch(SB+'/rest/v1/simulation_comments?sim_id=eq.'+currentSimId+'&order=created_at.asc&limit=50',{
+    headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}
+  }).then(function(r){return r.json();}).then(function(data){
+    if(!data||!data.length){
+      list.innerHTML='<div style="color:var(--dim);font-size:.78rem;padding:1rem;text-align:center">No comments yet. Be the first! 💬</div>';
+      return;
+    }
+    list.innerHTML=data.map(function(c){
+      var t=new Date(c.created_at).toLocaleDateString();
+      return '<div style="display:flex;gap:10px;padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+        +'<div style="width:36px;height:36px;border-radius:50%;background:rgba(38,232,176,0.12);border:1px solid rgba(38,232,176,0.2);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0">👤</div>'
+        +'<div style="flex:1">'
+        +'<div style="font-size:.7rem;color:var(--g);font-weight:700;margin-bottom:.15rem">'+(c.user_name||'Anonymous')+'</div>'
+        +'<div style="font-size:.82rem;color:rgba(255,255,255,.88);line-height:1.4">'+c.text+'</div>'
+        +'<div style="font-size:.62rem;color:var(--dim);margin-top:.2rem">'+t+'</div>'
+        +'</div></div>';
+    }).join('');
+    list.scrollTop=list.scrollHeight;
+  }).catch(function(){
+    list.innerHTML='<div style="color:var(--dim);font-size:.78rem;padding:.5rem;text-align:center">Could not load comments</div>';
+  });
+}
+async function submitComment(){
+  var input=document.getElementById('commentInput');
+  var text=(input&&input.value||'').trim();
+  if(!text)return;
+  if(!currentSimId){showToast('Create a simulation first');return;}
+  var userName=window.SS&&window.SS.user?window.SS.user.email.split('@')[0]:'Guest';
+  try{
+    await fetch(SB+'/rest/v1/simulation_comments',{
+      method:'POST',
+      headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({sim_id:currentSimId,text:text,user_name:userName,created_at:new Date().toISOString()})
+    });
+    if(input)input.value='';
+    loadComments();
+    /* Update count */
+    var cc=document.getElementById('commentCount');
+    if(cc){var cur=parseInt(cc.textContent)||0;cc.textContent=cur+1;}
+  }catch(e){showToast('Error posting comment');}
+}
 function earnPoint(msg,pts){userPoints+=(pts||1);document.getElementById('pointsCount').textContent=userPoints+' pts';showToast(msg);}
 function showToast(msg){var t=document.getElementById('ptToast');t.textContent=msg;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},2400);}
 

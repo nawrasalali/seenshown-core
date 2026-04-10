@@ -430,7 +430,7 @@ var PHASE_DUR=5000;
 var globalT=0;
 var lastTs=0;
 var formT=0;
-var FORM_DUR=4000; /* faster transition = more continuous feel */
+var FORM_DUR=3000; /* 3s transition */
 var N=0; /* set by detectSpeed() */
 var reinitScheduled=false;
 
@@ -877,169 +877,152 @@ function shapeFirstStars(n,ox,oy,size){
 
 /* ── DOMAIN SHAPE SPECS — 5 phases each ── */
 function getSpec(domain,phase,n){
-  var x=cx(),y=cy(); /* TRUE CENTER — sim centered on screen */
+  var x=cx(),y=cy();
   var sz=Math.min(W(),H());
+  var sw=Math.min(W()*.46,sz*.44); /* safe width */
+  var sh=Math.min(H()*.40,sz*.40); /* safe height */
+
   switch(domain){
-    /* FIREWORKS — New Year countdown: single dot → shells burst */
-    case 'fireworks':
-      if(phase===0)return shapePoint(n,W()/2,H()*.35,255,220,100); /* single spark — countdown plays as overlay */
-      if(phase===1)return shapeFireworks(n,1);  /* first shells */
-      if(phase===2)return shapeFireworks(n,2);  /* more shells */
-      if(phase===3)return shapeFireworks(n,3);  /* peak celebration */
-      return shapeFireworks(n,4);               /* grand finale */
 
-    /* BIG BANG — zero→full, one dot explodes to universe */
+    /* BIG BANG — 12 phases, all white flash on 1, continuous morphing */
     case 'bigbang':{
-      /* Scientific Big Bang: singularity → inflation → plasma → horn → collapse */
-      if(phase===0){
-        /* SINGULARITY — one point, all energy */
-        return shapePoint(n,x,y,255,245,220);
-      }
+      if(phase===0) return shapePoint(n,x,y,255,255,255);
       if(phase===1){
-        /* INFLATION — space expands from point outward in rings */
-        var ir=Math.min(sz*.28,W()*.32,H()*.32);
-        var out1=[];
-        out1.push.apply(out1,shapePoint(Math.floor(n*.06),x,y,255,255,240));
-        out1.push.apply(out1,shapeRing(Math.floor(n*.35),x,y,ir*.25,ir*.04,255,220,160));
-        out1.push.apply(out1,shapeRing(Math.ceil(n*.59),x,y,ir,ir*.06,200,130,60));
-        return out1;
+        var outF=[];
+        for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=Math.random()*sw;outF.push({tx:x+Math.cos(a)*d,ty:y+Math.sin(a)*d,rr:255,gg:255,bb:255,r:.3+Math.random()*2.5});}
+        return outF;
       }
-      if(phase===2){
-        /* QUARK-GLUON PLASMA — hot explosion fills screen */
-        return shapeExplosion(n,x,y,4,Math.min(sz*.38,W()*.40,H()*.40),255,100,20,true);
-      }
+      if(phase===2) return shapeExplosion(n,x,y,2,sw*.92,255,80,10,true);
       if(phase===3){
-        /* THE UNIVERSE HORN — NASA timeline shape expanding from left */
-        return shapeUniverseHorn(n,x,y,Math.min(sz*.46,W()*.43,H()*.40));
+        var out3=[],nc=8,cN=Math.floor(n/nc);
+        for(var c=0;c<nc;c++){var ca=c/nc*Math.PI*2,cd=sz*.16,cx2=x+Math.cos(ca)*cd,cy2=y+Math.sin(ca)*cd;for(var i=0;i<cN;i++){var a=rnd(0,Math.PI*2),d=Math.random()*sz*.05;out3.push({tx:cx2+Math.cos(a)*d,ty:cy2+Math.sin(a)*d,rr:255,gg:200,bb:80,r:.5+Math.random()*2});}}
+        return out3;
       }
-      /* COLLAPSE BACK TO SINGULARITY — all matter falls inward */
-      return shapeCollapse(n,x,y,Math.min(sz*.44,W()*.41,H()*.38),.6);
+      if(phase===4){var out4=[];for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=Math.pow(Math.random(),.4)*sw;var h2=1-d/sw;out4.push({tx:x+Math.cos(a)*d,ty:y+Math.sin(a)*d,rr:Math.round(180+h2*75),gg:Math.round(120+h2*80),bb:Math.round(80+h2*60),r:.3+Math.random()*1.2});}return out4;}
+      if(phase===5){var out5=[];for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=rnd(0,sw);out5.push({tx:x+Math.cos(a)*d,ty:y+Math.sin(a)*d,rr:15+Math.round(Math.random()*25),gg:15+Math.round(Math.random()*25),bb:40+Math.round(Math.random()*50),r:.2+Math.random()*.5});}return out5;}
+      if(phase===6) return shapeFirstStars(n,x,y,Math.min(sz*.42,sw));
+      if(phase===7) return shapeSpiral(n,x,y,Math.min(sz*.4,sw),3,180,200,255);
+      if(phase===8) return shapeUniverseHorn(n,x,y,Math.min(sz*.44,sw,sh));
+      if(phase===9) return shapeRing(Math.floor(n*.72),x,y,sw*.76,sw*.055,255,140,30).concat(shapeVoid(Math.ceil(n*.28),x,y,sw*.18,sw*.32,25,15,70));
+      if(phase===10){var out10=[];for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=rnd(sz*.08,sw);out10.push({tx:x+Math.cos(a)*d,ty:y+Math.sin(a)*d,rr:8+Math.round(Math.random()*15),gg:8+Math.round(Math.random()*12),bb:12+Math.round(Math.random()*20),r:.12+Math.random()*.28});}return out10;}
+      return shapeCollapse(n,x,y,sw,.78);
     }
-        /* UNIVERSE — zoom from multiverse to earth */
+
+    /* UNIVERSE — scale from quantum to cosmic */
     case 'universe':
-      if(phase===0)return shapeScatter(n,x,y,sz*.52,150,160,220); /* multiverse */
-      if(phase===1)return shapeSpiral(n,x,y,sz*.46,3,180,200,255); /* galaxy cluster */
-      if(phase===2)return shapeSpiral(n,x,y,sz*.38,3,200,220,255); /* milky way */
-      if(phase===3)return shapeRing(n,x,y,sz*.24,sz*.04,220,240,255); /* solar system */
-      return shapeFace(n,'😊',x,y,sz*.48); /* Earth */
+      if(phase===0) return shapeScatter(n,x,y,sz*.08,180,180,255); /* quantum foam — tiny */
+      if(phase===1) return shapeRing(n,x,y,sz*.12,sz*.03,200,180,255); /* atom */
+      if(phase===2) return shapeRing(n,x,y,sz*.28,sz*.05,220,200,255); /* solar system */
+      if(phase===3) return shapeSpiral(n,x,y,Math.min(sz*.4,sw),3,180,200,255); /* galaxy */
+      return shapeCosmicWeb(n,x,y,Math.min(sz*.44,sw,sh)); /* observable universe */
 
-    /* HEARTBREAK — form (two faces) → full → zero */
+    /* HEARTBREAK — two faces merging then fracturing */
     case 'heartbreak':
-      if(phase===0)return shapeTwoFaces(n,'😊','😊',x,y,sz*.38);
-      if(phase===1)return shapeFracture(n,x,y,sz*.42,sz*.01);
-      if(phase===2)return shapeFracture(n,x,y,sz*.44,sz*.1);
-      if(phase===3)return shapeFracture(n,x,y,sz*.44,sz*.22);
-      return shapeFracture(n,x,y,sz*.38,sz*.38);
+      if(phase===0) return shapeTwoFaces(n,'\u{1F60A}','\u{1F60A}',x,y,sz*.36); /* two happy */
+      if(phase===1) return shapeFracture(n,x,y,sz*.42,sz*.005); /* tiny crack */
+      if(phase===2) return shapeFracture(n,x,y,sz*.44,sz*.08); /* opening */
+      if(phase===3) return shapeFracture(n,x,y,sz*.44,sz*.2); /* separating */
+      return shapeFracture(n,x,y,sz*.38,sz*.36); /* fully apart */
 
-    /* LOVE — zero→form→full */
+    /* LOVE — two separate fields merging */
     case 'love':
-      if(phase===0)return shapeScatter(n,x-sz*.25,y,sz*.2,220,100,100).concat(shapeScatter(Math.floor(n/2),x+sz*.25,y,sz*.2,100,120,220));
-      if(phase===1)return shapeTwoFaces(n,'😊','😊',x,y,sz*.4);
-      if(phase===2)return shapeFracture(n,x,y,sz*.42,sz*.02);
-      if(phase===3)return shapeFace(n,'😊',x,y,sz*.52);
-      return shapeExplosion(n,x,y,4,sz*.46,255,200,150,false);
+      if(phase===0) return shapeScatter(n,x-sz*.26,y,sz*.18,220,100,100).concat(shapeScatter(Math.floor(n/2),x+sz*.26,y,sz*.18,100,120,220));
+      if(phase===1) return shapeTwoFaces(n,'\u{1F60A}','\u{1F60A}',x,y,sz*.38);
+      if(phase===2) return shapeFace(n,'\u{1F970}',x,y,sz*.48); /* merged heart eyes */
+      if(phase===3) return shapeRing(n,x,y,sz*.24,sz*.04,255,180,200);
+      return shapeExplosion(n,x,y,4,Math.min(sz*.42,sw),255,150,180,false);
 
-    /* GRIEF — full face → dissolves → void → reforms */
+    /* GRIEF — intact face → dissolves → void → integration */
     case 'grief':
-      if(phase===0)return shapeFace(n,'😐',x,y,sz*.5);
-      if(phase===1)return shapeFace(n,'😔',x,y,sz*.5);
-      if(phase===2)return shapeVoid(n,x,y,sz*.06,sz*.42,70,90,170);
-      if(phase===3)return shapeVoid(n,x,y,sz*.18,sz*.46,55,75,155);
-      return shapeFace(n,'😊',x,y,sz*.46);
+      if(phase===0) return shapeFace(n,'\u{1F610}',x,y,sz*.48); /* neutral */
+      if(phase===1) return shapeFace(n,'\u{1F614}',x,y,sz*.48); /* downcast */
+      if(phase===2) return shapeVoid(n,x,y,sz*.04,Math.min(sz*.4,sw),70,90,170);
+      if(phase===3) return shapeRing(n,x,y,Math.min(sz*.3,sw*.7),sz*.05,80,100,180);
+      return shapeFace(n,'\u{1F331}',x,y,sz*.46); /* new growth */
 
-    /* ANGER — tense face → explosion → wave */
+    /* ANGER — tense → eruption → wave → cooling */
     case 'anger':
-      if(phase===0)return shapeFace(n,'😤',x,y,sz*.5);
-      if(phase===1)return shapeExplosion(n,x,y,4,sz*.35,255,60,0,true);
-      if(phase===2)return shapeExplosion(n,x,y,4,Math.min(sz*.48,W()*.46,H()*.46),255,100,0,true);
-      if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*4)*sz*.2+rnd(-4,4);ow.push({tx:wx,ty:wy,rr:255,gg:80,bb:20,r:.5+Math.random()*2});}return ow;}
-      return shapeRing(n,x,y,sz*.3,sz*.08,180,70,30);
+      if(phase===0) return shapeFace(n,'\u{1F624}',x,y,sz*.48);
+      if(phase===1) return shapeExplosion(n,x,y,2,Math.min(sz*.32,sw*.75),255,40,0,true);
+      if(phase===2) return shapeExplosion(n,x,y,2,Math.min(sz*.44,sw),255,80,0,true);
+      if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*5)*sz*.18+rnd(-3,3);ow.push({tx:wx,ty:wy,rr:255,gg:70,bb:10,r:.5+Math.random()*2});}return ow;}
+      return shapeRing(n,x,y,sz*.25,sz*.06,180,60,30); /* cooling ring */
 
-    /* JOY — zero→face→explosion */
+    /* JOY — point → face → radiating rings → explosion */
     case 'joy':
-      if(phase===0)return shapePoint(n,x,y,255,220,60);
-      if(phase===1)return shapeFace(n,'😊',x,y,sz*.5);
-      if(phase===2)return shapeRing(n,x,y,sz*.26,sz*.05,255,220,80);
-      if(phase===3)return shapeExplosion(n,x,y,4,sz*.55,255,230,100,false);
-      return shapeScatter(n,x,y,sz*.42,255,240,180);
+      if(phase===0) return shapePoint(n,x,y,255,230,60);
+      if(phase===1) return shapeFace(n,'\u{1F60A}',x,y,sz*.48);
+      if(phase===2) return shapeRing(n,x,y,sz*.24,sz*.04,255,220,80);
+      if(phase===3) return shapeExplosion(n,x,y,4,Math.min(sz*.44,sw),255,230,100,false);
+      return shapeScatter(n,x,y,Math.min(sz*.44,sw),255,240,180);
 
-    /* NEURON */
+    /* NEURON — point → axon → network → pulse → brain */
     case 'neuron':
-      if(phase===0)return shapePoint(n,x,y,60,180,255);
-      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.03+t*W()*.94,wy=y+rnd(-sz*.02,sz*.02);ow.push({tx:wx,ty:wy,rr:60,gg:180,bb:255,r:.4+Math.random()*1.5});}return ow;}
-      if(phase===2)return shapeNeural(n,x,y,sz*.44);
-      if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*6)*sz*.16+rnd(-3,3);ow.push({tx:wx,ty:wy,rr:100,gg:220,bb:255,r:.4+Math.random()*2});}return ow;}
-      return shapeNeural(n,x,y,sz*.48);
+      if(phase===0) return shapePoint(n,x,y,60,180,255);
+      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.04+t*W()*.92,wy=y+rnd(-sz*.015,sz*.015);ow.push({tx:wx,ty:wy,rr:60,gg:180,bb:255,r:.4+Math.random()*1.5});}return ow;}
+      if(phase===2) return shapeNeural(n,x,y,Math.min(sz*.42,sw,sh));
+      if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*7)*sz*.14+rnd(-2,2);ow.push({tx:wx,ty:wy,rr:80,gg:220,bb:255,r:.4+Math.random()*2});}return ow;}
+      return shapeNeural(n,x,y,Math.min(sz*.46,sw,sh));
 
-    /* IMMUNE — bacterial infection and immune response */
+    /* IMMUNE — healthy cell → bacteria → infection → T-cells → resolution */
     case 'immune':{
-      var cSz=sz*.16; /* cell radius */
-      if(phase===0){
-        /* HEALTHY CELL — one normal cell, distant bacteria */
-        return shapeCell(Math.floor(n*.6),x-sz*.08,y,cSz,100,160,255,false)
-          .concat(shapeBacteria(Math.ceil(n*.4),x+sz*.38,y,cSz*.5,3));
-      }
-      if(phase===1){
-        /* BACTERIA APPROACH — bacteria moving toward cell */
-        return shapeCell(Math.floor(n*.55),x-sz*.08,y,cSz,100,160,255,false)
-          .concat(shapeBacteria(Math.ceil(n*.45),x+sz*.15,y,cSz*.6,5));
-      }
-      if(phase===2){
-        /* INFECTION — bacteria attached, cell membrane irregular, cell distressed */
-        return shapeCell(Math.floor(n*.5),x,y,cSz*1.15,255,100,80,true)
-          .concat(shapeBacteria(Math.ceil(n*.5),x,y,cSz*.4,8));
-      }
-      if(phase===3){
-        /* T-CELL RESPONSE — killer T-cells arrive (bright blue-white cells) */
-        return shapeCell(Math.floor(n*.3),x,y,cSz*1.1,255,100,80,true)
-          .concat(shapeBacteria(Math.ceil(n*.25),x,y,cSz*.4,4))
-          .concat(shapeCell(Math.ceil(n*.45),x,y,sz*.38,38,232,176,false));
-      }
-      /* RESOLUTION — healthy cell restored, bacteria eliminated */
-      return shapeCell(n,x,y,cSz*1.05,100,200,255,false);
+      var cSz=sz*.14;
+      if(phase===0) return shapeCell(Math.floor(n*.6),x-sz*.1,y,cSz,100,160,255,false).concat(shapeBacteria(Math.ceil(n*.4),x+sz*.32,y,cSz*.5,3));
+      if(phase===1) return shapeCell(Math.floor(n*.52),x-sz*.06,y,cSz,100,160,255,false).concat(shapeBacteria(Math.ceil(n*.48),x+sz*.1,y,cSz*.55,5));
+      if(phase===2) return shapeCell(Math.floor(n*.48),x,y,cSz*1.1,255,100,80,true).concat(shapeBacteria(Math.ceil(n*.52),x,y,cSz*.36,8));
+      if(phase===3) return shapeCell(Math.floor(n*.3),x,y,cSz*1.08,255,100,80,true).concat(shapeBacteria(Math.ceil(n*.22),x+sz*.12,y,cSz*.3,3)).concat(shapeCell(Math.ceil(n*.48),x-sz*.06,y,sz*.32,38,220,176,false));
+      return shapeCell(n,x,y,cSz,100,200,255,false);
     }
 
-    /* AMR — full→zero */
+    /* AMR — healthy colony → antibiotic wave → survivors → resistant colony */
     case 'amr':
-      if(phase===0)return shapeGrid(n,x,y,sz*.42,38,220,100);
-      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+rnd(-sz*.06,sz*.06);ow.push({tx:wx,ty:wy,rr:240,gg:192,bb:64,r:.5+Math.random()*1.8});}return ow;}
-      if(phase===2)return shapeScatter(Math.floor(n*.15),x,y,sz*.4,200,80,80);
-      if(phase===3)return shapeRing(n,x,y,sz*.18,sz*.05,255,60,60);
-      return shapeGrid(n,x,y,sz*.42,220,60,60);
+      if(phase===0) return shapeGrid(n,x,y,Math.min(sz*.4,sw,sh),38,220,100);
+      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+rnd(-sz*.05,sz*.05);ow.push({tx:wx,ty:wy,rr:240,gg:192,bb:64,r:.5+Math.random()*1.8});}return ow;}
+      if(phase===2) return shapeScatter(Math.floor(n*.08),x,y,Math.min(sz*.4,sw),200,80,80).concat(shapePoint(Math.ceil(n*.92),x,y,0,0,0));
+      if(phase===3) return shapeRing(n,x,y,sz*.16,sz*.05,255,60,60);
+      return shapeGrid(n,x,y,Math.min(sz*.4,sw,sh),220,60,60);
 
-    /* BLACK HOLE — full→zero */
+    /* BLACK HOLE — star → collapse → accretion disk → event horizon → evaporation */
     case 'bh':
-      if(phase===0)return shapeScatter(n,x,y,sz*.48,200,180,255);
-      if(phase===1)return shapeRing(n,x,y,sz*.34,sz*.12,255,160,40);
-      if(phase===2)return shapeRing(n,x,y,sz*.22,sz*.02,255,255,200);
-      if(phase===3)return shapeRing(n,x,y,sz*.38,sz*.015,255,255,255);
-      return shapeVoid(n,x,y,sz*.14,sz*.44,110,80,255);
+      if(phase===0) return shapeScatter(n,x,y,Math.min(sz*.42,sw),200,180,255); /* star */
+      if(phase===1) return shapeExplosion(n,x,y,2,Math.min(sz*.36,sw),255,160,40,true); /* supernova */
+      if(phase===2) return shapeRing(n,x,y,Math.min(sz*.32,sw*.75),sz*.08,255,140,30); /* accretion */
+      if(phase===3) return shapeRing(n,x,y,sz*.16,sz*.015,255,255,200); /* photon sphere */
+      return shapeVoid(n,x,y,sz*.1,Math.min(sz*.4,sw),80,60,200); /* event horizon */
 
-    /* RUMOUR */
+    /* RUMOUR — one node → cluster → cascade → mutation → exhaustion */
     case 'rumour':
-      if(phase===0)return shapePoint(n,x,y,240,192,64);
-      if(phase===1)return shapeRing(n,x,y,sz*.05,sz*.02,240,192,64);
-      if(phase===2)return shapeNeural(n,x,y,sz*.4);
-      if(phase===3)return shapeExplosion(n,x,y,4,sz*.55,240,192,64,false);
-      return shapeScatter(n,x,y,sz*.5,200,160,40);
+      if(phase===0) return shapePoint(n,x,y,240,192,64);
+      if(phase===1) return shapeRing(n,x,y,sz*.06,sz*.02,240,192,64);
+      if(phase===2) return shapeNeural(n,x,y,Math.min(sz*.42,sw,sh));
+      if(phase===3) return shapeExplosion(n,x,y,4,Math.min(sz*.44,sw),240,192,64,false);
+      return shapeScatter(n,x,y,Math.min(sz*.44,sw),180,140,30);
 
-    /* URBAN */
+    /* URBAN — ordered flow → capacity → congestion → gridlock → cascade */
     case 'urban':
-      if(phase===0)return shapeGrid(n,x,y,sz*.42,100,140,220);
-      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.04+t*W()*.92,wy=(i%2===0?y-sz*.08:y+sz*.08)+rnd(-3,3);ow.push({tx:wx,ty:wy,rr:80,gg:140,bb:255,r:.5+Math.random()*1.5});}return ow;}
-      if(phase===2)return shapeRing(n,x,y,sz*.09,sz*.04,255,80,80);
-      if(phase===3)return shapeVoid(n,x,y,sz*.1,sz*.4,90,100,200);
-      return shapeScatter(n,x,y,sz*.46,100,110,180);
+      if(phase===0) return shapeGrid(n,x,y,Math.min(sz*.4,sw,sh),100,140,220);
+      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.03+t*W()*.94,wy=(i%2===0?y-sz*.07:y+sz*.07)+rnd(-2,2);ow.push({tx:wx,ty:wy,rr:80,gg:140,bb:255,r:.5+Math.random()*1.5});}return ow;}
+      if(phase===2) return shapeRing(n,x,y,sz*.09,sz*.04,255,80,80);
+      if(phase===3) return shapeVoid(n,x,y,sz*.08,Math.min(sz*.38,sw),90,100,200);
+      return shapeScatter(n,x,y,Math.min(sz*.44,sw),90,100,170);
 
-    /* CHEM */
+    /* CHEMISTRY — separated → collision → transition state → products → equilibrium */
     case 'chem':
-      if(phase===0)return shapeScatter(Math.floor(n/2),x-sz*.24,y,sz*.2,40,180,255).concat(shapeScatter(Math.ceil(n/2),x+sz*.24,y,sz*.2,255,80,80));
-      if(phase===1)return shapeScatter(n,x,y,sz*.4,150,150,200);
-      if(phase===2)return shapeRing(n,x,y,sz*.1,sz*.06,255,200,80);
-      if(phase===3)return shapeExplosion(n,x,y,4,sz*.36,255,220,100,false);
-      return shapeGrid(n,x,y,sz*.38,80,220,255);
+      if(phase===0) return shapeScatter(Math.floor(n/2),x-sz*.22,y,sz*.18,40,180,255).concat(shapeScatter(Math.ceil(n/2),x+sz*.22,y,sz*.18,255,80,80));
+      if(phase===1) return shapeScatter(n,x,y,sz*.16,180,130,200); /* converging */
+      if(phase===2) return shapeRing(n,x,y,sz*.08,sz*.04,255,200,80); /* transition state */
+      if(phase===3) return shapeExplosion(n,x,y,4,Math.min(sz*.36,sw),255,220,100,false); /* energy release */
+      return shapeGrid(n,x,y,Math.min(sz*.36,sw,sh),80,220,255); /* equilibrium */
 
-    default:return shapeScatter(n,x,y,sz*.4,100,150,200);
+    /* FIREWORKS — point → ascent → burst → multi-burst → finale */
+    case 'fireworks':
+      if(phase===0) return shapePoint(n,W()/2,H()*.35,255,220,100);
+      if(phase===1) return shapeFireworks(n,1);
+      if(phase===2) return shapeFireworks(n,2);
+      if(phase===3) return shapeFireworks(n,3);
+      return shapeFireworks(n,4);
+
+    default: return shapeScatter(n,x,y,Math.min(sz*.4,sw),100,150,200);
   }
 }
 
@@ -1059,7 +1042,7 @@ function initPhase(domain,phase,fromScratch){
   var dir=DOMAIN_ENERGY[domain]&&DOMAIN_ENERGY[domain].dir||'zero_to_full';
   /* Phase 0 from scratch gets staggered birth, all other phases = CONTINUOUS
      — particles leave from exactly where they are now, no restart */
-  var maxDelay=fromScratch&&phase===0?2800:800; /* shorter stagger = more fluid */
+  var maxDelay=fromScratch&&phase===0?1800:400; /* very short stagger */
   for(var i=0;i<n;i++){
     var s=spec[i%spec.length];
     pTX[i]=s.tx;pTY[i]=s.ty;
@@ -1075,22 +1058,22 @@ function initPhase(domain,phase,fromScratch){
         pX[i]=pBX[i];pY[i]=pBY[i];
       }
     } else {
-      /* CONTINUOUS — birth = current actual particle position, no gap */
-      pBX[i]=pX[i]||cx();pBY[i]=pY[i]||cy();
+      /* CONTINUOUS — birth = exact current rendered position */
+      pBX[i]=(pX[i]>0||pY[i]>0)?pX[i]:cx();
+      pBY[i]=(pX[i]>0||pY[i]>0)?pY[i]:cy();
     }
     pLife[i]=0;
   }
   formT=0;
 }
 
-/* Snapshot current rendered X/Y positions */
+/* Snapshot: pX/pY already updated every frame in render loop
+   This just forces formT to end so all particles are at target */
 function snapshot(){
-  var t2=Math.min(formT/FORM_DUR,1);
   for(var i=0;i<N;i++){
-    var t=clamp((formT-pDelay[i])/FORM_DUR,0,1);
-    var te=easeOut(t);
-    pX[i]=lerp(pBX[i],pTX[i],te);
-    pY[i]=lerp(pBY[i],pTY[i],te);
+    pX[i]=pTX[i]+pVX[i];
+    pY[i]=pTY[i]+pVY[i];
+    pVX[i]=0;pVY[i]=0;
   }
 }
 
@@ -1198,11 +1181,18 @@ var NARR={
     ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
-    ['Step 1: Singularity','All matter, energy, space and time exist in a single point of infinite density. Temperature: 10 to the 32 Kelvin. Volume: smaller than a proton. Time itself does not yet flow. This is t=0.'],
-    ['Step 2: Cosmic Inflation','In 10 to the minus 35 seconds, space expands by a factor of 10 to the 26 — faster than light. Not matter moving, but space itself multiplying. Quantum fluctuations are stretched to cosmic scale and will become every galaxy.'],
-    ['Step 3: Quark-Gluon Plasma','At one microsecond old, the universe is a superheated plasma of quarks and gluons. Temperature: 10 to the 13 Kelvin. In minutes, quarks bind into protons and neutrons. In 380,000 years, the first atoms form and the universe becomes transparent.'],
-    ['Step 4: The Observable Universe','The NASA horn shape: narrow at the Big Bang end (left), expanding to the present day (right). 93 billion light-years across today. Dark matter filaments hold galaxies at every node. Dark energy drives the accelerating expansion you see at the right edge.'],
-    ['Step 5: Heat Death','Expansion accelerates forever. Galaxies drift apart. Stars burn out. In 10 to the 100 years: only black holes remain. They evaporate via Hawking radiation. The universe reaches maximum entropy — heat death. Everything returns to the quantum void from which it came.']
+    ['Planck Epoch · t=0','The Planck epoch: the single point containing all matter, energy, space and time. Temperature 10 to the 32 Kelvin. The four forces are unified. Quantum gravity rules. Physics as we know it does not yet exist. Duration: 10 to the minus 43 seconds.'],
+    ['Inflation · Space Explodes','Space itself expands by a factor of 10 to the 26 in 10 to the minus 35 seconds — faster than light. Not an explosion through space but space multiplying. Quantum fluctuations are stretched to cosmic scale, becoming the seeds of every galaxy. The universe size goes from sub-nuclear to grapefruit.'],
+    ['Quark-Gluon Plasma · The Soup','The universe is a superheated plasma of quarks and gluons — the raw constituents of matter. Temperature: 10 to the 13 Kelvin. The four forces now operate separately. At one microsecond, quarks bind into protons and neutrons. Matter narrowly wins over antimatter by 1 part in a billion.'],
+    ['Nucleosynthesis · First Atoms','From 3 to 20 minutes after the Big Bang, the universe acts as a fusion reactor. Protons and neutrons fuse into hydrogen nuclei (75%) and helium nuclei (25%), with trace lithium. After 20 minutes, the universe cools too far for fusion to continue. This exact ratio is confirmed by observation today.'],
+    ['Recombination · Light Freed','380,000 years. The universe cools to 3,000 Kelvin. Electrons combine with nuclei for the first time, forming neutral hydrogen and helium atoms. The universe becomes transparent. Photons travel freely for the first time. We see those photons today as the Cosmic Microwave Background — the oldest light.'],
+    ['Dark Ages · 380k to 400M years','For 400 million years, no stars exist. The universe is a dark, cold, expanding fog of hydrogen and helium. Only the 2.7 Kelvin glow of the CMB illuminates the void. Gravity quietly amplifies density variations, pulling hydrogen clouds together. This darkness ends when the first stars ignite.'],
+    ['First Stars · Population III','400 million years. Hydrogen clouds collapse under gravity and ignite. Population III stars — the first — have no heavy elements and form at 100 to 1000 solar masses. They burn for only a million years, then explode as supernovae, seeding space with the first carbon, oxygen, and iron.'],
+    ['Stellar Era · Galaxy Formation','From 1 to 10 billion years. Gravity organises matter into spiral galaxies. Stars form, age, explode, and form again across billions of generations. Each generation is more metal-rich than the last. Our sun is a Population I star — third-generation, born 4.6 billion years ago from recycled stellar debris.'],
+    ['Dark Energy Dominance · Accelerating','5 billion years ago, dark energy — an unknown force comprising 68% of the universe — began dominating gravity. The expansion of the universe is now accelerating. Galaxies are receding from each other at increasing speed. In 100 billion years, other galaxies will be unreachable and invisible from our own.'],
+    ['Black Hole Era · 10^40 years','Stars cease forming. The last red dwarf burns out. Only black holes remain, slowly evaporating via Hawking radiation. Supermassive black holes dominate the now-dark universe. Each radiates an infinitesimally small amount of energy. This era lasts incomprehensibly longer than the current age of the universe.'],
+    ['Heat Death · Maximum Entropy','At 10 to the 100 years, all black holes have evaporated. The universe reaches maximum entropy — no energy gradients remain. No work can be performed. No information can be processed. Temperature approaches absolute zero uniformly everywhere. This is the heat death: not destruction but eternal sameness.'],
+    ['Big Crunch · The Return','In one possible future, dark energy reverses. The expansion halts and reverses. Galaxies accelerate toward each other. The universe collapses back to a singularity in a mirror of its birth — the Big Crunch. Temperature climbs back toward the Planck limit. Everything returns to the quantum void. A new Planck epoch begins.']
   ],
     universe:[
     ['Step 1: Quantum Vacuum','Before anything: quantum vacuum fluctuations — virtual particle pairs blinking in and out of existence. This is the ground state of physics. Nothing, yet seething with probabilistic energy. The Big Bang is one of these fluctuations that did not annihilate.'],
@@ -1381,7 +1371,7 @@ function updateNarr(domain,phase){
     simPhase=(simPhase+1)%narrsLen;
     initPhase(simDomain,simPhase,false);
     updateNarr(simDomain,simPhase);
-  },8000); /* 8s per phase — enough to read + watch */
+  },domain==='bigbang'?5000:6500); /* bigbang 5s, others 6.5s */
 }
 
 function toggleAutoPlay(){

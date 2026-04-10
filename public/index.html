@@ -289,7 +289,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   <div id="answerTicker" onclick="togglePhasesPanel()"
     style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.52);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:7px 0;min-height:34px;position:relative">
     <div id="tickerTrack"
-      style="display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:tickerScroll 90s linear infinite">
+      style="display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:tickerScroll 200s linear infinite">
     </div>
     <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.58rem;color:rgba(38,232,176,0.45);pointer-events:none">tap ▼</div>
   </div>
@@ -544,6 +544,92 @@ function shapeFireworks(n,phase){
   return out;
 }
 
+/* ── COSMIC WEB — large-scale structure of the universe ── */
+function shapeCosmicWeb(n,ox,oy,size){
+  /* Filaments connecting galaxy cluster nodes — the actual structure of the universe */
+  var out=[];
+  /* Define cluster nodes */
+  var nodes=[];
+  var nc=14; /* number of galaxy cluster nodes */
+  for(var k=0;k<nc;k++){
+    var a=k/nc*Math.PI*2+rnd(-.3,.3);
+    var d=rnd(size*.12,size*.42);
+    nodes.push({x:ox+Math.cos(a)*d,y:oy+Math.sin(a)*d*.72});
+  }
+  /* Add central attractor (great attractor analogue) */
+  nodes.push({x:ox+rnd(-size*.06,size*.06),y:oy+rnd(-size*.05,size*.05)});
+  /* Particles distributed along filaments between nodes */
+  var perFilament=Math.floor(n*0.72/nodes.length);
+  var nodeParticles=Math.floor(n*0.28/nodes.length);
+  for(var ni=0;ni<nodes.length;ni++){
+    var na=nodes[ni];
+    /* Dense cluster at each node */
+    for(var p=0;p<nodeParticles;p++){
+      var spread=size*.025;
+      out.push({tx:na.x+rnd(-spread,spread),ty:na.y+rnd(-spread,spread),rr:255,gg:240,bb:200,r:.5+Math.random()*2.2});
+    }
+    /* Filaments to 2-3 nearest neighbours */
+    var sorted=nodes.slice().sort(function(a,b){
+      var da=Math.hypot(a.x-na.x,a.y-na.y);
+      var db=Math.hypot(b.x-na.x,b.y-na.y);
+      return da-db;
+    });
+    for(var si=1;si<=3&&si<sorted.length;si++){
+      var nb=sorted[si];
+      for(var p=0;p<Math.floor(perFilament/3);p++){
+        var ft=Math.pow(Math.random(),.5); /* bias toward nodes */
+        var fx=lerp(na.x,nb.x,ft)+rnd(-size*.008,size*.008);
+        var fy=lerp(na.y,nb.y,ft)+rnd(-size*.008,size*.008);
+        /* Colour: hot blue-white filaments, dimmer at midpoint */
+        var mid=1-Math.abs(ft-.5)*2;
+        out.push({tx:fx,ty:fy,rr:Math.round(120+mid*80),gg:Math.round(160+mid*60),bb:255,r:.3+Math.random()*(1-mid*.5)});
+      }
+    }
+  }
+  /* Voids — sparse random background */
+  var voidN=n-out.length;
+  for(var i=0;i<voidN;i++){
+    out.push({tx:ox+rnd(-size*.48,size*.48),ty:oy+rnd(-size*.38,size*.38),rr:40,gg:50,bb:120,r:.2+Math.random()*.5});
+  }
+  return out.slice(0,n);
+}
+
+function shapeFirstStars(n,ox,oy,size){
+  /* Population III stars — sparse, huge, hot blue-white, scattered across dark space */
+  var out=[];
+  var starN=Math.min(80,Math.floor(n*0.01));
+  var stars=[];
+  for(var s=0;s<starN;s++){
+    var a=rnd(0,Math.PI*2),d=rnd(size*.04,size*.44);
+    stars.push({x:ox+Math.cos(a)*d,y:oy+Math.sin(a)*d*.72});
+  }
+  /* Particles per star — glow halo */
+  var perStar=Math.floor(n/starN);
+  for(var si=0;si<starN;si++){
+    var st=stars[si];
+    var isLarge=Math.random()>.7;
+    for(var p=0;p<perStar;p++){
+      var r=Math.pow(Math.random(),.3)*size*(isLarge?.028:.014);
+      var a=rnd(0,Math.PI*2);
+      var falloff=1-r/(size*(isLarge?.028:.014));
+      out.push({
+        tx:st.x+Math.cos(a)*r,
+        ty:st.y+Math.sin(a)*r,
+        rr:Math.round(180+falloff*75),
+        gg:Math.round(200+falloff*55),
+        bb:255,
+        r:.3+falloff*2.5
+      });
+    }
+  }
+  /* Sparse dark background gas */
+  var bgN=n-out.length;
+  for(var i=0;i<bgN;i++){
+    out.push({tx:ox+rnd(-size*.46,size*.46),ty:oy+rnd(-size*.36,size*.36),rr:25,gg:30,bb:80,r:.2+Math.random()*.4});
+  }
+  return out;
+}
+
 /* ── DOMAIN SHAPE SPECS — 5 phases each ── */
 function getSpec(domain,phase,n){
   var x=cx(),y=cy(); /* TRUE CENTER — sim centered on screen */
@@ -559,11 +645,33 @@ function getSpec(domain,phase,n){
 
     /* BIG BANG — zero→full, one dot explodes to universe */
     case 'bigbang':
-      if(phase===0)return shapePoint(n,x,y);
-      if(phase===1)return shapePoint(Math.floor(n*.05),x,y).concat(shapeRing(Math.ceil(n*.95),x,y,sz*.04,2,255,240,200));
-      if(phase===2)return shapeExplosion(n,x,y,4,Math.min(sz*.42,W()*.46,H()*.46),255,180,80,true); /* clamped to screen */
-      if(phase===3)return shapeSpiral(n,x,y,sz*.44,3,120,160,255);
-      return shapeScatter(n,x,y,Math.min(sz*.38,W()*.42,H()*.42),200,210,255); /* universe scatter — clamped */
+      /* Full cosmological journey — singularity to observable universe */
+      if(phase===0){
+        /* THE SINGULARITY — one point, everything */
+        return shapePoint(n,x,y,255,240,220);
+      }
+      if(phase===1){
+        /* FIRST FLASH — Planck epoch ends, space itself expands
+           Inner core of hot dense plasma + rapid expansion ring */
+        var r1=Math.min(sz*.03,W()*.04,H()*.04);
+        var r2=Math.min(sz*.18,W()*.2,H()*.2);
+        return shapePoint(Math.floor(n*.08),x,y,255,255,240)
+          .concat(shapeRing(Math.floor(n*.42),x,y,r1,r1*.5,255,220,180))
+          .concat(shapeRing(Math.ceil(n*.5),x,y,r2,r2*.4,255,160,80));
+      }
+      if(phase===2){
+        /* QUARK-GLUON PLASMA — 10^-6 seconds, hot violent explosion
+           Constrained to screen bounds */
+        return shapeExplosion(n,x,y,4,Math.min(sz*.4,W()*.42,H()*.42),255,120,30,true);
+      }
+      if(phase===3){
+        /* FIRST STARS (Population III) — 180 million years
+           Huge, hot, blue-white giants scattered across dark primordial space */
+        return shapeFirstStars(n,x,y,Math.min(sz*.46,W()*.44,H()*.44));
+      }
+      /* COSMIC WEB — the universe today
+         Filaments of dark matter, galaxy superclusters at nodes, vast voids between */
+      return shapeCosmicWeb(n,x,y,Math.min(sz*.46,W()*.43,H()*.43));
 
     /* UNIVERSE — zoom from multiverse to earth */
     case 'universe':
@@ -828,11 +936,11 @@ var NARR={
     ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
-    ['Phase 1 · The Singularity','One particle. All matter, energy, space, and time compressed into a volume smaller than a proton. Temperature: 10³² Kelvin. The laws of physics as we know them do not apply yet.'],
-    ['Phase 2 · The Flash','An incomprehensible release of energy — not matter moving through space, but space itself suddenly existing and expanding. Every particle of light born in the same instant.'],
-    ['Phase 3 · Expansion','In 10⁻³² seconds the universe expanded by 10²⁶. Quantum fluctuations stretched to cosmic scales — these imperfections in the early universe became every galaxy, every star, every planet.'],
-    ['Phase 4 · First Stars','Hydrogen and helium condensed under gravity into the first stars — billions of times more massive than our sun, burning for only a million years, then exploding to seed space with heavier elements.'],
-    ['Phase 5 · The Light Still Arriving','380,000 years later the universe cooled enough to become transparent for the first time. That first light is still travelling. We call it the Cosmic Microwave Background.']
+    ['The Singularity','One point. All matter, energy, space, and time compressed beyond measure. Temperature: 10³² Kelvin. Volume: smaller than a proton. The laws of physics do not yet apply.'],
+    ['The First Flash','Space itself begins to exist. Not matter moving through space — space expanding. In 10⁻³⁵ seconds, the universe inflates by a factor of 10²⁶. Every particle of light born in the same instant.'],
+    ['Quark-Gluon Plasma','One microsecond old. The universe is a superheated soup of quarks and gluons — the building blocks of everything. Temperature: 10¹³ Kelvin. It looks like nothing that exists today.'],
+    ['The First Stars','180 million years of darkness. Then gravity wins. Hydrogen collapses into the first stars — Population III giants, a thousand times the mass of our sun, burning blue-white, lasting only a million years before exploding and seeding space with carbon, oxygen, and iron.'],
+    ['The Cosmic Web','13.8 billion years later. Dark matter forms a vast filamentary web — strands hundreds of millions of light-years long, with galaxy superclusters at every node and vast empty voids between. This is the universe as it exists today.']
   ],
   universe:[
     ['Phase 1 · The Multiverse','An infinite field. If string theory is correct, there are 10⁵⁰⁰ possible universes — each with different physical constants, different laws of physics. Ours is one that permits stars, carbon, and life.'],
@@ -998,7 +1106,15 @@ function updateNarr(domain,phase){
   if(voiceOn)startVoice(ph[1]);
   /* Sound */
   if(soundOn)playEmotionalSound(domain);
-  /* No auto-advance — sim runs continuously, all phases visible in ticker */
+  /* Auto-advance: cycle through phases automatically, 7s per phase */
+  if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
+  var narrsLen=narrs?narrs.length:1;
+  phaseAutoTimer=setTimeout(function(){
+    snapshot();
+    simPhase=(simPhase+1)%narrsLen; /* loop back to phase 0 after last */
+    initPhase(simDomain,simPhase,false);
+    updateNarr(simDomain,simPhase);
+  },7000);
 }
 
 function toggleAutoPlay(){
@@ -1472,7 +1588,7 @@ function buildTicker(narrs,loading){
   /* Reset animation */
   track.style.animation='none';
   void track.offsetWidth;
-  var dur=Math.max(60,narrs.length*14)+'s'; /* slow news ticker — comfortable reading speed */
+  var dur=Math.max(180,narrs.length*40)+'s'; /* very slow — each phase readable for ~40s */
   track.style.animation='tickerScroll '+dur+' linear infinite';
 }
 

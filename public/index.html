@@ -44,7 +44,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 .dpill.active{color:#02040e;font-weight:700;border-color:transparent}
 
 /* RIGHT RAIL — responsive, always visible */
-#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 6px;width:60px;background:rgba(2,4,14,0.4);border-radius:16px 0 0 16px;border-left:1px solid rgba(255,255,255,0.06);border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(12px)}
+#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 5px;width:56px}
 .rail-btn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}
 .rail-btn:active{transform:scale(.88)}
 .rail-icon{width:38px;height:38px;border-radius:50%;background:rgba(2,4,14,0.6);border:1.5px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;transition:border-color .2s,background .2s}
@@ -171,6 +171,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 #liveBadge.show{display:flex}
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
 @media(max-width:640px){
   .ntab:not(.active){display:none}
@@ -197,15 +198,17 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <nav id="nav">
   <a class="nav-logo" href="/">SeenShown</a>
-  <div class="nav-tabs">
+  <div class="nav-tabs" style="overflow-x:auto;scrollbar-width:none;flex:1;margin:0 6px;-webkit-overflow-scrolling:touch">
     <span class="ntab active">Home</span>
     <a class="ntab" href="/social.html">Social</a>
     <a class="ntab" href="/community.html">Community</a>
-    <a class="ntab" href="/investors.html">Investors</a>
+    <a class="ntab" href="/investors.html">Invest</a>
+    <a class="ntab" href="/investor-portal.html">My&nbsp;SAFE</a>
+    <a class="ntab" href="/dashboard.html">Dashboard</a>
+    <a class="ntab" href="/partners.html">Partners</a>
   </div>
   <div class="nav-right">
-    <span class="nbadge">AU 2026903218</span>
-    <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--dim);padding:4px 10px;font-size:.68rem;cursor:pointer;transition:all .2s">Sign in</button>
+    <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
   </div>
 </nav>
 
@@ -345,33 +348,30 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 </div>
 
 <div id="bottomPanel">
-  <div id="answerWrap">
-    <div id="phaseRow">
-      <span id="narrPhaseLabel">Phase 1</span>
-      <div id="phaseProgress"><div id="phaseProgressFill" style="width:20%"></div></div>
-      <button id="stopBtn" onclick="toggleAutoPlay()">⏸ Pause</button>
+  <!-- TICKER BAR — scrolling answer, tap to expand -->
+  <div id="answerTicker" onclick="togglePhasesPanel()"
+    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.52);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:7px 0;min-height:34px;position:relative">
+    <div id="tickerTrack"
+      style="display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:tickerScroll 32s linear infinite">
     </div>
-    <div id="narrDots"></div>
-    <div id="answerText"></div>
-    <div id="phaseArrows">
-      <div class="parr" onclick="prevPhase()">‹ Prev</div>
-      <div id="phaseNum">1 / 5</div>
-      <div class="parr" onclick="nextPhase()">Next ›</div>
-    </div>
+    <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.58rem;color:rgba(38,232,176,0.45);pointer-events:none">tap ▼</div>
   </div>
-  <div id="iconRow">
-    <div class="ictl" id="pauseBtn" onclick="togglePause()"><span>⏸</span><span id="pauseLabel">Pause</span></div>
-    <div class="sdiv"></div>
-    <div class="ictl" id="soundBtn" onclick="toggleSound()"><span id="soundIco">🔇</span><span>Sound</span></div>
-    <div class="sdiv"></div>
-    <span style="font-size:.54rem;color:var(--dim);flex-shrink:0">Speed</span>
-    <input type="range" id="speedR" min="0.2" max="2.5" step="0.05" value="1.0">
-    <div class="sdiv"></div>
-    <div class="chips" id="qchips"></div>
+  <!-- EXPANDED PHASES PANEL -->
+  <div id="phasesPanel"
+    style="display:none;background:rgba(2,4,14,0.85);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);max-height:40vh;overflow-y:auto;pointer-events:all;-webkit-overflow-scrolling:touch">
+    <div id="phasesList" style="padding:6px 14px 2px"></div>
+    <div onclick="closePhasesPanel()"
+      style="text-align:center;font-size:.6rem;color:var(--dim);padding:7px;cursor:pointer;pointer-events:all;border-top:1px solid rgba(255,255,255,0.05)">▲ Close</div>
   </div>
-  <div id="qRow">
-    <textarea id="mainQ" placeholder="Ask here" maxlength="300" rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion()}"></textarea>
-    <button id="askBtn" onclick="askQuestion()">Simulate ⚡</button>
+  <!-- INPUT — bigger, ⚡ inside -->
+  <div id="qRow"
+    style="pointer-events:all;display:flex;align-items:flex-end;padding:6px 12px 12px;background:rgba(2,4,14,0.96);border-top:1px solid rgba(255,255,255,0.06);position:relative">
+    <textarea id="mainQ" placeholder="Ask anything…" maxlength="300" rows="2"
+      style="flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:14px;padding:11px 46px 11px 14px;color:var(--w);font-size:.94rem;outline:none;caret-color:var(--g);resize:none;min-height:54px;max-height:100px;font-family:inherit;line-height:1.45;transition:border-color .2s;width:100%"
+      oninput="autoResizeMQ(this)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion()}"></textarea>
+    <button id="submitIcon" onclick="askQuestion()"
+      style="position:absolute;right:20px;bottom:18px;width:32px;height:32px;background:var(--g);border-radius:50%;border:none;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1">⚡</button>
   </div>
 </div>
 
@@ -390,14 +390,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="lodOv"><div style="text-align:center"><div class="lring"></div><div style="font-size:.64rem;color:var(--dim)">Forming…</div></div></div>
 
-    <div style="font-size:1.4rem;font-weight:800;color:var(--g);margin-bottom:.4rem">Welcome to SeenShown</div>
-    <div style="font-size:.82rem;color:var(--dim);margin-bottom:2rem;line-height:1.6">Ask any question. Watch it form as particles.</div>
-    <div id="guideSteps">
-      <!-- Steps injected by JS -->
-    </div>
-    <div style="display:flex;justify-content:center;gap:6px;margin:1.6rem 0 1.2rem" id="guideDots"></div>
-    <button id="guideBtn" onclick="guideNext()" style="background:var(--g);color:#02040e;border:none;border-radius:12px;padding:12px 32px;font-weight:700;font-size:.9rem;cursor:pointer;width:100%">Next →</button>
-    <div style="margin-top:.8rem"><span onclick="closeguide()" style="font-size:.72rem;color:var(--dim);cursor:pointer;text-decoration:underline">Skip</span></div>
+
   </div>
 </div>
 
@@ -1053,8 +1046,9 @@ function updateNarr(domain,phase){
     (function(idx){d.onclick=function(){jumpToPhase(idx);};})(i);
     dots.appendChild(d);
   }
-  /* Stream text */
+  /* Stream text + update ticker */
   streamWords(ph[1]);
+  buildTicker(narrs);
   /* Voice — word by word */
   if(voiceOn)startVoice(ph[1]);
   /* Sound */
@@ -1183,11 +1177,15 @@ function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTime
 
 /* ── ASK QUESTION ── */
 async function askQuestion(){
-  var q=(document.getElementById('mainQ').value||'').trim();if(!q)return;
-  var btn=document.getElementById('askBtn');btn.classList.add('busy');btn.textContent='…';
-  stopVoice();stopSound();
-  document.getElementById('answerText').innerHTML='';
-  document.getElementById('narrPhaseLabel').textContent='Forming…';
+  var q=(document.getElementById('mainQ').value||'').trim();
+  if(!q)return;
+  /* Gate anon users */
+  var anonCount=parseInt(localStorage.getItem('ss_anon_sims')||'0');
+  if(anonCount>=5&&(!window.SS||!window.SS.isSubscriber)){showUpgradeModal('limit');return;}
+  /* Visual — busy state on submit icon */
+  var icon=document.getElementById('submitIcon');
+  if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='…';}
+  /* Route domain */
   var key=smartRoute(q);
   var pill=document.querySelector('.dpill[data-key="'+key+'"]');
   simDomain=key;simPhase=0;
@@ -1195,9 +1193,12 @@ async function askQuestion(){
   document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
   if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
   domIdx=DOMAIN_ORDER.indexOf(key);
+  /* Start sim immediately */
   initPhase(key,0,true);
-  /* Fetch question-specific narration */
-  var gotNarr=false;
+  /* Show loading state in ticker */
+  buildTicker(null,true);
+  closePhasesPanel();
+  /* Fetch narration */
   try{
     var res=await fetch(SB+'/functions/v1/simulate',{
       method:'POST',
@@ -1208,20 +1209,20 @@ async function askQuestion(){
     if(data.narration&&Array.isArray(data.narration)&&data.narration.length>=3){
       var clean=data.narration.filter(function(p){
         return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>15
-          &&p[1].indexOf('this simulation')<0&&p[1].indexOf('This simulation')<0
-          &&p[1].indexOf('models the')<0;
+          &&!p[1].toLowerCase().includes('this simulation')
+          &&!p[1].toLowerCase().includes('models the');
       });
-      if(clean.length>=3){
-        /* Pad to 5 phases if needed */
-        while(clean.length<5)clean.push(clean[clean.length-1]);
-        NARR[key]=clean;gotNarr=true;
-      }
+      while(clean.length<5)clean.push(clean[clean.length-1]);
+      if(clean.length>=3)NARR[key]=clean;
     }
   }catch(e){}
-  updateNarr(key,0);
-  btn.classList.remove('busy');btn.textContent='Simulate ⚡';
+  /* Update ticker with final answer */
+  buildTicker(NARR[key]);
+  if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
   currentLikes=0;document.getElementById('likeCount').textContent='0';
+  localStorage.setItem('ss_anon_sims',anonCount+1);
   saveSimulation(q,key);
+  if(q)setTimeout(function(){offerSaveModal(q,simDomain);},9000);
 }
 
 async function saveSimulation(q,domain){
@@ -1285,10 +1286,11 @@ function togglePause(){
   document.getElementById('pauseBtn').classList.toggle('on',paused);
   document.getElementById('pauseLabel').textContent=paused?'Play':'Pause';
   document.querySelector('#pauseBtn span:first-child').textContent=paused?'▶':'⏸';
-  if(paused){stopVoice();stopSound();}
+
 }
-document.getElementById('speedR').oninput=function(){simSpeed=parseFloat(this.value);};
+/* Speed slider removed */
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+function autoResizeMQ(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
 
 /* ── COMPETE — guaranteed different domains, arrow vote buttons ── */
 var compCtx1,compCtx2,compTimeLeft=60,compDomain1='bigbang',compDomain2='heartbreak';
@@ -1509,6 +1511,79 @@ document.addEventListener('keydown',function(e){
   if(e.key===' '){e.preventDefault();togglePause();}
   if(e.key==='s')toggleSound();
 });
+
+/* ── TICKER — news bar with all phase answers ── */
+var tickerPaused=false;
+function buildTicker(narrs,loading){
+  var track=document.getElementById('tickerTrack');
+  if(!track)return;
+  if(loading){
+    track.innerHTML='<span style="display:inline-flex;align-items:center;padding:0 20px;font-size:.76rem;color:var(--dim);gap:6px"><span style="width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(38,232,176,.3);border-top-color:var(--g);animation:spin .7s linear infinite;display:inline-block"></span>Generating answer…</span>';
+    track.style.animation='none';
+    return;
+  }
+  if(!narrs||!narrs.length){track.innerHTML='';return;}
+  /* Build ticker content — doubled for seamless loop */
+  var segs=narrs.map(function(ph,i){
+    var label=(ph[0]||'').split('·').pop().trim()||('Phase '+(i+1));
+    var text=ph[1]||'';
+    return '<span style="display:inline-flex;align-items:center;gap:6px;padding:0 28px 0 4px;flex-shrink:0">'
+      +'<span style="width:5px;height:5px;border-radius:50%;background:var(--g);opacity:.7;flex-shrink:0"></span>'
+      +'<span style="font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g);opacity:.8;flex-shrink:0">'+label+'</span>'
+      +'<span style="font-size:.78rem;color:rgba(255,255,255,.88)">'+text+'</span>'
+      +'<span style="color:rgba(38,232,176,.25);font-size:1rem;padding:0 4px">·</span>'
+      +'</span>';
+  }).join('');
+  /* Double for seamless scroll */
+  track.innerHTML=segs+segs;
+  /* Reset animation */
+  track.style.animation='none';
+  void track.offsetWidth;
+  var dur=Math.max(20,narrs.length*8)+'s';
+  track.style.animation='tickerScroll '+dur+' linear infinite';
+}
+
+function togglePhasesPanel(){
+  var panel=document.getElementById('phasesPanel');
+  if(panel.style.display==='none'||!panel.style.display){
+    openPhasesPanel();
+  } else {
+    closePhasesPanel();
+  }
+}
+
+function openPhasesPanel(){
+  var panel=document.getElementById('phasesPanel');
+  var list=document.getElementById('phasesList');
+  var narrs=NARR[simDomain];
+  if(!narrs||!narrs.length){return;}
+  list.innerHTML=narrs.map(function(ph,i){
+    var label=(ph[0]||'Phase '+(i+1));
+    var text=ph[1]||'';
+    var isActive=i===simPhase;
+    return '<div class="phase-item'+(isActive?' active':'')+'" onclick="jumpToPhaseAndClose('+i+')" '
+      +'style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer'+(i===narrs.length-1?';border-bottom:none':'')+'">'
+      +'<div style="font-size:.52rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g);opacity:'+(isActive?'1':'.6')+';margin-bottom:.25rem">'+label+'</div>'
+      +'<div style="font-size:.78rem;color:'+(isActive?'#fff':'rgba(255,255,255,.82)')+';line-height:1.5">'+text+'</div>'
+      +'</div>';
+  }).join('');
+  panel.style.display='block';
+  /* Pause ticker */
+  var track=document.getElementById('tickerTrack');
+  if(track)track.style.animationPlayState='paused';
+}
+
+function closePhasesPanel(){
+  var panel=document.getElementById('phasesPanel');
+  panel.style.display='none';
+  var track=document.getElementById('tickerTrack');
+  if(track)track.style.animationPlayState='running';
+}
+
+function jumpToPhaseAndClose(ph){
+  closePhasesPanel();
+  jumpToPhase(ph);
+}
 
 /* ── BUILD UI ── */
 function buildStrip(){

@@ -13,13 +13,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SeenShown">
 <meta name="mobile-web-app-capable" content="yes">
-<!-- PWA Install button style -->
 <style>
-#installBtn{position:fixed;bottom:auto;top:auto;display:none;align-items:center;gap:6px;background:rgba(38,232,176,0.12);border:1.5px solid rgba(38,232,176,0.5);border-radius:20px;padding:7px 14px;font-size:.72rem;font-weight:700;color:var(--g);cursor:pointer;z-index:260;backdrop-filter:blur(12px);transition:all .2s;white-space:nowrap;box-shadow:0 2px 16px rgba(0,0,0,.4)}
+#installBtn{position:fixed;bottom:180px;left:14px;display:none;align-items:center;gap:6px;background:rgba(38,232,176,0.12);border:1.5px solid rgba(38,232,176,0.5);border-radius:20px;padding:7px 14px;font-size:.72rem;font-weight:700;color:var(--g);cursor:pointer;z-index:260;backdrop-filter:blur(12px);transition:all .2s;white-space:nowrap;box-shadow:0 2px 16px rgba(0,0,0,.4)}
 #installBtn:hover{background:rgba(38,232,176,0.22);transform:scale(1.03)}
 #installBtn.show{display:flex}
-</style>
-<style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--border:rgba(38,232,176,0.15);--red:#e05c5c;--gold:#f0c040}
 html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;user-select:none}
@@ -30,7 +27,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 /* NAV */
 #nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:46px;background:rgba(2,4,14,0.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.05)}
 .nav-logo{font-size:1rem;font-weight:800;color:var(--g);text-decoration:none;letter-spacing:-.02em}
-.nav-tabs{display:flex;gap:1px}
+.nav-tabs{display:flex;gap:1px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.nav-tabs::-webkit-scrollbar{display:none}
 .ntab{padding:4px 9px;border-radius:6px;font-size:.7rem;color:var(--dim);cursor:pointer;border:none;background:transparent;text-decoration:none;display:inline-block;transition:color .18s}
 .ntab.active{color:var(--g);background:rgba(38,232,176,0.08)}
 .nav-right{display:flex;align-items:center;gap:6px}
@@ -38,13 +35,13 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 .inv-btn{font-size:.62rem;background:var(--g);color:#02040e;padding:4px 9px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block}
 
 /* PILLS */
-#pills{position:fixed;top:46px;left:0;right:64px;z-index:100;display:flex;gap:4px;padding:6px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
+#pills{position:fixed;top:46px;left:0;right:56px;z-index:100;display:flex;gap:4px;padding:6px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
 #pills::-webkit-scrollbar{display:none}
 .dpill{flex-shrink:0;font-size:.56rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);color:var(--dim);cursor:pointer;transition:all .2s;background:rgba(2,4,14,0.6);white-space:nowrap}
 .dpill.active{color:#02040e;font-weight:700;border-color:transparent}
 
 /* RIGHT RAIL — responsive, always visible */
-#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 5px;width:56px}
+#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 6px;width:56px}
 .rail-btn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}
 .rail-btn:active{transform:scale(.88)}
 .rail-icon{width:38px;height:38px;border-radius:50%;background:rgba(2,4,14,0.6);border:1.5px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;transition:border-color .2s,background .2s}
@@ -54,70 +51,16 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 .rail-label.gold{color:var(--gold)}
 .rail-label.green{color:var(--g)}
 
-/* BOTTOM PANEL — always right:60px to match rail */
-#bottomPanel{position:fixed;bottom:0;left:0;right:60px;z-index:150;pointer-events:none}
+/* BOTTOM PANEL — right:56px matches rail width */
+#bottomPanel{position:fixed;bottom:0;left:0;right:56px;z-index:150;pointer-events:none}
 
-/* ANSWER WRAP — lighter so sim shows through */
-#answerWrap{pointer-events:all;padding:0 14px 8px;background:linear-gradient(0deg,rgba(2,4,14,0.88) 0%,rgba(2,4,14,0.55) 55%,transparent 100%);backdrop-filter:blur(2px)}
 
-/* PHASE ROW */
-#phaseRow{display:flex;align-items:center;gap:8px;margin-bottom:5px}
-#narrPhaseLabel{font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--g);opacity:.8;white-space:nowrap}
-#phaseProgress{flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:1px;overflow:hidden;max-width:100px}
-#phaseProgressFill{height:100%;background:var(--g);border-radius:1px;transition:width 5s linear}
-#stopBtn{font-size:.6rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--dim);padding:2px 7px;cursor:pointer;pointer-events:all;white-space:nowrap;flex-shrink:0}
-#stopBtn.stopped{color:var(--g);border-color:rgba(38,232,176,0.4)}
 
-/* PHASE DOTS */
-#narrDots{display:flex;gap:5px;margin-bottom:7px}
-.ndot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.13);cursor:pointer;transition:all .2s;pointer-events:all}
-.ndot.on{background:var(--g);width:14px;border-radius:3px}
 
-/* ANSWER TEXT */
-#answerText{font-size:.88rem;line-height:1.68;color:rgba(255,255,255,0.92);min-height:40px;letter-spacing:.01em;max-width:520px}
-.word{display:inline;opacity:0;transition:opacity .12s}
-.word.show{opacity:1}
 
-/* PHASE SWIPE ARROWS */
-#phaseArrows{pointer-events:all;display:flex;justify-content:space-between;align-items:center;padding:4px 0 4px;margin-bottom:2px}
-.parr{font-size:.8rem;color:var(--dim);cursor:pointer;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);transition:all .18s;user-select:none}
-.parr:hover{color:var(--g);border-color:rgba(38,232,176,0.3)}
-#phaseNum{font-size:.62rem;color:var(--dim);text-align:center}
 
-/* CONTROLS ROW */
-#iconRow{pointer-events:all;display:flex;align-items:center;gap:6px;padding:5px 14px 0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
-#iconRow::-webkit-scrollbar{display:none}
-.ictl{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:4px 8px;font-size:.66rem;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:3px;transition:all .18s;white-space:nowrap;flex-shrink:0}
-.ictl:hover{border-color:rgba(38,232,176,0.4);color:var(--g)}
-.ictl.on{border-color:var(--g);color:var(--g);background:rgba(38,232,176,0.07)}
-.sdiv{width:1px;height:13px;background:rgba(255,255,255,0.07);flex-shrink:0;margin:0 2px}
-#speedR{width:60px;accent-color:var(--g);cursor:pointer;flex-shrink:0}
-.chips{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
-.chips::-webkit-scrollbar{display:none}
-.qchip{flex-shrink:0;font-size:.56rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:3px 7px;color:var(--dim);cursor:pointer;transition:all .17s;white-space:nowrap}
-.qchip:hover{border-color:var(--g);color:var(--g)}
 
-/* INPUT */
-#qRow{pointer-events:all;display:flex;gap:8px;padding:7px 14px 14px;background:rgba(2,4,14,0.96);border-top:1px solid rgba(255,255,255,0.05)}
-#mainQ{flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--w);font-size:.9rem;outline:none;transition:border-color .2s;caret-color:var(--g);resize:none;min-height:42px;max-height:80px;font-family:inherit;line-height:1.4}
-#mainQ:focus{border-color:var(--g);background:rgba(255,255,255,0.09)}
-#mainQ::placeholder{color:var(--dim)}
-#askBtn{background:var(--g);color:#02040e;border:none;border-radius:12px;padding:10px 14px;font-weight:700;font-size:.8rem;cursor:pointer;white-space:nowrap;min-width:72px;transition:opacity .2s;align-self:flex-end}
-#askBtn.busy{opacity:.4;pointer-events:none}
 
-/* VOICE + SOUND — side by side */
-#mediaBtns{position:fixed;top:54px;left:14px;z-index:160;display:flex;gap:6px}
-.mbtn{background:rgba(2,4,14,0.72);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:4px 10px;font-size:.64rem;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .2s;backdrop-filter:blur(8px)}
-.mbtn.speaking{border-color:rgba(124,79,212,0.5);color:#c4a0ff}
-.mbtn.sounding{border-color:rgba(38,232,176,0.4);color:var(--g)}
-.vwave{display:flex;gap:2px;align-items:center;height:10px}
-.vwave span{display:block;width:2px;background:currentColor;border-radius:2px;animation:vw .6s ease-in-out infinite}
-.vwave span:nth-child(1){height:3px}
-.vwave span:nth-child(2){animation-delay:.15s;height:8px}
-.vwave span:nth-child(3){animation-delay:.3s;height:5px}
-.vwave span:nth-child(4){animation-delay:.15s;height:10px}
-.vwave span:nth-child(5){height:3px}
-@keyframes vw{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
 
 /* PHASE FLASH */
 #phaseFlash{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.1rem,3.5vw,2rem);font-weight:900;color:rgba(255,255,255,0.88);text-align:center;pointer-events:none;opacity:0;transition:opacity .4s;z-index:90;text-shadow:0 0 36px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:80vw}
@@ -179,7 +122,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   .rail-icon{width:34px;height:34px;font-size:.9rem}
   .rail-label{font-size:.42rem}
   #bottomPanel{right:52px}
-  #answerText{font-size:.82rem}
   #pills{right:52px}
 }
 @media(max-height:580px){
@@ -211,10 +153,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
   </div>
 </nav>
-
-<!-- SCRIPTS -->
-<script src="/auth.js"></script>
-<script src="/live.js"></script>
 
 <!-- AUTH MODAL -->
 <div class="ss-modal" id="authModal">
@@ -322,7 +260,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="pills"></div>
 
-<div id="mediaBtns" style="display:none"></div>
 
 <div id="rightRail">
   <div class="rail-btn" id="railLike" onclick="doLike()">
@@ -455,7 +392,7 @@ var globalT=0;
 var lastTs=0;
 var formT=0;
 var FORM_DUR=5000;
-var N=60000;
+var N=0; /* set by detectSpeed() */
 var reinitScheduled=false;
 
 /* ── PARTICLE BUFFERS ── */
@@ -769,7 +706,7 @@ function initPhase(domain,phase,fromScratch){
       }
     } else {
       /* CONTINUOUS — birth = current actual particle position, no gap */
-      pBX[i]=pX[i]||cx();pBY[i]=pY[i]||cy()*.55;
+      pBX[i]=pX[i]||cx();pBY[i]=pY[i]||cy();
     }
     pLife[i]=0;
   }
@@ -1030,10 +967,10 @@ function updateNarr(domain,phase){
   if(document.getElementById('narrPhaseLabel'))document.getElementById('narrPhaseLabel').textContent=ph[0];
   var pct=((phase+1)/narrs.length*100).toFixed(0);
   /* Reset progress bar animation */
-  var fill=document.getElementById('phaseProgressFill');if(!fill){
-  // fill exists
-  fill.style.transition='none';fill.style.width='0%';
-  setTimeout(function(){fill.style.transition='width '+(PHASE_DUR/1000)+'s linear';fill.style.width=pct+'%';},50);
+  var fill=document.getElementById('phaseProgressFill');
+  if(fill){
+    fill.style.transition='none';fill.style.width='0%';
+    setTimeout(function(){fill.style.transition='width '+(PHASE_DUR/1000)+'s linear';fill.style.width=pct+'%';},50);
   }
   if(document.getElementById('phaseNum'))document.getElementById('phaseNum').textContent=(phase+1)+' / '+narrs.length;
   /* Phase flash */
@@ -1042,12 +979,12 @@ function updateNarr(domain,phase){
   flash.style.opacity='1';
   setTimeout(function(){flash.style.opacity='0';},2000);
   /* Dots */
-  var dots=document.getElementById('narrDots');if(dots)dots.innerHTML='';
+  var dots=document.getElementById('narrDots');if(dots){dots.innerHTML='';
   for(var i=0;i<narrs.length;i++){
     var d=document.createElement('div');d.className='ndot'+(i===phase?' on':'');
     (function(idx){d.onclick=function(){jumpToPhase(idx);};})(i);
     dots.appendChild(d);
-  }
+  }}
   /* Stream text + update ticker */
   if(typeof streamWords==='function')streamWords(ph[1]);
   if(typeof buildTicker==='function')buildTicker(narrs);
@@ -1082,7 +1019,7 @@ function prevPhase(){if(simPhase>0)jumpToPhase(simPhase-1);}
 /* ── VOICE — word synced ── */
 async function startVoice(text){
   stopVoice();
-  document.getElementById('voiceBtn').classList.add('speaking');
+  var _vb=document.getElementById('voiceBtn');if(_vb)_vb.classList.add('speaking');
   try{
     var res=await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+ELV+'/stream',{
       method:'POST',
@@ -1092,16 +1029,16 @@ async function startVoice(text){
     if(!res.ok)throw 0;
     var blob=await res.blob(),url=URL.createObjectURL(blob);
     voiceAudio=new Audio(url);
-    voiceAudio.onended=function(){URL.revokeObjectURL(url);voiceAudio=null;document.getElementById('voiceBtn').classList.remove('speaking');};
-    voiceAudio.onerror=function(){document.getElementById('voiceBtn').classList.remove('speaking');};
+    voiceAudio.onended=function(){URL.revokeObjectURL(url);voiceAudio=null;var _vb2=document.getElementById('voiceBtn');if(_vb2)_vb2.classList.remove('speaking');  };
+    voiceAudio.onerror=function(){var _vb3=document.getElementById('voiceBtn');if(_vb3)_vb3.classList.remove('speaking');};
     if(voiceOn)voiceAudio.play();
   }catch(e){document.getElementById('voiceBtn').classList.remove('speaking');}
 }
-function stopVoice(){if(voiceAudio){voiceAudio.pause();voiceAudio=null;}document.getElementById('voiceBtn').classList.remove('speaking');}
+function stopVoice(){if(voiceAudio){voiceAudio.pause();voiceAudio=null;}var vb=document.getElementById('voiceBtn');if(vb)vb.classList.remove('speaking');}
 function toggleVoice(){
   voiceOn=!voiceOn;
-  document.getElementById('voiceLbl').textContent=voiceOn?'Voice On':'Voice';
-  document.getElementById('voiceBtn').classList.toggle('speaking',voiceOn);
+  var vl=document.getElementById('voiceLbl');if(vl)vl.textContent=voiceOn?'Voice On':'Voice';
+  var vb=document.getElementById('voiceBtn');if(vb)vb.classList.toggle('speaking',voiceOn);
   if(!voiceOn)stopVoice();
   else{var narrs=NARR[simDomain];if(narrs&&narrs[simPhase])startVoice(narrs[simPhase][1]);}
 }
@@ -1144,9 +1081,9 @@ function playEmotionalSound(domain){
 }
 function toggleSound(){
   soundOn=!soundOn;
-  document.getElementById('soundIco').textContent=soundOn?'🔊':'🔇';
-  document.getElementById('soundLbl').textContent=soundOn?'Sound On':'Sound';
-  document.getElementById('soundBtn').classList.toggle('sounding',soundOn);
+  var ico=document.getElementById('soundIco');if(ico)ico.textContent=soundOn?'🔊':'🔇';
+  var lbl=document.getElementById('soundLbl');if(lbl)lbl.textContent=soundOn?'Sound On':'Sound';
+  var btn=document.getElementById('soundBtn');if(btn)btn.classList.toggle('sounding',soundOn);
   if(!soundOn)stopSound();
   else playEmotionalSound(simDomain);
 }
@@ -1274,10 +1211,9 @@ function showToast(msg){var t=document.getElementById('ptToast');t.textContent=m
 /* ── PAUSE ── */
 function togglePause(){
   paused=!paused;
-  document.getElementById('pauseBtn').classList.toggle('on',paused);
-  document.getElementById('pauseLabel').textContent=paused?'Play':'Pause';
-  document.querySelector('#pauseBtn span:first-child').textContent=paused?'▶':'⏸';
-
+  var pb=document.getElementById('pauseBtn');if(pb)pb.classList.toggle('on',paused);
+  var pl=document.getElementById('pauseLabel');if(pl)pl.textContent=paused?'Play':'Pause';
+  var ps=document.querySelector('#pauseBtn span:first-child');if(ps)ps.textContent=paused?'▶':'⏸';
 }
 /* Speed slider removed */
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
@@ -1590,7 +1526,8 @@ function buildStrip(){
 var QS=['How does the Big Bang start?','How big is the universe?','How does heartbreak feel?','What is love?','How does grief work?','How does anger form?','What is joy?','How does a neuron fire?','How do T-cells kill cancer?','How does antibiotic resistance happen?','How does a black hole form?','How do rumours spread?','How does gridlock happen?','What is a chemical reaction?'];
 function buildChips(){
   var c=document.getElementById('qchips');
-  QS.forEach(function(q){var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;ch.onclick=function(){document.getElementById('mainQ').value=q;autoResize(document.getElementById('mainQ'));askQuestion();};c.appendChild(ch);});
+  if(!c)return; /* qchips element optional */
+  QS.forEach(function(q){var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;ch.onclick=function(){document.getElementById('mainQ').value=q;autoResizeMQ(document.getElementById('mainQ'));askQuestion();};c.appendChild(ch);});
 }
 
 /* ── CONTEXTUAL GUIDE — tooltips pointing to actual UI ── */
@@ -1808,26 +1745,7 @@ function joinRoom(){
   LIVE_API.join(id,simDomain);
 }
 
-/* ── OVERRIDE askQuestion TO OFFER SAVE — clean direct wrap ── */
-var _origAskQuestion=null;
-function wrapAskQuestion(){
-  if(_origAskQuestion)return;
-  _origAskQuestion=askQuestion;
-  /* Replace global askQuestion with gated version */
-  window.askQuestion=askQuestion=async function(){
-    var q=(document.getElementById('mainQ').value||'').trim();
-    if(!q)return;
-    /* Gate: check sim limit for anonymous users */
-    var anon=getAnonSimCount();
-    if(anon>=5&&(!window.SS||!window.SS.isSubscriber)){
-      showUpgradeModal('limit');return;
-    }
-    /* Run the original simulation */
-    await _origAskQuestion();
-    /* Offer save modal 8 seconds after sim starts forming */
-    if(q){setTimeout(function(){offerSaveModal(q,simDomain);},8000);}
-  };
-}
+/* wrapAskQuestion removed — gating and save offer built into askQuestion directly */
 
 /* ── URL PARAMS ── */
 var urlP=new URLSearchParams(window.location.search);
@@ -1838,7 +1756,6 @@ var liveParam=urlP.get('live');
 
 /* ── INIT AUTH ON LOAD ── */
 if(window.SS_AUTH){window.SS_AUTH.init();}
-wrapAskQuestion();
 if(liveParam){setTimeout(function(){if(window.LIVE_API)LIVE_API.join(liveParam,simDomain);},1200);}
 
 /* ── BOOT ── */
@@ -1854,5 +1771,8 @@ setTimeout(function(){document.getElementById('lodOv').style.opacity='0';setTime
 updateNarr(simDomain,0);
 if(urlQ){setTimeout(function(){var el=document.getElementById('mainQ');if(el){el.value=decodeURIComponent(urlQ);autoResizeMQ(el);askQuestion();}},500);}
 </script>
+<!-- External scripts load after main so DOMAIN_LABELS etc are available -->
+<script src="/auth.js"></script>
+<script src="/live.js"></script>
 </body>
 </html>

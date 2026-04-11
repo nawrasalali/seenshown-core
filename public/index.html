@@ -518,6 +518,9 @@ var pX,pY,pTX,pTY,pBX,pBY,pR,pG,pB,pSz,pDelay,pLife;
 /* ── TOUCH INTERACTION ── */
 var touchActive=false;
 var GT={sx:0,sy:0,mx:0,my:0,st:0,moved:false};
+var _bbGrowth=0; /* BigBang growth factor 0=singularity 1=full horn */
+var _bbDir=1;    /* 1=expanding -1=collapsing */
+var _bbBlack=0;  /* black pause timer ms */
 var touchX=cx(),touchY=cy();
 var touchForce=0; /* +1 = attract, -1 = repel */
 var touchStartTime=0;
@@ -982,17 +985,9 @@ function getSpec(domain,phase,n){
 
     /* BIG BANG — 12 phases, all white flash on 1, continuous morphing */
     case 'bigbang':{
-      /* Phase 0: singularity — tight white ball at center-bottom */
-      if(phase===0) return shapePoint(n,x,H()-185-20,255,255,255);
-      /* Phase 1: horn small — seed just beginning to open */
-      if(phase===1) return shapeUniverseHorn(n,x,y,sz,0.18);
-      /* Phase 2: horn growing — mid expansion */
-      if(phase===2) return shapeUniverseHorn(n,x,y,sz,0.55);
-      /* Phase 3: horn full — fills entire screen upward */
-      if(phase===3) return shapeUniverseHorn(n,x,y,sz,1.0);
-      /* Phase 4: black — all particles collapse to invisible point below screen */
-      if(phase===4){var outB=[];for(var i=0;i<n;i++){outB.push({tx:x+rnd(-1,1),ty:H()-185+50,rr:0,gg:0,bb:0,r:0.1});}return outB;}
-      return shapePoint(n,x,H()-185-20,255,255,255);
+      /* Single continuous phase — growth driven by _bbGrowth in render loop */
+      if(_bbGrowth<0.015) return shapePoint(n,x,H()-185-20,255,255,255);
+      return shapeUniverseHorn(n,x,y,sz,_bbGrowth);
     }
 
     /* UNIVERSE — scale from quantum to cosmic */
@@ -1272,7 +1267,21 @@ function loop(ts){
   var dt=Math.min((ts-lastTs)*simSpeed,50);
   lastTs=ts;
   render(dt);
-  if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=(simDomain==='bigbang')?(simPhase===0?600:(simPhase===4?300:9500)):7300;if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
+  if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=7300;if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
+  /* BigBang continuous growth driver */
+  if(simDomain==='bigbang'&&!compActive){
+    if(_bbBlack>0){
+      _bbBlack-=dt;
+      if(_bbBlack<=0){_bbGrowth=0;_bbDir=1;initPhase('bigbang',0,false);updateNarr('bigbang',0);}
+    } else if(_bbDir===1){
+      _bbGrowth+=dt/18000; /* expand over 18s */
+      if(_bbGrowth>=1){_bbGrowth=1;_bbDir=-1;updateNarr('bigbang',1);}
+      if(_bbGrowth>0.01) initPhase('bigbang',0,false);
+    } else {
+      _bbGrowth-=dt/3000; /* collapse over 3s */
+      if(_bbGrowth<=0){_bbGrowth=0;_bbBlack=800;} /* 0.8s black pause */
+    }
+  }
 }
 
 /* ── NARRATION ── */
@@ -1285,11 +1294,8 @@ var NARR={
     ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
-    ['Planck Epoch · T=0','A single point. All matter, energy, space and time compressed into a quantum singularity smaller than a proton. Temperature 10 to the 32 Kelvin. The four forces are one. This moment lasts 10 to the minus 43 seconds.'],
-    ['Inflation Begins · The Horn Opens','Space itself begins multiplying. Not matter moving — space expanding. The horn of the universe opens from its quantum tip. In 10 to the minus 35 seconds, everything grows by a factor of 10 to the 26. Quantum fluctuations stretch to cosmic scale, seeding every galaxy that will ever exist.'],
-    ['The Universe Expands · Horn Grows','The horn widens. Quarks bind into protons. Hydrogen and helium nuclei form. After 380,000 years the universe cools to 3,000 Kelvin and becomes transparent. The oldest light — the Cosmic Microwave Background — streams free. Gravity gathers matter into the first stars, galaxies, and filaments of the cosmic web.'],
-    ['Maximum Expansion · Full Horn','13.8 billion years. The observable universe spans 93 billion light years. Dark energy drives the expansion to accelerate. Galaxies rush apart faster than light can bridge the gap. The horn reaches its full breadth — from the quantum singularity at its tip to the vast cold dark at its mouth.'],
-    ['Big Crunch · Collapse','In one possible future, everything reverses. The expansion halts. Gravity wins. The horn collapses inward. Galaxies accelerate toward each other. Temperature climbs back to the Planck limit. The universe returns to nothing — a quantum void. Then silence. Then again: a point.']
+    ['Planck Epoch · T=0','A single point. All matter, energy, space and time compressed into a quantum singularity. Temperature 10 to the 32 Kelvin. The four forces are unified. This moment lasts 10 to the minus 43 seconds.'],
+    ['The Universe Expands','Space itself multiplies. The horn of the observable universe opens — tip at the Big Bang, mouth at the present day. Quarks, atoms, stars, galaxies. 13.8 billion years of expansion, rendered in light.']
   ],
     universe:[
     ['Step 1: Quantum Vacuum','Before anything: quantum vacuum fluctuations — virtual particle pairs blinking in and out of existence. This is the ground state of physics. Nothing, yet seething with probabilistic energy. The Big Bang is one of these fluctuations that did not annihilate.'],
@@ -1487,7 +1493,7 @@ function updateNarr(domain,phase){
     simPhase=(simPhase+1)%narrsLen;
     initPhase(simDomain,simPhase,false);
     updateNarr(simDomain,simPhase);
-  },(domain==='bigbang')?(simPhase===0?500:(simPhase===4?200:9000)):6500); /* T0=0.5s, black=0.2s, horn=9s */
+  },domain==='bigbang'?99999:6500); /* bigbang uses continuous driver, not phase timer */
 }
 
 function toggleAutoPlay(){
@@ -1604,6 +1610,7 @@ var DOMAIN_QUESTIONS={
 };
 
 function switchDomain(key,pill){
+  if(key==='bigbang'){_bbGrowth=0;_bbDir=1;_bbBlack=0;}
   simDomain=key;simPhase=0;_phaseMs=0;
   if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
   stopVoice();stopSound();

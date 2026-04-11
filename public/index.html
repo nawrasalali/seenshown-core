@@ -521,6 +521,7 @@ var GT={sx:0,sy:0,mx:0,my:0,st:0,moved:false};
 var _bbGrowth=0;
 var _bbState=0;
 var _bbT=0;
+var _bbPaused=false; /* pause during question answering */
 /* BB States: 0=black-nothing 1=dot-appears 2=explosion+expand 3=hold-full 4=collapse 5=black-end */
 var touchX=cx(),touchY=cy();
 var touchForce=0; /* +1 = attract, -1 = repel */
@@ -1291,7 +1292,7 @@ function loop(ts){
      5: THUNDER COLLAPSE back to dot (instant)
      6: DOT + "back to nothingness" 3s
      7: BLACK 1s → replay */
-  if(simDomain==='bigbang'&&!compActive){
+  if(simDomain==='bigbang'&&!compActive&&!_bbPaused){
     _bbT+=dt;
     if(_bbState===0){
       if(_bbT<80) showBBWord();
@@ -1673,73 +1674,66 @@ async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();
   if(!q)return;
 
-  /* Show question in bar immediately */
   showQuestionBar(q);
-
-  /* Visual feedback */
   var icon=document.getElementById('submitIcon');
   if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='...';}
-
-  /* Clear input */
   var mainQ=document.getElementById('mainQ');
   if(mainQ){mainQ.value='';autoResizeMQ(mainQ);}
 
-  /* Use bigbang as visual default while AI loads */
-  var key='bigbang';
-  simDomain=key;simPhase=0;domIdx=DOMAIN_ORDER.indexOf(key);
-  if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
-  initPhase(key,0,true);
-  buildTicker(NARR[key]);
-  updateNarr(key,0);
-  closePhasesPanel();
+  /* Pause BigBang state machine so it doesn't fight with question answer */
+  _bbPaused=true;
 
-  if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
+  showToast('Thinking...');
 
-  currentLikes=0;
-  var lc=document.getElementById('likeCount');
-  if(lc)lc.textContent='0';
-
-  setTimeout(function(){
-    var rs=document.getElementById('railSave'),rp=document.getElementById('railPost');
-    if(rs)rs.style.opacity='1';if(rp)rp.style.opacity='1';
-  },3000);
-
-  /* Ask AI — returns best domain AND answer for this specific question */
+  /* Fetch AI answer */
   try{
-    var apiUrl=window.location.origin+'/api/ask';
-    var res=await fetch(apiUrl,{
+    var res=await fetch(window.location.origin+'/api/ask',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question:q})
     });
-    if(!res.ok)throw new Error('HTTP '+res.status);
+    if(!res.ok)throw new Error('API error '+res.status);
     var data=await res.json();
-    if(data.narration&&Array.isArray(data.narration)&&data.narration.length>=3){
-      /* Switch to AI-chosen domain for best visual match */
-      var aiKey=data.domain||key;
-      if(aiKey!==simDomain){
-        simDomain=aiKey;domIdx=DOMAIN_ORDER.indexOf(aiKey);
-        initPhase(aiKey,0,true);
-        /* Update pill */
-        document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
-        var ap=document.querySelector('.dpill[data-key="'+aiKey+'"]');
-        if(ap){ap.classList.add('active');ap.style.background=DC[aiKey]||'#26e8b0';ap.style.color='#02040e';ap.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
-      }
-      /* Load AI narration */
-      var clean=data.narration.filter(function(p){return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>10;});
-      while(clean.length<5&&clean.length>0)clean.push(clean[clean.length-1]);
-      NARR[aiKey]=clean;
-      simPhase=0;_phaseMs=0;
-      if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
-      updateNarr(aiKey,0);
-      buildTicker(NARR[aiKey]);
-      showToast('✨ Answer ready');
-      saveSimulation(q,aiKey);
-    }
+    if(!data.narration||data.narration.length<3)throw new Error('Bad response');
+
+    var aiKey=data.domain||'bigbang';
+    var clean=data.narration.filter(function(p){return Array.isArray(p)&&p[0]&&p[1];});
+    while(clean.length<5&&clean.length>0)clean.push(clean[clean.length-1]);
+
+    /* Store AI narration */
+    NARR[aiKey]=clean;
+
+    /* Switch domain and show simulation */
+    simDomain=aiKey;simPhase=0;domIdx=DOMAIN_ORDER.indexOf(aiKey);
+    if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
+    _phaseMs=0;_bbPaused=false;
+
+    /* Reset BB state if switching away from bigbang */
+    if(aiKey!=='bigbang'){_bbState=0;_bbT=0;_bbGrowth=0;}
+
+    initPhase(aiKey,0,true);
+    updateNarr(aiKey,0);
+    buildTicker(NARR[aiKey]);
+
+    /* Update pill */
+    document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
+    var ap=document.querySelector('.dpill[data-key="'+aiKey+'"]');
+    if(ap){ap.classList.add('active');ap.style.background=DC[aiKey]||'#26e8b0';ap.style.color='#02040e';ap.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
+
+    showToast('✨ Answer ready');
+    if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
+    saveSimulation(q,aiKey);
+
+    setTimeout(function(){
+      var rs=document.getElementById('railSave'),rp=document.getElementById('railPost');
+      if(rs)rs.style.opacity='1';if(rp)rp.style.opacity='1';
+    },3000);
+
   }catch(e){
-    console.warn('AI failed:',e.message);
-    showToast('⚡ '+e.message.slice(0,50));
-    saveSimulation(q,key);
+    _bbPaused=false;
+    console.error('askQuestion failed:',e);
+    showToast('Error: '+e.message.slice(0,60));
+    if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
   }
 }
 

@@ -1989,7 +1989,7 @@ function rematch(){
 }
 
 
-canvas.addEventListener('touchstart',function(e){
+document.addEventListener('touchstart',function(e){
   var panel=document.getElementById('phasesPanel');
   if(panel&&panel.style.display!=='none'){closePhasesPanel();return;}
   var t=e.touches[0];
@@ -2003,7 +2003,7 @@ canvas.addEventListener('touchstart',function(e){
   touchActive=true;touchForce=1;
 },{passive:true});
 
-canvas.addEventListener('touchmove',function(e){
+document.addEventListener('touchmove',function(e){
   var t=e.touches[0];
   GT.mx=t.clientX;GT.my=t.clientY;
   var totalDX=GT.mx-GT.sx;
@@ -2019,7 +2019,7 @@ canvas.addEventListener('touchmove',function(e){
   }
 },{passive:true});
 
-canvas.addEventListener('touchend',function(e){
+document.addEventListener('touchend',function(e){
   touchActive=false;touchForce=0;
   var t=e.changedTouches[0];
   var dx=GT.mx-GT.sx;

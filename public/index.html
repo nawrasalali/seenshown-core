@@ -131,7 +131,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   .rail-icon{width:30px;height:30px;font-size:.8rem}
 }
 
-#pillStrip{position:fixed;top:46px;left:0;right:0;z-index:120;height:32px;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;background:rgba(2,4,14,0.82);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 6px;gap:5px;}
+#pillStrip{display:none!important;position:fixed;top:46px;left:0;right:0;z-index:120;height:32px;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;background:rgba(2,4,14,0.82);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 6px;gap:5px;}
 #pillStrip::-webkit-scrollbar{display:none}
 .dpill{flex-shrink:0;height:22px;padding:0 11px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);font-size:.58rem;font-weight:700;letter-spacing:.06em;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;user-select:none;}
 .dpill.active{color:#02040e;border-color:transparent;}
@@ -967,7 +967,7 @@ function shapeFirstStars(n,ox,oy,size){
 /* ── DOMAIN SHAPE SPECS — 5 phases each ── */
 function getSpec(domain,phase,n){
   /* Center in the available simulation area (between nav and bottom panel) */
-  var navH=78,panelH=185,railW=72;
+  var navH=46,panelH=185,railW=72;
   var availW=W()-railW;
   var availH=H()-navH-panelH;
   var x=availW/2; /* horizontal center of sim area */
@@ -1326,109 +1326,10 @@ function loop(ts){
 
 /* ── NARRATION ── */
 var NARR={
-  fireworks:[
-    ['5 · Four more seconds','The crowd is counting. The sky holds its breath. Every face tilted upward, lit by city light. In four seconds the year ends. Something old becomes something new.'],
-    ['4 · Three more seconds','The fuses are lit. The shells are already climbing. At 100 metres per second, they are invisible — just a whisper of smoke against the dark.'],
-    ['3 · Two more seconds','The atmosphere hums. You can feel the people around you tensing — not with anxiety, but with something older. Anticipation. The body preparing for a gift.'],
-    ['2 · One more second','The first shell reaches its apex. 300 metres above you, a chemical fuse burns its last millimetre. The crowd is at ONE.'],
-    ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
-  ],
   bigbang:[
-    ['Planck Epoch · T=0','In the beginning, nothing. Then a single point — all matter, energy, space and time compressed into a quantum singularity smaller than a proton. Temperature: 10 to the power of 32 Kelvin.'],
-    ['The Universe Expands','The singularity explodes outward. Not matter moving through space — space itself multiplying. The horn of the observable universe opens from its tip. Each particle is a star, a galaxy, a world. 13.8 billion years of expansion, rendered in light.']
-  ],
-    universe:[
-    ['Step 1: Quantum Vacuum','Before anything: quantum vacuum fluctuations — virtual particle pairs blinking in and out of existence. This is the ground state of physics. Nothing, yet seething with probabilistic energy. The Big Bang is one of these fluctuations that did not annihilate.'],
-    ['Step 2: Galaxy Formation','Gravity amplifies tiny density variations from inflation. Gas clouds collapse. First galaxies form 400 million years after the Big Bang — small, irregular, chaotic. Over 13 billion years they merge, sort, and organise into the large-scale structure.'],
-    ['Step 3: The Milky Way','Our galaxy: a barred spiral 100,000 light-years across, 200 billion stars. Our sun sits in the Orion Arm, 26,000 light-years from a supermassive black hole called Sagittarius A, which contains 4 million solar masses.'],
-    ['Step 4: Solar System Formation','4.6 billion years ago, a molecular cloud collapses — perhaps triggered by a nearby supernova shockwave. The sun ignites. Remaining dust and gas form a protoplanetary disk. Collisions and accretion build eight planets over 100 million years.'],
-    ['Step 5: Earth — One Rock','Pale blue dot. 12,742 km across. 4.5 billion years old. Every human who has ever lived was born on this single object orbiting an average star in the outer arm of one of 2 trillion galaxies. The universe required 13.8 billion years to produce you.']
-  ],
-    heartbreak:[
-    ['Step 1: Two Complete Systems','Two human beings, each with a complete neural model of the world. Before contact: two separate oscillating fields, each self-sustaining, each complete.'],
-    ['Step 2: Entanglement','The brain builds predictive models of people close to us — their voice, weight, responses, patterns. After sufficient time together, the model of the other person runs continuously, even in their absence. The fields have merged.'],
-    ['Step 3: Fracture Propagation','Separation begins at a boundary condition. The merged field must split. Unlike physical objects, neural models do not simply stop — they continue predicting, and every prediction now fails. The failure is felt as loss, thousands of times per day.'],
-    ['Step 4: Field Separation','As physical distance increases, the predictive model diverges further from reality. The brain attempts to update the model but lacks new data. The gap between expectation and reality is the precise mechanism of grief. Not sadness — mismatch.'],
-    ['Step 5: Integration','The brain cannot delete what it loved. With time, the failed predictions reduce in frequency. The field does not heal — it reorganises around the absence. Love remains encoded in synaptic weights permanently. Heartbreak is the scar of an attachment that was real.']
-  ],
-    love:[
-    ['Step 1: Initial Attraction','The ventral tegmental area releases dopamine when a person is encountered who represents novelty, warmth, and potential survival advantage. This is not a choice — it is a chemical evaluation running 250 milliseconds below conscious thought.'],
-    ['Step 2: Recognition','Sustained exposure builds neural prediction models. The orbicularis oculi — the eye muscle — contracts involuntarily in genuine recognition. This cannot be faked. The body signals trust before the mind confirms it.'],
-    ['Step 3: Pair Bonding','Oxytocin — released through touch, eye contact, and sustained proximity — binds to receptors that reduce threat detection and increase trust. The amygdala quiets. The other person begins to feel safe in a way that is measurably different from all others.'],
-    ['Step 4: Merged Fields','Two independently oscillating neural fields begin to synchronise. Heart rate variability, breathing, even neural oscillation patterns shift toward alignment. This is measurable. Two people in love are physically different from two people who are not.'],
-    ['Step 5: Stable Orbit','Long-term love activates serotonin pathways rather than dopamine — a shift from excitement to deep contentment. The merged field becomes self-sustaining. Love at this stage does not require novelty to persist. It is a new equilibrium state.']
-  ],
-    grief:[
-    ['Step 1: Intact Prediction Model','The brain maintains a complete predictive model of every significant person. It runs continuously — anticipating their response, planning future interactions, simulating their presence. This model does not stop when they die.'],
-    ['Step 2: The First Failure','The model predicts. Reality does not match. The mismatch activates the anterior cingulate cortex — the same region that registers physical pain. Grief and pain use the same neural infrastructure. This is why it is described as a physical sensation.'],
-    ['Step 3: Void Formation','The brain cannot delete the model. Every environment, smell, sound, and time of day that was associated with the person triggers a prediction — and a failure. The absence becomes a presence. The void has a shape made of everything that once fitted there.'],
-    ['Step 4: Reorganisation','The brain begins to build a new model: one that incorporates the absence. This takes, on average, two years. The wound does not close — the architecture around it changes. Grief carried long enough becomes wisdom, because it is paid for.'],
-    ['Step 5: New Growth','The person who emerges from grief is not the same as the one who entered it. New neural pathways have formed around the loss. The love is still encoded. The loss is still encoded. Both are permanent features of the landscape of self.']
-  ],
-    anger:[
-    ['Step 1: Amygdala Firing','The amygdala detects threat and fires 250 milliseconds before conscious awareness. Cortisol and adrenaline flood the bloodstream. The heart rate increases 20 beats per minute. All of this happens before you know you are angry.'],
-    ['Step 2: Prefrontal Shutdown','The prefrontal cortex — the region responsible for rational evaluation — reduces blood flow by up to 40 percent. Executive function drops. The brain prioritises fast threat response over accurate evaluation. You are, neurologically, less intelligent when angry.'],
-    ['Step 3: Peak Activation','Full sympathetic nervous system activation. Blood flows to large muscle groups. Peripheral vision narrows. Digestion stops. The body is optimised for combat or flight in a world that almost never requires either. The energy has nowhere useful to go.'],
-    ['Step 4: Wave Propagation','Anger travels in waves through conversation, through relationship, through institutions. Each wave reinforces the neural pathway that produced it — Hebbian learning applied to rage. Anger practised is anger strengthened. It becomes the default response faster each time.'],
-    ['Step 5: Cortisol Clearance','The parasympathetic system begins to win approximately 20 minutes after peak activation. Cortisol clears. Heart rate drops. Rational evaluation returns. But every pathway that fired has been reinforced. The next trigger will reach the same intensity faster.']
-  ],
-    joy:[
-    ['Step 1: Anticipation Signal','The ventral tegmental area releases dopamine before the good thing arrives — not in response to it. The prediction itself generates pleasure. This is why anticipation is sometimes better than the event. The brain rewards itself for accurate positive forecasting.'],
-    ['Step 2: The Duchenne Smile','Real joy activates the orbicularis oculi — the muscle around the eye. This contraction is involuntary. It cannot be consciously faked. When it fires alongside the zygomatic major (the mouth smile), the result is a Duchenne smile — universally recognised across cultures as genuine.'],
-    ['Step 3: Social Propagation','Joy is one of the few emotions that naturally seeks to include others. Mirror neurons activate in observers. Heart rate synchronises. The emotional state transfers. A laughing person in a room changes the neurochemistry of everyone in it.'],
-    ['Step 4: Peak Neurochemistry','At peak joy: dopamine, serotonin, endorphins, and oxytocin are simultaneously elevated. The nucleus accumbens — the brain reward centre — saturates. This exact neurochemical state is indistinguishable from certain states of mania. Joy at peak is biologically extreme.'],
-    ['Step 5: Serotonin Afterglow','After the peak, serotonin — the background contentment signal — expands slowly and persists for hours. This is the biochemical reason good experiences leave warmth long after they end. The chemistry outlasts the cause. Memory of joy contains real residual neurochemistry.']
-  ],
-    neuron:[
-    ['Step 1: Resting State','A single neuron, at rest. Resting membrane potential: minus 70 millivolts. Maintained by sodium-potassium pumps moving 3 sodium ions out for every 2 potassium ions in, consuming 70 percent of the neuron energy budget. 86 billion neurons, each doing this, always.'],
-    ['Step 2: Action Potential','A stimulus depolarises the membrane. Voltage-gated sodium channels open at the axon hillock — the threshold is minus 55 millivolts. In under 1 millisecond, the membrane flips to positive 40 millivolts. A wave of electrical charge propagates down the axon at 120 metres per second.'],
-    ['Step 3: Synaptic Transmission','The signal reaches the synaptic terminal. Calcium ions enter. Vesicles fuse with the membrane and release neurotransmitter molecules into the 20-nanometre synaptic cleft. The signal converts from electrical to chemical, crosses the gap, and converts back to electrical in under 1 millisecond.'],
-    ['Step 4: Neural Network','What fires together, wires together — Hebbs Rule. Every thought you have ever had is a specific pattern of activation across 86 billion nodes, each connected to 7,000 others on average. Learning is the physical strengthening of specific connections. You are the pattern, not the neurons.'],
-    ['Step 5: Neuroplasticity','The brain you have today was shaped by every experience you have ever had. Connections used frequently are myelinated — wrapped in fatty insulation that increases transmission speed by 100 times. Unused connections are pruned. The architecture is never fixed. Every moment changes it.']
-  ],
-    immune:[
-    ['Healthy Cell','One human cell, 50 micrometres across. Its plasma membrane maintains a precise ionic balance. Nearby: three rod-shaped bacteria — Streptococcus, 2 micrometres long — drifting toward it.'],
-    ['Bacterial Approach','Bacteria express surface adhesins — molecular hooks that bind to receptor proteins on the host cell. This is not random. Pathogens have evolved specific keys for specific cellular locks.'],
-    ['Infection','Bacteria breach the cell membrane. The cell responds: it releases cytokines — chemical distress signals that travel through surrounding tissue, summoning the immune system.'],
-    ['T-Cell Response','Cytotoxic T-cells arrive. They recognise bacterial peptide fragments displayed on the cell MHC-I surface markers. Perforin creates membrane pores. Granzyme B enters and triggers apoptosis in infected cells.'],
-    ['Resolution','Macrophages clear the debris. The infection is contained. The adaptive immune system records the pathogen signature — next encounter, the response is ten times faster. This is immunological memory.']
-  ],
-  amr:[
-    ['Step 1: Bacterial Colony','A colony of 10 billion bacteria in equilibrium. Within this population, approximately 1 in 100 million carries a random genetic mutation conferring resistance to a specific antibiotic. These resistant bacteria are invisible — they look and behave identically to susceptible ones.'],
-    ['Step 2: Antibiotic Exposure','An antibiotic is introduced. It is not a cure. It is a selective filter. Within 48 hours, 99.9999 percent of susceptible bacteria are killed. The 1 in 100 million resistant bacteria did not develop resistance in response — they already had it. Natural selection reveals, not creates.'],
-    ['Step 3: Selective Pressure','The antibiotic has inadvertently performed perfect selective breeding. Every susceptible competitor is eliminated. The resistant bacteria face no competition for nutrients, no immune system activity (it was treating only bacteria, not the host). Ideal growth conditions.'],
-    ['Step 4: Resistance Replication','Bacteria divide every 20 minutes. In 10 hours: 1 billion descendants, all resistant. Resistance genes are also transferred horizontally between unrelated bacterial species via plasmids — small circular DNA loops that function as resistance libraries, shared freely across the bacterial world.'],
-    ['Step 5: Post-Antibiotic Era','The resistant colony is indistinguishable from the original, except it cannot be treated. We currently develop new antibiotics more slowly than resistance evolves. The World Health Organisation projects 10 million deaths per year from antibiotic-resistant infections by 2050, exceeding cancer.']
-  ],
-    bh:[
-    ['Step 1: Stellar Death','A star 20 times the mass of our sun exhausts its nuclear fuel. For its entire life, radiation pressure from nuclear fusion balanced gravitational collapse. Without it, gravity wins in seconds. The core collapses to nuclear density — the equivalent of squeezing the sun into a sphere 10 km across.'],
-    ['Step 2: Accretion Disk','Matter from surrounding space spirals inward. Conservation of angular momentum spins it into a disk. Friction heats the disk to millions of Kelvin. It radiates X-rays detectable across the galaxy. This is the only light that escapes. Everything else crosses the event horizon.'],
-    ['Step 3: Event Horizon','At the Schwarzschild radius, escape velocity equals the speed of light. This is not a surface — it is a geometric boundary. Inside it, all paths through spacetime lead toward the singularity. Not toward the centre of a sphere — toward a point in time. The future becomes the singularity.'],
-    ['Step 4: Hawking Radiation','Virtual particle pairs appear and annihilate constantly near the event horizon. Occasionally, one falls in and one escapes. The black hole pays for this with mass — it slowly evaporates. A stellar black hole takes 10 to the 67 years to evaporate. The universe is 10 to the 10 years old.'],
-    ['Step 5: Final Evaporation','As the black hole shrinks, Hawking radiation intensifies. The final evaporation is explosive — releasing energy equivalent to millions of hydrogen bombs in a fraction of a second. What remains: uncertain. String theory suggests a remnant. Quantum gravity has no confirmed answer.']
-  ],
-    rumour:[
-    ['Step 1: Patient Zero','A single node in a network of 8 billion people. The information has specific properties that determine whether it spreads: emotional charge, identity relevance, moral content, and surprise. Neutral accurate information spreads slowly. Emotionally charged inaccurate information spreads six times faster — measured across Twitter over 10 years by MIT.'],
-    ['Step 2: First Transmission','Each person who shares reaches an average of 250 connections. The first three hops of a rumour reach 16 million people — if each person shares with just three others. R-naught above 1.0 means exponential growth has begun. Below 1.0 it dies. Rumours that spread have found the threshold.'],
-    ['Step 3: Exponential Cascade','Exponential growth is invisible until suddenly it is not. At transmission 10: 59,000 people. At transmission 20: 3.5 billion. The entire observable network is saturated before any central authority can respond. Modern network topology makes this faster than any previous point in human history.'],
-    ['Step 4: Mutation','The message mutates with each transmission. Details are dropped, exaggerated, or distorted — not through malice but through cognitive compression. The emotional charge is preserved with high fidelity. The factual content degrades rapidly. At the end of a long chain, only the feeling survives.'],
-    ['Step 5: Correction Failure','Corrections spread 3 times slower than the original rumour, reach 6 times fewer people, and are shared with less confidence. The brain treats a correction as new information, not as an update to the original. The rumour is stored as a memory. The correction is stored separately. Both exist simultaneously.']
-  ],
-    urban:[
-    ['Step 1: Laminar Flow','At low vehicle density, traffic behaves as laminar fluid — smooth, predictable, efficient. Each vehicle moves at near-optimal speed. The network operates below capacity. A city of 3 million can move 2.5 million person-trips per day at this phase without congestion.'],
-    ['Step 2: Approaching Capacity','As density increases, minor fluctuations propagate upstream — shockwaves in a fluid. A single driver braking 50 km upstream creates a traffic jam that persists for hours after the cause has cleared. The jam moves backward through traffic at 15 km per hour. This is phantom traffic.'],
-    ['Step 3: Phase Transition','At approximately 20 vehicles per km, traffic undergoes a phase transition from free flow to congested flow. This transition is sudden, not gradual — like water freezing. The road that was flowing moments ago becomes gridlocked. The transition point is unpredictable and irreversible without intervention.'],
-    ['Step 4: Gridlock Propagation','One blocked junction prevents vehicles from entering from four directions. Those vehicles block their upstream junctions. The cascade propagates at the speed of braking — approximately 15 km per hour. A single intersection failure can gridlock 40 city blocks in 12 minutes.'],
-    ['Step 5: Network Recovery','Recovery requires external intervention: traffic management, signal timing changes, emergency route clearing. Natural recovery through self-organisation takes 3-4 times longer than the congestion took to form. City traffic networks are resilient to randomness but fragile to correlated failures.']
-  ],
-    chem:[
-    ['Step 1: Molecular Separation','Two molecular species, A and B, exist in solution. At this distance, the activation energy barrier prevents reaction — the electron clouds repel before atoms can form bonds. Temperature determines whether any given collision has sufficient kinetic energy to overcome this barrier.'],
-    ['Step 2: Brownian Motion','Molecules move randomly through solution — thermal energy produces constant, chaotic motion called Brownian motion. The collision frequency for a 1-molar solution is 10 to the 30 collisions per second per litre. Most have insufficient energy to react. Probability governs chemistry.'],
-    ['Step 3: Transition State','A collision with sufficient activation energy occurs. For a fraction of a picosecond — 10 to the minus 12 seconds — the atoms exist in a transition state: old bonds breaking and new bonds forming simultaneously. This state cannot be isolated. It is a moment, not a molecule.'],
-    ['Step 4: Product Formation','Products form and release energy — the difference between the energy of reactants and products, called enthalpy. This energy drives further reactions, heats the environment, or does work. Fire, life, explosions, and metabolism all run on this principle. Chemistry is controlled energy release.'],
-    ['Step 5: Equilibrium','Products accumulate, reactants deplete. The forward reaction rate slows; the reverse reaction rate accelerates. At equilibrium, both proceed at equal rates — a dynamic balance. Le Chateliers principle: disturb the equilibrium and the system shifts to restore it. Every chemical system seeks its lowest energy state.']
+    ['Planck Epoch · T=0','A single point. All matter, energy, space and time compressed into a quantum singularity. Temperature 10 to the 32 Kelvin. This moment lasts 10 to the minus 43 seconds.'],
+    ['The Universe Expands','Space itself multiplies. The horn of the observable universe opens from its quantum tip. 13.8 billion years of expansion, from the hot singularity to the vast cold dark of today.']
   ]
-  
 };
 
 /* ── QUESTION ROUTING ── */
@@ -1670,6 +1571,47 @@ function switchDomain(key,pill){
 function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTimeout(function(){reinitScheduled=false;initPhase(simDomain,simPhase,false);},100);}
 
 /* ── ASK QUESTION ── */
+/* ── AI FREE-FORM SIMULATION — particle groups designed by Claude ── */
+function applyGroups(groups, motion){
+  if(!groups||!groups.length)return;
+  var availW=W()-72;
+  var availH=H()-78-185;
+  var idx=0;
+  /* Normalise densities */
+  var total=groups.reduce(function(s,g){return s+(g.density||0);},0)||1;
+  for(var g=0;g<groups.length;g++){
+    var grp=groups[g];
+    var frac=(grp.density||0)/total;
+    var count=g===groups.length-1?(N-idx):Math.min(N-idx,Math.round(N*frac));
+    var gx=clamp(grp.x||0.5,0.05,0.95)*availW;
+    var gy=78+clamp(grp.y||0.5,0.05,0.95)*availH;
+    var spread=clamp(grp.spread||0.3,0.01,1.0)*Math.min(availW,availH)*0.44;
+    var sz=Math.max(0.2,grp.size||1);
+    for(var i=0;i<count&&idx<N;i++,idx++){
+      var dx=(Math.random()+Math.random()+Math.random()-1.5)/1.5*spread;
+      var dy=(Math.random()+Math.random()+Math.random()-1.5)/1.5*spread*0.85;
+      pTX[idx]=clamp(gx+dx,2,W()-74);
+      pTY[idx]=clamp(gy+dy,48,H()-187);
+      pR[idx]=clamp(Math.round(grp.r)||180,0,255);
+      pG[idx]=clamp(Math.round(grp.g)||180,0,255);
+      pB[idx]=clamp(Math.round(grp.b)||180,0,255);
+      pSz[idx]=sz*(0.5+Math.random()*0.8);
+      pDelay[idx]=Math.random()*500;
+      pBX[idx]=(pX[idx]>0||pY[idx]>0)?pX[idx]:gx;
+      pBY[idx]=(pX[idx]>0||pY[idx]>0)?pY[idx]:gy;
+      pLife[idx]=1;
+    }
+  }
+  /* Park unused particles off screen */
+  for(;idx<N;idx++){
+    pTX[idx]=(W()-72)/2;pTY[idx]=78+availH/2;
+    pR[idx]=10;pG[idx]=10;pB[idx]=15;pSz[idx]=0.1;
+    pDelay[idx]=0;pBX[idx]=pTX[idx];pBY[idx]=pTY[idx];pLife[idx]=1;
+  }
+  formT=0;
+}
+
+
 async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();
   if(!q)return;

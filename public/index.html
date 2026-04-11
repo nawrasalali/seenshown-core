@@ -1311,11 +1311,11 @@ function loop(ts){
       if(_bbT>=3000){hideBBWord();_bbState=3;_bbT=0;_bbGrowth=0;initPhase('bigbang',0,false);}
     } else if(_bbState===3){
       /* Fast explosion: 0→1 in 3s using easeOut curve, then subtle breathing 3s→10s */
-      var t3=Math.min(1,_bbT/3000);
-      var eased=t3<1?(1-Math.pow(1-t3,3)):1; /* easeOutCubic — fast then slows */
+      var t3=Math.min(1,_bbT/300);
+      var eased=t3<1?(1-Math.pow(1-t3,2)):1; /* lightning fast 0.3s */
       _bbGrowth=eased;
       initPhase('bigbang',0,false);
-      if(_bbT>=10000){_bbState=4;_bbT=0;}
+      if(_bbT>=10000){_bbState=4;_bbT=0;} /* 10s total expand state */
     } else if(_bbState===4){
       /* Hold full 5s, show collapse text after 1s */
       _bbGrowth=1;

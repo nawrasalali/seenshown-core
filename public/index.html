@@ -1724,8 +1724,8 @@ async function askQuestion(){
       }
     }
   }catch(e){
-    /* /api/ask failed — keep template narration which is already showing */
     console.warn('AI fetch failed:',e.message);
+    showToast('AI: '+e.message.slice(0,40));
   }
 }
 

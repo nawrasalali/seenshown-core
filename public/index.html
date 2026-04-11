@@ -1194,7 +1194,7 @@ function qcos(x){return NOISE_TBL[(Math.abs(Math.round(x*651.9))+1024)%4096];}
 
 function render(dt){
   /* Dim trail */
-  var clearAlpha=(simDomain==='bigbang'&&(_bbState===0||_bbState===7))?0.5:0.15;
+  var clearAlpha=(simDomain==='bigbang'&&(_bbState===0||_bbState===7))?0.6:(simDomain==='bigbang'&&_bbState===5)?0.9:0.15;
   ctx.fillStyle='rgba(0,0,0,'+clearAlpha+')';
   ctx.fillRect(0,0,W(),H());
 
@@ -1289,59 +1289,50 @@ function loop(ts){
   lastTs=ts;
   render(dt);
   if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=7300;if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
-  /* BigBang state machine — exact sequence:
-     0: DARKNESS 6s — all words visible together
-     1: ONE DOT — appears above question bar, holds 3s
-     2: EXPLOSION TEXT — "Big Bang about to explode" 3s
-     3: EXPAND — horn grows upward 10s, dot stays fixed at bottom
-     4: HOLD FULL — 3s — "Universe to collapse back"
-     5: SPLASH BACK — 1s fast collapse to dot
-     6: DOT VANISH — 0.5s dot then gone
-     7: BLACK — 0.5s then replay */
+  /* BigBang state machine:
+     0: DARKNESS 6s — 3 lines visible
+     1: ONE DOT 3s
+     2: EXPLOSION TEXT 3s — "Big Bang about to explode"
+     3: FAST EXPLOSION + CONTINUOUS EXPAND — 0→full in 3s, then keep expanding feel for 7s more (10s total)
+     4: HOLD FULL 5s — then show "will collapse back to origin"
+     5: THUNDER COLLAPSE — 0.4s (lightning fast)
+     6: DOT + "back to nothingness" text — 3s
+     7: BLACK 1s → replay */
   if(simDomain==='bigbang'&&!compActive){
     _bbT+=dt;
     if(_bbState===0){
-      /* DARKNESS — show all words together, hold 6s */
       if(_bbT<80){_bbGrowth=0;initPhase('bigbang',0,false);showBBWord();}
-      if(_bbT>=6000){
-        hideBBWord();
-        _bbState=1;_bbT=0;
-        initPhase('bigbang',0,false);
-      }
+      if(_bbT>=6000){hideBBWord();_bbState=1;_bbT=0;initPhase('bigbang',0,false);}
     } else if(_bbState===1){
-      /* ONE DOT — 3s */
       _bbGrowth=0;
       if(_bbT>=3000){_bbState=2;_bbT=0;showBBExplosionText();}
     } else if(_bbState===2){
-      /* EXPLOSION TEXT — 3s */
       _bbGrowth=0;
-      if(_bbT>=3000){
-        hideBBWord();
-        _bbState=3;_bbT=0;
-        _bbGrowth=0;
-        initPhase('bigbang',0,false);
-      }
+      if(_bbT>=3000){hideBBWord();_bbState=3;_bbT=0;_bbGrowth=0;initPhase('bigbang',0,false);}
     } else if(_bbState===3){
-      /* EXPAND — 10s, tip fixed at bottom */
-      _bbGrowth=Math.min(1,_bbT/10000);
+      /* Fast explosion: 0→1 in 3s using easeOut curve, then subtle breathing 3s→10s */
+      var t3=Math.min(1,_bbT/3000);
+      var eased=t3<1?(1-Math.pow(1-t3,3)):1; /* easeOutCubic — fast then slows */
+      _bbGrowth=eased;
       initPhase('bigbang',0,false);
-      if(_bbT>=10000){_bbState=4;_bbT=0;showBBCollapseText();}
+      if(_bbT>=10000){_bbState=4;_bbT=0;}
     } else if(_bbState===4){
-      /* HOLD FULL — 3s */
+      /* Hold full 5s, show collapse text after 1s */
       _bbGrowth=1;
-      if(_bbT>=3000){hideBBWord();_bbState=5;_bbT=0;}
+      if(_bbT>=1000&&_bbT<1100) showBBCollapseText();
+      if(_bbT>=5000){hideBBWord();_bbState=5;_bbT=0;}
     } else if(_bbState===5){
-      /* SPLASH BACK — 1s fast collapse */
-      _bbGrowth=Math.max(0,1-(_bbT/1000));
+      /* THUNDER — 0.4s lightning collapse */
+      _bbGrowth=Math.max(0,1-(_bbT/400));
       initPhase('bigbang',0,false);
-      if(_bbT>=1000){_bbGrowth=0;_bbState=6;_bbT=0;initPhase('bigbang',0,false);}
+      if(_bbT>=400){_bbGrowth=0;_bbState=6;_bbT=0;initPhase('bigbang',0,false);showBBNothingText();}
     } else if(_bbState===6){
-      /* DOT VISIBLE 0.5s then vanish */
+      /* Dot + nothingness text — 3s */
       _bbGrowth=0;
-      if(_bbT>=500){_bbState=7;_bbT=0;initPhase('bigbang',0,false);}
+      if(_bbT>=3000){hideBBWord();_bbState=7;_bbT=0;initPhase('bigbang',0,false);}
     } else if(_bbState===7){
-      /* BLACK 0.5s then replay */
-      if(_bbT>=500){_bbState=0;_bbT=0;}
+      /* Black 1s then replay */
+      if(_bbT>=1000){_bbState=0;_bbT=0;}
     }
   }
 }
@@ -1911,11 +1902,11 @@ function showBBWord(){
   hideBBWord();
   var el=document.createElement('div');
   el.id='bbWord';
-  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 1.2s ease;';
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 1.4s ease;';
   el.innerHTML=
-    '<div style="color:rgba(255,255,255,0.7);font-size:1.1rem;font-weight:200;letter-spacing:.3em;text-transform:uppercase;font-style:italic;margin-bottom:18px">There was nothingness.</div>'+
-    '<div style="color:rgba(255,255,255,0.5);font-size:.85rem;font-weight:200;letter-spacing:.25em;text-transform:uppercase;font-style:italic;margin-bottom:14px">Darkness.</div>'+
-    '<div style="color:rgba(255,255,255,0.4);font-size:.78rem;font-weight:200;letter-spacing:.22em;text-transform:uppercase;font-style:italic;">Subtle energy. Silent intelligence.</div>';
+    '<div style="color:rgba(255,255,255,0.75);font-size:1.05rem;font-weight:200;letter-spacing:.32em;text-transform:uppercase;font-style:italic;margin-bottom:20px">There was nothingness.</div>'+
+    '<div style="color:rgba(255,255,255,0.5);font-size:.88rem;font-weight:200;letter-spacing:.28em;text-transform:uppercase;font-style:italic;margin-bottom:16px">Darkness.</div>'+
+    '<div style="color:rgba(255,255,255,0.35);font-size:.75rem;font-weight:200;letter-spacing:.22em;text-transform:uppercase;font-style:italic;">Subtle energy.&nbsp;&nbsp;Silent intelligence.</div>';
   document.body.appendChild(el);
   setTimeout(function(){el.style.opacity='1';},50);
 }
@@ -1923,8 +1914,8 @@ function showBBExplosionText(){
   hideBBWord();
   var el=document.createElement('div');
   el.id='bbWord';
-  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.8s ease;';
-  el.innerHTML='<div style="color:rgba(255,200,80,0.85);font-size:.95rem;font-weight:300;letter-spacing:.28em;text-transform:uppercase;font-style:italic;">The Big Bang is about to explode.</div>';
+  el.style.cssText='position:fixed;top:42%;left:50%;transform:translateX(-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.7s ease;';
+  el.innerHTML='<div style="color:rgba(255,210,80,0.9);font-size:.92rem;font-weight:300;letter-spacing:.26em;text-transform:uppercase;font-style:italic;">The Big Bang is about to explode.</div>';
   document.body.appendChild(el);
   setTimeout(function(){el.style.opacity='1';},50);
 }
@@ -1932,14 +1923,25 @@ function showBBCollapseText(){
   hideBBWord();
   var el=document.createElement('div');
   el.id='bbWord';
-  el.style.cssText='position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.8s ease;';
-  el.innerHTML='<div style="color:rgba(180,220,255,0.8);font-size:.9rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;font-style:italic;">The universe will collapse back.</div>';
+  el.style.cssText='position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.8s ease;';
+  el.innerHTML='<div style="color:rgba(180,220,255,0.85);font-size:.88rem;font-weight:300;letter-spacing:.24em;text-transform:uppercase;font-style:italic;">The universe will collapse back to its origin.</div>';
+  document.body.appendChild(el);
+  setTimeout(function(){el.style.opacity='1';},50);
+}
+function showBBNothingText(){
+  hideBBWord();
+  var el=document.createElement('div');
+  el.id='bbWord';
+  el.style.cssText='position:fixed;top:38%;left:50%;transform:translateX(-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.9s ease;';
+  el.innerHTML=
+    '<div style="color:rgba(255,255,255,0.6);font-size:.88rem;font-weight:200;letter-spacing:.28em;text-transform:uppercase;font-style:italic;margin-bottom:14px">Back to nothingness.</div>'+
+    '<div style="color:rgba(255,255,255,0.35);font-size:.72rem;font-weight:200;letter-spacing:.22em;text-transform:uppercase;font-style:italic;">Only subtle intelligence remains.</div>';
   document.body.appendChild(el);
   setTimeout(function(){el.style.opacity='1';},50);
 }
 function hideBBWord(){
   var el=document.getElementById('bbWord');
-  if(el){el.style.opacity='0';setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},1300);}
+  if(el){el.style.opacity='0';setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},1400);}
 }
 
 function showToast(msg){var t=document.getElementById('ptToast');t.textContent=msg;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},2400);}

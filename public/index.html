@@ -1310,12 +1310,10 @@ function loop(ts){
       _bbGrowth=0;
       if(_bbT>=3000){hideBBWord();_bbState=3;_bbT=0;_bbGrowth=0;initPhase('bigbang',0,false);}
     } else if(_bbState===3){
-      /* Fast explosion: 0→1 in 3s using easeOut curve, then subtle breathing 3s→10s */
-      var t3=Math.min(1,_bbT/300);
-      var eased=t3<1?(1-Math.pow(1-t3,2)):1; /* lightning fast 0.3s */
-      _bbGrowth=eased;
-      initPhase('bigbang',0,false);
-      if(_bbT>=10000){_bbState=4;_bbT=0;} /* 10s total expand state */
+      /* INSTANT flash to full — no gradual growth */
+      _bbGrowth=1;
+      if(_bbT<50) initPhase('bigbang',0,false);
+      if(_bbT>=5000){_bbState=4;_bbT=0;}
     } else if(_bbState===4){
       /* Hold full 5s, show collapse text after 1s */
       _bbGrowth=1;

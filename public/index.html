@@ -984,31 +984,10 @@ function getSpec(domain,phase,n){
 
     /* BIG BANG — 12 phases, all white flash on 1, continuous morphing */
     case 'bigbang':{
+      /* 3 phases: singularity → horn expanding → collapse */
       if(phase===0) return shapePoint(n,x,y,255,255,255);
-      if(phase===1){
-        var outF=[];
-        for(var i=0;i<n;i++){
-          var a=rnd(0,Math.PI*2),d=Math.random()*Math.min(sw*.92,sh*.88);
-          var px=clamp(x+Math.cos(a)*d, 0, W()-72);
-          var py=clamp(y+Math.sin(a)*d, 46, H()-185);
-          outF.push({tx:px,ty:py,rr:255,gg:255,bb:255,r:.3+Math.random()*2.5});
-        }
-        return outF;
-      }
-      if(phase===2) return shapeExplosion(n,x,y,2,Math.min(sw*.55,sh*.52,W()*.38,H()*.38),255,80,10,true);
-      if(phase===3){
-        var out3=[],nc=8,cN=Math.floor(n/nc);
-        for(var c=0;c<nc;c++){var ca=c/nc*Math.PI*2,cd=sz*.16,cx2=x+Math.cos(ca)*cd,cy2=y+Math.sin(ca)*cd;for(var i=0;i<cN;i++){var a=rnd(0,Math.PI*2),d=Math.random()*sz*.05;out3.push({tx:cx2+Math.cos(a)*d,ty:cy2+Math.sin(a)*d,rr:255,gg:200,bb:80,r:.5+Math.random()*2});}}
-        return out3;
-      }
-      if(phase===4){var out4=[];for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=Math.pow(Math.random(),.4)*sw;var h2=1-d/sw;out4.push({tx:x+Math.cos(a)*d,ty:y+Math.sin(a)*d,rr:Math.round(180+h2*75),gg:Math.round(120+h2*80),bb:Math.round(80+h2*60),r:.3+Math.random()*1.2});}return out4;}
-      if(phase===5){var out5=[];for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=rnd(0,sw);out5.push({tx:x+Math.cos(a)*d,ty:y+Math.sin(a)*d,rr:15+Math.round(Math.random()*25),gg:15+Math.round(Math.random()*25),bb:40+Math.round(Math.random()*50),r:.2+Math.random()*.5});}return out5;}
-      if(phase===6) return shapeFirstStars(n,x,y,Math.min(sz*.42,sw));
-      if(phase===7) return shapeSpiral(n,x,y,Math.min(sz*.4,sw),3,180,200,255);
-      if(phase===8) return shapeUniverseHorn(n,x,y,Math.min(sz*.44,sw,sh));
-      if(phase===9) return shapeRing(Math.floor(n*.72),x,y,sw*.76,sw*.055,255,140,30).concat(shapeVoid(Math.ceil(n*.28),x,y,sw*.18,sw*.32,25,15,70));
-      if(phase===10){var out10=[];for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=rnd(sz*.08,sw);out10.push({tx:x+Math.cos(a)*d,ty:y+Math.sin(a)*d,rr:8+Math.round(Math.random()*15),gg:8+Math.round(Math.random()*12),bb:12+Math.round(Math.random()*20),r:.12+Math.random()*.28});}return out10;}
-      return shapeCollapse(n,x,y,sw,.78);
+      if(phase===1) return shapeUniverseHorn(n,x,y,Math.min(sz*.48,sw,sh));
+      return shapeCollapse(n,x,y,sw,.82);
     }
 
     /* UNIVERSE — scale from quantum to cosmic */
@@ -1301,18 +1280,9 @@ var NARR={
     ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
-    ['Planck Epoch · t=0','The Planck epoch: the single point containing all matter, energy, space and time. Temperature 10 to the 32 Kelvin. The four forces are unified. Quantum gravity rules. Physics as we know it does not yet exist. Duration: 10 to the minus 43 seconds.'],
-    ['Inflation · Space Explodes','Space itself expands by a factor of 10 to the 26 in 10 to the minus 35 seconds — faster than light. Not an explosion through space but space multiplying. Quantum fluctuations are stretched to cosmic scale, becoming the seeds of every galaxy. The universe size goes from sub-nuclear to grapefruit.'],
-    ['Quark-Gluon Plasma · The Soup','The universe is a superheated plasma of quarks and gluons — the raw constituents of matter. Temperature: 10 to the 13 Kelvin. The four forces now operate separately. At one microsecond, quarks bind into protons and neutrons. Matter narrowly wins over antimatter by 1 part in a billion.'],
-    ['Nucleosynthesis · First Atoms','From 3 to 20 minutes after the Big Bang, the universe acts as a fusion reactor. Protons and neutrons fuse into hydrogen nuclei (75%) and helium nuclei (25%), with trace lithium. After 20 minutes, the universe cools too far for fusion to continue. This exact ratio is confirmed by observation today.'],
-    ['Recombination · Light Freed','380,000 years. The universe cools to 3,000 Kelvin. Electrons combine with nuclei for the first time, forming neutral hydrogen and helium atoms. The universe becomes transparent. Photons travel freely for the first time. We see those photons today as the Cosmic Microwave Background — the oldest light.'],
-    ['Dark Ages · 380k to 400M years','For 400 million years, no stars exist. The universe is a dark, cold, expanding fog of hydrogen and helium. Only the 2.7 Kelvin glow of the CMB illuminates the void. Gravity quietly amplifies density variations, pulling hydrogen clouds together. This darkness ends when the first stars ignite.'],
-    ['First Stars · Population III','400 million years. Hydrogen clouds collapse under gravity and ignite. Population III stars — the first — have no heavy elements and form at 100 to 1000 solar masses. They burn for only a million years, then explode as supernovae, seeding space with the first carbon, oxygen, and iron.'],
-    ['Stellar Era · Galaxy Formation','From 1 to 10 billion years. Gravity organises matter into spiral galaxies. Stars form, age, explode, and form again across billions of generations. Each generation is more metal-rich than the last. Our sun is a Population I star — third-generation, born 4.6 billion years ago from recycled stellar debris.'],
-    ['Dark Energy Dominance · Accelerating','5 billion years ago, dark energy — an unknown force comprising 68% of the universe — began dominating gravity. The expansion of the universe is now accelerating. Galaxies are receding from each other at increasing speed. In 100 billion years, other galaxies will be unreachable and invisible from our own.'],
-    ['Black Hole Era · 10^40 years','Stars cease forming. The last red dwarf burns out. Only black holes remain, slowly evaporating via Hawking radiation. Supermassive black holes dominate the now-dark universe. Each radiates an infinitesimally small amount of energy. This era lasts incomprehensibly longer than the current age of the universe.'],
-    ['Heat Death · Maximum Entropy','At 10 to the 100 years, all black holes have evaporated. The universe reaches maximum entropy — no energy gradients remain. No work can be performed. No information can be processed. Temperature approaches absolute zero uniformly everywhere. This is the heat death: not destruction but eternal sameness.'],
-    ['Big Crunch · The Return','In one possible future, dark energy reverses. The expansion halts and reverses. Galaxies accelerate toward each other. The universe collapses back to a singularity in a mirror of its birth — the Big Crunch. Temperature climbs back toward the Planck limit. Everything returns to the quantum void. A new Planck epoch begins.']
+    ['Planck Epoch · T=0','The Planck epoch: a single point containing all matter, energy, space and time. Temperature 10 to the 32 Kelvin. The four fundamental forces are unified into one. Quantum gravity rules. Physics as we know it does not yet exist.'],
+    ['Inflation · The Horn Expands','Space itself expands by a factor of 10 to the 26 in 10 to the minus 35 seconds — faster than light. Not matter moving through space, but space multiplying. The universe grows from a quantum dot to the size of a grapefruit, then to a horn stretching across billions of light years. Every galaxy you will ever see is born in this moment.'],
+    ['Big Crunch · The Return','In one possible future, dark energy reverses. The expansion halts. Galaxies accelerate toward each other. The horn collapses inward. Temperature climbs back toward the Planck limit. Everything returns to the quantum void — a singularity. A new Planck epoch begins.']
   ],
     universe:[
     ['Step 1: Quantum Vacuum','Before anything: quantum vacuum fluctuations — virtual particle pairs blinking in and out of existence. This is the ground state of physics. Nothing, yet seething with probabilistic energy. The Big Bang is one of these fluctuations that did not annihilate.'],
@@ -1510,7 +1480,7 @@ function updateNarr(domain,phase){
     simPhase=(simPhase+1)%narrsLen;
     initPhase(simDomain,simPhase,false);
     updateNarr(simDomain,simPhase);
-  },(domain==='bigbang'&&simPhase===0)?500:6500); /* bigbang T0=0.5s, all others 6.5s */
+  },(domain==='bigbang'&&simPhase===0)?500:8000); /* bigbang T0=0.5s, horn+collapse=8s */
 }
 
 function toggleAutoPlay(){

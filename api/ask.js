@@ -1,5 +1,4 @@
-/* /api/ask — SeenShown: question → custom simulation
-   AI generates the actual visual geometry, not just text */
+/* /api/ask — SeenShown: question → AI designs the simulation freely */
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -13,61 +12,63 @@ module.exports = async function handler(req, res) {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return res.status(500).json({ error: 'No API key' });
 
-    const prompt = `You are the simulation engine for SeenShown — an app where ANY question becomes a living particle animation that helps humans understand complex concepts visually.
+    const prompt = `You are the visual intelligence behind SeenShown — a platform that turns any human question into a living particle simulation. Your job is to design a simulation that makes the answer VISIBLE, FELT, and UNDERSTOOD through motion and light.
 
 The user asked: "${question}"
 
-Your task has TWO parts:
+You have complete freedom to design the simulation. Thousands of particles will move from the center of a dark screen to wherever you place them. Think of yourself as a choreographer of light.
 
-PART 1 — NARRATION
-Write 5 steps that directly answer "${question}". Each step should reveal something specific, surprising, and true. Think like a documentary narrator — vivid, concrete, scientifically accurate. Each step has a title and 2 sentences.
+PART 1 — DESIGN THE SIMULATION
+Describe the simulation as a set of particle groups. Each group has:
+- A position on screen (x, y as fractions 0.0 to 1.0, where 0.5,0.5 is center)
+- A color (r, g, b values 0-255)
+- A size (0.5 = tiny, 3.0 = large)
+- A density (0.0 to 1.0 — fraction of total particles in this group)
+- A spread (0.0 = tight cluster, 1.0 = spread across the screen)
 
-PART 2 — SIMULATION GEOMETRY  
-Design the particle formation that best represents the STRUCTURE of this answer visually. You have a canvas. Particles will animate from the center to your specified positions.
+Design between 2 and 8 groups. Total density must equal 1.0.
+Think visually: what SHAPE does this answer take? What STRUCTURE? What MOVEMENT would help someone understand?
 
-Choose ONE of these formation types that best matches the answer's structure:
-- "radial": particles explode outward from center (explosions, origins, spread)
-- "spiral": particles form a spiral/galaxy (cycles, evolution, time)  
-- "network": particles form connected clusters (brain, social, systems)
-- "wave": particles form wave patterns (sound, light, emotion, ripples)
-- "tree": particles branch upward like a tree (growth, hierarchy, evolution)
-- "split": particles divide into 2-3 distinct groups (conflict, comparison, duality)
-- "collapse": particles fall inward to center (gravity, black holes, grief, endings)
-- "scatter": particles spread randomly then drift (chaos, memory, loss)
-- "layers": particles form horizontal layers (geology, atmosphere, depth)
-- "pulse": particles expand and contract rhythmically (heartbeat, breathing, rhythm)
+Examples of thinking:
+- Heartbreak: a dense bright cluster that splits into two drifting apart groups
+- Black hole: rings of particles collapsing to a single point, bright at edge dark at center
+- Evolution: a tree-like branching from one point into many spread groups
+- Sound wave: parallel bands of particles undulating across the screen
+- DNA: two intertwining helical streams
+- Consciousness: a dense network with bright hub nodes and dim connections spreading out
 
-Also choose a COLOR PALETTE that matches the emotional/scientific tone:
-- "hot": reds, oranges, yellows (energy, fire, anger, heat)
-- "cool": blues, purples, whites (space, mind, calm, cold)
-- "life": greens, teals, yellows (biology, growth, nature)
-- "neural": cyan, white, electric blue (brain, technology, data)
-- "cosmic": deep purple, gold, white (universe, philosophy, time)
-- "warm": amber, gold, cream (love, happiness, warmth)
-- "dark": deep blue, near-black, dim white (grief, mystery, depth)
+PART 2 — NARRATION
+Write 5 steps answering "${question}" directly. Documentary style — specific, true, surprising. Each has a short title and 2 vivid sentences.
 
-Return ONLY this JSON:
+Return ONLY this JSON (no markdown):
 {
-  "formation": "one formation type from the list",
-  "palette": "one palette from the list",
-  "intensity": 0.7,
+  "groups": [
+    {
+      "label": "what this group represents",
+      "x": 0.5,
+      "y": 0.5,
+      "r": 255, "g": 255, "b": 255,
+      "size": 1.5,
+      "density": 0.3,
+      "spread": 0.2
+    }
+  ],
+  "motion": "one word describing overall feel: pulse / drift / explode / collapse / branch / weave / orbit / scatter / flow / converge",
   "narration": [
-    ["Title 1", "Sentence 1 directly answering ${question}. Sentence 2 specific detail."],
+    ["Title 1", "Sentence directly answering ${question}. Sentence 2 specific detail."],
     ["Title 2", "Sentence 1. Sentence 2."],
     ["Title 3", "Sentence 1. Sentence 2."],
     ["Title 4", "Sentence 1. Sentence 2."],
-    ["Title 5", "Sentence 1. Sentence 2 — the most surprising or profound insight."]
+    ["Title 5", "The most surprising or profound insight about ${question}."]
   ]
-}
-
-intensity is 0.0-1.0: how explosive/dramatic the formation should be (0=gentle, 1=explosive).`;
+}`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': key },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1400,
+        max_tokens: 1800,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -82,18 +83,31 @@ intensity is 0.0-1.0: how explosive/dramatic the formation should be (0=gentle, 
     try { parsed = JSON.parse(clean); }
     catch(e) {
       const m = clean.match(/\{[\s\S]*\}/);
-      if (m) try { parsed = JSON.parse(m[0]); } catch(e2) { return res.status(500).json({ error: 'parse failed', raw: clean.slice(0,300) }); }
-      else return res.status(500).json({ error: 'no JSON', raw: clean.slice(0,300) });
+      if (m) try { parsed = JSON.parse(m[0]); } catch(e2) {
+        return res.status(500).json({ error: 'parse failed', raw: clean.slice(0,400) });
+      }
+      else return res.status(500).json({ error: 'no JSON', raw: clean.slice(0,400) });
     }
 
-    const FORMATIONS = ['radial','spiral','network','wave','tree','split','collapse','scatter','layers','pulse'];
-    const PALETTES = ['hot','cool','life','neural','cosmic','warm','dark'];
+    // Validate and normalise groups
+    const groups = (parsed.groups || []).filter(g =>
+      typeof g.x === 'number' && typeof g.y === 'number' &&
+      typeof g.r === 'number' && typeof g.density === 'number'
+    ).slice(0, 8);
+
+    if (!groups.length) return res.status(500).json({ error: 'no valid groups', raw: clean.slice(0,400) });
+
+    // Normalise densities to sum to 1
+    const totalDensity = groups.reduce((s, g) => s + (g.density || 0), 0);
+    groups.forEach(g => g.density = (g.density || 0) / (totalDensity || 1));
+
+    const narration = (parsed.narration || []).filter(x => Array.isArray(x) && x[0] && x[1]);
+    if (narration.length < 3) return res.status(500).json({ error: 'too few narration steps' });
 
     return res.status(200).json({
-      formation: FORMATIONS.includes(parsed.formation) ? parsed.formation : 'radial',
-      palette: PALETTES.includes(parsed.palette) ? parsed.palette : 'cosmic',
-      intensity: Math.max(0, Math.min(1, parsed.intensity || 0.7)),
-      narration: (parsed.narration || []).filter(x => Array.isArray(x) && x[0] && x[1]),
+      groups,
+      motion: parsed.motion || 'drift',
+      narration,
       question
     });
 

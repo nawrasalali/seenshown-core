@@ -35,10 +35,10 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 .inv-btn{font-size:.62rem;background:var(--g);color:#02040e;padding:4px 9px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block}
 
 /* PILLS */
-#pills{position:fixed;top:46px;left:0;right:72px;z-index:100;display:flex;gap:4px;padding:6px 14px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(180deg,rgba(2,4,14,0.85) 0%,transparent 100%)}
-#pills::-webkit-scrollbar{display:none}
-.dpill{flex-shrink:0;font-size:.56rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);color:var(--dim);cursor:pointer;transition:all .2s;background:rgba(2,4,14,0.6);white-space:nowrap}
-.dpill.active{color:#02040e;font-weight:700;border-color:transparent}
+
+
+
+
 
 /* RIGHT RAIL — responsive, always visible */
 #rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:20px;padding:14px 8px;width:72px}
@@ -63,7 +63,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 
 /* PHASE FLASH */
-#phaseFlash{position:fixed;top:100px;left:14px;font-size:clamp(.7rem,2.2vw,1rem);font-weight:800;color:rgba(38,232,176,.95);text-align:left;pointer-events:none;opacity:0;transition:opacity .3s;z-index:95;text-shadow:0 1px 8px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:55vw;line-height:1.2}
+#phaseFlash{position:fixed;top:120px;left:14px;font-size:clamp(.7rem,2.2vw,1rem);font-weight:800;color:rgba(38,232,176,.95);text-align:left;pointer-events:none;opacity:0;transition:opacity .3s;z-index:95;text-shadow:0 1px 8px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:55vw;line-height:1.2}
 #phaseFlash.show{opacity:1}
 
 /* TOAST */
@@ -148,9 +148,9 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <a class="ntab" href="/social.html" target="_blank">Social</a>
     <a class="ntab" href="/community.html" target="_blank">Community</a>
     <a class="ntab" href="/investors.html" target="_blank">Invest</a>
-    <a class="ntab" href="/investor-portal.html" target="_blank">My&nbsp;SAFE</a>
+    
     <a class="ntab" href="/dashboard.html" target="_blank">Dashboard</a>
-    <a class="ntab" href="/partners.html" target="_blank">Partners</a>
+    
     <a class="ntab" href="/founder.html" target="_blank" id="adminTab" style="display:none;color:var(--gold)">Admin ⚙️</a>
   </div>
   <div class="nav-right">
@@ -167,7 +167,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div class="ss-modal-sub" style="text-align:center" id="authReason">Watch any question come alive</div>
 
     <!-- GOOGLE -->
-    <button onclick="window.SS_AUTH.signInWithGoogle()"
+    <button onclick="if(window.SS_AUTH)window.SS_AUTH.signInWithGoogle();else{window.location.href='https://jnvdpmmxlbkxwanqqhfw.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(window.location.origin+'/auth-callback.html')}"
       style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:.6rem;transition:background .2s"
       onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
       <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -175,7 +175,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     </button>
 
     <!-- APPLE -->
-    <button onclick="window.SS_AUTH.signInWithApple()"
+    <button onclick="if(window.SS_AUTH)window.SS_AUTH.signInWithApple();else{window.location.href='https://jnvdpmmxlbkxwanqqhfw.supabase.co/auth/v1/authorize?provider=apple&redirect_to='+encodeURIComponent(window.location.origin+'/auth-callback.html')}"
       style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:background .2s"
       onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
@@ -289,7 +289,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 <!-- LIVE BADGE -->
 <div id="liveBadge"><div class="live-dot"></div><span>LIVE</span></div>
 
-<div id="pills"></div>
 
 
 <div id="rightRail">
@@ -379,7 +378,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 <div id="compMode">
   <div id="compHUD"><span id="cScoreA" style="color:#c4a0ff">Player A: 0</span><span id="cTimer">⏱ 60s</span><span id="cScoreB" style="color:var(--g)">Player B: 0</span></div>
   <div id="compFlashA" style="position:absolute;top:54px;left:14px;font-size:.8rem;font-weight:800;color:#fff;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:0 1px 10px rgba(124,79,212,.9);z-index:176;max-width:45vw;line-height:1.2"></div>
-  <div id="compFlashB" style="position:absolute;bottom:calc(50% + 60px);left:14px;font-size:.8rem;font-weight:800;color:#fff;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:0 1px 10px rgba(38,232,176,.9);z-index:176;max-width:45vw;line-height:1.2"></div>
+  <div id="compFlashB" style="position:fixed;top:calc(50% + 60px);left:14px;font-size:.8rem;font-weight:800;color:#fff;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:0 1px 10px rgba(38,232,176,.9);z-index:176;max-width:45vw;line-height:1.2"></div>
   <button id="compClose" onclick="endCompete()">✕ Exit</button>
   <canvas id="compCanvas1"></canvas>
   <div id="compDiv"></div>
@@ -528,13 +527,17 @@ function shapePoint(n,x,y,rr,gg,bb){
 }
 function shapeExplosion(n,ox,oy,minD,maxD,rr,gg,bb,hot){
   var out=[];
-  var _xMin=10,_xMax=W()-82,_yMin=52,_yMax=H()-192;
+  /* Cap maxD so no particle can exit screen regardless of center position */
+  var safeMaxX=Math.min(ox-10, W()-ox-82);
+  var safeMaxY=Math.min(oy-52, H()-oy-192);
+  var safeMax=Math.min(maxD, safeMaxX, safeMaxY);
+  if(safeMax<minD)safeMax=minD+4;
   for(var i=0;i<n;i++){
-    var a=rnd(0,Math.PI*2),d=minD+Math.pow(Math.random(),.5)*(maxD-minD);
-    var heat=hot?1-d/maxD:0;
+    var a=rnd(0,Math.PI*2),d=minD+Math.pow(Math.random(),.5)*(safeMax-minD);
+    var heat=hot?1-d/safeMax:0;
     out.push({
-      tx:clamp(ox+Math.cos(a)*d,_xMin,_xMax),
-      ty:clamp(oy+Math.sin(a)*d,_yMin,_yMax),
+      tx:clamp(ox+Math.cos(a)*d,10,W()-82),
+      ty:clamp(oy+Math.sin(a)*d,52,H()-192),
       rr:Math.round(clamp(rr+heat*80,0,255)),
       gg:Math.round(clamp(gg-heat*60,0,255)),
       bb:Math.round(clamp(bb-heat*80,0,255)),
@@ -956,7 +959,7 @@ function getSpec(domain,phase,n){
         }
         return outF;
       }
-      if(phase===2) return shapeExplosion(n,x,y,2,sw*.92,255,80,10,true);
+      if(phase===2) return shapeExplosion(n,x,y,2,Math.min(sw*.55,sh*.52,W()*.38,H()*.38),255,80,10,true);
       if(phase===3){
         var out3=[],nc=8,cN=Math.floor(n/nc);
         for(var c=0;c<nc;c++){var ca=c/nc*Math.PI*2,cd=sz*.16,cx2=x+Math.cos(ca)*cd,cy2=y+Math.sin(ca)*cd;for(var i=0;i<cN;i++){var a=rnd(0,Math.PI*2),d=Math.random()*sz*.05;out3.push({tx:cx2+Math.cos(a)*d,ty:cy2+Math.sin(a)*d,rr:255,gg:200,bb:80,r:.5+Math.random()*2});}}
@@ -1577,7 +1580,7 @@ var DOMAIN_QUESTIONS={
 function switchDomain(key,pill){
   /* Scroll the active pill into view */
   setTimeout(function(){
-    var ap=document.querySelector('.dpill.active');
+    var ap=document.querySelector&&document.querySelector('.dpill.active');
     if(ap&&ap.scrollIntoView)ap.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   },80);
   simDomain=key;simPhase=0;
@@ -2214,17 +2217,8 @@ function jumpToPhaseAndClose(ph){
   jumpToPhase(ph);
 }
 
-/* ── BUILD UI ── */
-function buildStrip(){
-  var strip=document.getElementById('pills');strip.innerHTML='';
-  DOMAIN_ORDER.forEach(function(key){
-    var el=document.createElement('div');el.className='dpill';
-    el.textContent=DOMAIN_LABELS[key];el.dataset.key=key;
-    el.onclick=function(){switchDomain(key,el);};
-    if(key===simDomain){el.classList.add('active');el.style.background=DC[key];el.style.color='#02040e';}
-    strip.appendChild(el);
-  });
-}
+
+
 var QS=['How does the Big Bang start?','How big is the universe?','How does heartbreak feel?','What is love?','How does grief work?','How does anger form?','What is joy?','How does a neuron fire?','How do T-cells kill cancer?','How does antibiotic resistance happen?','How does a black hole form?','How do rumours spread?','How does gridlock happen?','What is a chemical reaction?'];
 function buildChips(){
   var c=document.getElementById('qchips');
@@ -2541,7 +2535,7 @@ if('serviceWorker' in navigator){
 (function detectSpeed(){var t=performance.now(),n=0;while(performance.now()-t<6)n++;/* Cap at 25K for 60fps on mobile — quality over quantity */N=n>20000?25000:n>10000?18000:12000;})();
 allocBuffers(N);
 allocVelocity(N);
-buildStrip();buildChips();
+buildChips();
 initPhase(simDomain,0,true);
 lastTs=performance.now();
 requestAnimationFrame(loop);

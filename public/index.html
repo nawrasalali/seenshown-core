@@ -1239,11 +1239,15 @@ function render(dt){
 
     var fx=pX[i],fy=pY[i];
     var sz=Math.max(0.4,pSz[i]*(0.35+easeOut(t)*.8));
-    /* Edge vignette — fade particles near boundary so no hard edge visible */
+    /* Edge vignette — fade particles near all 4 boundaries */
     var _aw=W()-72,_ah=H()-46-185;
-    var _ex=fx/(_aw*0.12), _ey=(fy-46)/(_ah*0.12);
-    var _er=((_aw-fx))/(_aw*0.12), _eb=((H()-185-fy))/(_ah*0.12);
+    var _fade=0.18; /* 18% fade zone each edge */
+    var _ex=fx/(_aw*_fade);
+    var _ey=(fy-46)/(_ah*_fade);
+    var _er=(_aw-fx)/(_aw*_fade);
+    var _eb=(H()-185-fy)/(_ah*_fade);
     var edgeFade=clamp(_ex,0,1)*clamp(_ey,0,1)*clamp(_er,0,1)*clamp(_eb,0,1);
+    edgeFade=edgeFade*edgeFade; /* square for softer falloff */
     alpha*=edgeFade;
 
     var cr=(pR[i]>>3)<<3,cg=(pG[i]>>3)<<3,cb=(pB[i]>>3)<<3;

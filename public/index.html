@@ -114,7 +114,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 #liveBadge.show{display:flex}
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes vsPulse{0%,100%{text-shadow:0 0 20px rgba(255,215,0,.9),0 0 40px rgba(255,215,0,.4);transform:translate(-50%,-50%) scale(1)}50%{text-shadow:0 0 30px rgba(255,215,0,1),0 0 60px rgba(255,215,0,.7);transform:translate(-50%,-50%) scale(1.08)}}@keyframes ballGlow{0%,100%{box-shadow:0 0 14px rgba(255,215,0,.9),0 0 30px rgba(255,215,0,.4)}50%{box-shadow:0 0 22px rgba(255,215,0,1),0 0 45px rgba(255,215,0,.7)}}@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 #answerTicker{position:relative}
 
 @media(max-width:640px){
@@ -376,39 +376,92 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 <div id="ptToast"></div>
 
 <div id="compMode" style="display:none;position:fixed;inset:0;z-index:300;flex-direction:column;background:#000">
-  <!-- EXIT button — top left under nav -->
-  <button id="compExit" onclick="exitCompete()" style="position:absolute;top:50px;left:12px;z-index:320;background:rgba(2,4,14,0.9);border:1px solid rgba(255,255,255,0.2);border-radius:20px;color:rgba(255,255,255,0.75);font-size:.7rem;font-weight:700;padding:5px 13px;cursor:pointer;letter-spacing:.06em">X EXIT</button>
-  <!-- Timer — top centre -->
-  <div id="cTimer" style="position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:320;font-size:.8rem;font-weight:800;color:#fff;background:rgba(2,4,14,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:4px 14px;letter-spacing:.08em"></div>
-  <!-- Win bar — left side vertical -->
-  <div id="compBar" style="position:absolute;left:0;top:0;bottom:0;width:5px;z-index:315;display:flex;flex-direction:column;pointer-events:none">
-    <div id="compBarA" style="flex:1;background:rgba(124,79,212,0.55);transition:flex .5s ease"></div>
-    <div id="compBarB" style="flex:1;background:rgba(38,232,176,0.55);transition:flex .5s ease"></div>
+
+  <!-- EXIT — top left under nav -->
+  <button id="compExit" onclick="exitCompete()"
+    style="position:absolute;top:50px;left:12px;z-index:325;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.25);border-radius:18px;color:rgba(255,255,255,0.8);font-size:.68rem;font-weight:800;padding:5px 13px;cursor:pointer;letter-spacing:.1em">
+    ✕ EXIT
+  </button>
+
+  <!-- TIMER — top centre, sporty -->
+  <div id="cTimer"
+    style="position:absolute;top:46px;left:50%;transform:translateX(-50%);z-index:325;font-size:1rem;font-weight:900;color:#fff;background:rgba(0,0,0,0.75);border:2px solid rgba(255,220,0,0.6);border-radius:20px;padding:4px 18px;letter-spacing:.12em;text-shadow:0 0 16px rgba(255,220,0,.6);min-width:70px;text-align:center">
   </div>
-  <!-- Canvas A — top sim -->
-  <div style="position:relative;flex:1;overflow:hidden">
+
+  <!-- VS — dead centre, sporty gaming -->
+  <div id="compVS"
+    style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:325;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:2px">
+    <div style="font-size:1.6rem;font-weight:900;color:#ffd700;letter-spacing:.15em;line-height:1;animation:vsPulse 2s ease-in-out infinite">VS</div>
+  </div>
+
+  <!-- BALL POINTER — replaces side bar -->
+  <!-- The ball slides up/down between the two halves based on votes -->
+  <div id="compPointerTrack"
+    style="position:absolute;left:0;top:0;bottom:0;width:28px;z-index:320;pointer-events:none">
+    <!-- Track line -->
+    <div style="position:absolute;left:13px;top:5%;bottom:5%;width:2px;background:rgba(255,255,255,0.12);border-radius:2px"></div>
+    <!-- Top zone colour -->
+    <div id="compTrackA" style="position:absolute;left:10px;top:5%;width:8px;height:45%;background:linear-gradient(180deg,rgba(124,79,212,0.5),transparent);border-radius:4px 4px 0 0;transition:height .5s ease"></div>
+    <!-- Bottom zone colour -->
+    <div id="compTrackB" style="position:absolute;left:10px;bottom:5%;width:8px;height:45%;background:linear-gradient(0deg,rgba(38,232,176,0.5),transparent);border-radius:0 0 4px 4px;transition:height .5s ease"></div>
+    <!-- THE BALL — slides to winner side -->
+    <div id="compBall"
+      style="position:absolute;left:4px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#ffd700);box-shadow:0 0 14px rgba(255,215,0,.9),0 0 30px rgba(255,215,0,.5);transition:top .5s cubic-bezier(.34,1.56,.64,1);animation:ballGlow 1.5s ease-in-out infinite">
+    </div>
+    <!-- Arrow on ball pointing to winner -->
+    <div id="compBallArrow"
+      style="position:absolute;left:4px;top:calc(50% + 14px);transform:translateX(2px);font-size:.65rem;color:#ffd700;line-height:1;transition:top .5s cubic-bezier(.34,1.56,.64,1);pointer-events:none;text-shadow:0 0 8px rgba(255,215,0,.8)">
+      &#9660;
+    </div>
+  </div>
+
+  <!-- CANVAS A — top sim — CLICK ANYWHERE = vote -->
+  <div id="compAreaA" style="position:relative;flex:1;overflow:hidden;cursor:pointer"
+    onclick="castVote('A')">
     <canvas id="compCanvas1" style="width:100%;height:100%;display:block"></canvas>
-    <div id="compFlashA" style="position:absolute;top:8px;left:18px;font-size:.75rem;font-weight:800;color:rgba(124,79,212,.95);pointer-events:none;opacity:0;transition:opacity .3s;z-index:316;max-width:55vw;line-height:1.2"></div>
-    <div id="cScoreA" style="position:absolute;top:8px;right:12px;font-size:.8rem;font-weight:800;color:#c4a0ff"></div>
-    <button id="compVT" onclick="castVote('A')" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(124,79,212,0.22);border:1.5px solid rgba(124,79,212,0.7);border-radius:22px;color:#c4a0ff;font-size:.78rem;font-weight:800;padding:8px 22px;cursor:pointer;z-index:316;transition:all .2s;white-space:nowrap">Like &amp; Vote</button>
+    <!-- Phase flash -->
+    <div id="compFlashA" style="position:absolute;top:8px;left:32px;font-size:.72rem;font-weight:800;color:rgba(124,79,212,.95);pointer-events:none;opacity:0;transition:opacity .3s;z-index:316;max-width:50vw;line-height:1.2"></div>
+    <!-- Score -->
+    <div id="cScoreA" style="position:absolute;top:6px;right:10px;font-size:.9rem;font-weight:900;color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,.7);letter-spacing:.06em"></div>
+    <!-- VOTE pill -->
+    <div id="compVT"
+      style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,0.15);border:2px solid #ffd700;border-radius:100px;color:#ffd700;font-size:.8rem;font-weight:900;padding:9px 28px;pointer-events:none;letter-spacing:.1em;text-shadow:0 0 12px rgba(255,215,0,.5);box-shadow:0 0 18px rgba(255,215,0,.2);white-space:nowrap">
+      VOTE
+    </div>
+    <!-- Float layer -->
     <div id="floatA" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:314"></div>
   </div>
-  <!-- Divider -->
-  <div style="height:3px;background:linear-gradient(90deg,rgba(124,79,212,.5),rgba(38,232,176,.5));flex-shrink:0"></div>
-  <!-- Canvas B — bottom sim -->
-  <div style="position:relative;flex:1;overflow:hidden">
+
+  <!-- DIVIDER with VS glow -->
+  <div style="height:3px;background:linear-gradient(90deg,rgba(124,79,212,.6),rgba(255,215,0,.8),rgba(38,232,176,.6));flex-shrink:0;box-shadow:0 0 12px rgba(255,215,0,.4)"></div>
+
+  <!-- CANVAS B — bottom sim — CLICK ANYWHERE = vote -->
+  <div id="compAreaB" style="position:relative;flex:1;overflow:hidden;cursor:pointer"
+    onclick="castVote('B')">
     <canvas id="compCanvas2" style="width:100%;height:100%;display:block"></canvas>
-    <div id="compFlashB" style="position:absolute;top:8px;left:18px;font-size:.75rem;font-weight:800;color:rgba(38,232,176,.95);pointer-events:none;opacity:0;transition:opacity .3s;z-index:316;max-width:55vw;line-height:1.2"></div>
-    <div id="cScoreB" style="position:absolute;top:8px;right:12px;font-size:.8rem;font-weight:800;color:var(--g)"></div>
-    <button id="compVB" onclick="castVote('B')" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(38,232,176,0.15);border:1.5px solid rgba(38,232,176,0.7);border-radius:22px;color:var(--g);font-size:.78rem;font-weight:800;padding:8px 22px;cursor:pointer;z-index:316;transition:all .2s;white-space:nowrap">Like &amp; Vote</button>
+    <!-- Phase flash -->
+    <div id="compFlashB" style="position:absolute;top:8px;left:32px;font-size:.72rem;font-weight:800;color:rgba(38,232,176,.95);pointer-events:none;opacity:0;transition:opacity .3s;z-index:316;max-width:50vw;line-height:1.2"></div>
+    <!-- Score -->
+    <div id="cScoreB" style="position:absolute;top:6px;right:10px;font-size:.9rem;font-weight:900;color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,.7);letter-spacing:.06em"></div>
+    <!-- VOTE pill — same as top, yellow -->
+    <div id="compVB"
+      style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,0.15);border:2px solid #ffd700;border-radius:100px;color:#ffd700;font-size:.8rem;font-weight:900;padding:9px 28px;pointer-events:none;letter-spacing:.1em;text-shadow:0 0 12px rgba(255,215,0,.5);box-shadow:0 0 18px rgba(255,215,0,.2);white-space:nowrap">
+      VOTE
+    </div>
+    <!-- Float layer -->
     <div id="floatB" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:314"></div>
   </div>
-  <!-- Winner overlay -->
-  <div id="compWinner" style="display:none;position:absolute;inset:0;z-index:330;background:rgba(2,4,14,0.88);align-items:center;justify-content:center;flex-direction:column;gap:16px">
+
+  <!-- WINNER OVERLAY -->
+  <div id="compWinner" style="display:none;position:absolute;inset:0;z-index:330;background:rgba(2,4,14,0.9);align-items:center;justify-content:center;flex-direction:column;gap:16px">
     <canvas id="celebCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div id="compWinnerText" style="font-size:1.5rem;font-weight:900;color:#fff;text-align:center;line-height:1.4;position:relative;z-index:2;text-shadow:0 0 40px rgba(38,232,176,0.5)"></div>
-    <button onclick="rematch()" style="position:relative;z-index:2;background:var(--g);color:#02040e;border:none;border-radius:24px;font-size:.9rem;font-weight:800;padding:13px 34px;cursor:pointer">Rematch</button>
+    <div id="compWinnerText" style="font-size:1.5rem;font-weight:900;color:#fff;text-align:center;line-height:1.5;position:relative;z-index:2;text-shadow:0 0 40px rgba(255,215,0,0.7)"></div>
+    <button onclick="rematch()"
+      style="position:relative;z-index:2;background:#ffd700;color:#02040e;border:none;border-radius:100px;font-size:.9rem;font-weight:900;padding:13px 36px;cursor:pointer;letter-spacing:.1em;box-shadow:0 0 24px rgba(255,215,0,.5)">
+      REMATCH
+    </button>
   </div>
+
 </div><!-- /compMode -->ang="en">
 <head>
 <meta charset="UTF-8">
@@ -524,7 +577,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 #liveBadge.show{display:flex}
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes vsPulse{0%,100%{text-shadow:0 0 20px rgba(255,215,0,.9),0 0 40px rgba(255,215,0,.4);transform:translate(-50%,-50%) scale(1)}50%{text-shadow:0 0 30px rgba(255,215,0,1),0 0 60px rgba(255,215,0,.7);transform:translate(-50%,-50%) scale(1.08)}}@keyframes ballGlow{0%,100%{box-shadow:0 0 14px rgba(255,215,0,.9),0 0 30px rgba(255,215,0,.4)}50%{box-shadow:0 0 22px rgba(255,215,0,1),0 0 45px rgba(255,215,0,.7)}}@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 #answerTicker{position:relative}
 
 @media(max-width:640px){
@@ -2260,9 +2313,29 @@ function renderCompeteCanvas(ctx2d,canvas,cp,dt){
 /* Win bar */
 function updateCompBar(){
   var total=compScoreA+compScoreB;
-  var rA=total>0?compScoreA/total:0.5,rB=total>0?compScoreB/total:0.5;
-  var bA=document.getElementById('compBarA'),bB=document.getElementById('compBarB');
-  if(bA)bA.style.flex=String(Math.max(0.05,rA));if(bB)bB.style.flex=String(Math.max(0.05,rB));
+  var rA=total>0?compScoreA/total:0.5;
+  /* Ball position: 10% = top (A winning), 90% = bottom (B winning), 50% = tie */
+  /* rA=1 -> ball at top (10%), rA=0 -> ball at bottom (90%) */
+  var ballPct=10+(1-rA)*80; /* 10% to 90% of track height */
+  var ball=document.getElementById('compBall');
+  var arrow=document.getElementById('compBallArrow');
+  if(ball){
+    ball.style.top=ballPct+'%';
+    /* Glow colour shifts: purple when A winning, green when B winning, gold when tied */
+    var glow=total===0?'rgba(255,215,0,.9)':rA>0.5?'rgba(124,79,212,.9)':'rgba(38,232,176,.9)';
+    ball.style.boxShadow='0 0 14px '+glow+',0 0 30px '+glow.replace('.9','.4');
+  }
+  if(arrow){
+    /* Arrow below ball, points DOWN to winner */
+    var arrPct=ballPct+2.5;
+    arrow.style.top=arrPct+'%';
+    arrow.style.transform=rA>=0.5?'translateX(2px) rotate(180deg)':'translateX(2px)';
+  }
+  /* Track fills */
+  var tA=document.getElementById('compTrackA');
+  var tB=document.getElementById('compTrackB');
+  if(tA)tA.style.height=Math.min(90,Math.max(5,rA*90))+'%';
+  if(tB)tB.style.height=Math.min(90,Math.max(5,(1-rA)*90))+'%';
 }
 /* Floating emoji left to right */
 function spawnFloat(side,emoji,xPct,yPct){
@@ -2290,19 +2363,29 @@ function celebrateVote(side){
 }
 /* Cast vote — unlimited, per canvas */
 function castVote(side){
+  var pts=3; /* 3 points per vote */
   if(side==='A'){
-    compScoreA++;
-    var sc=document.getElementById('cScoreA');if(sc)sc.textContent='V '+compScoreA;
-    var btn=document.getElementById('compVT');
-    if(btn){btn.textContent='Voted!';btn.style.transform='scale(1.12)';btn.style.background='rgba(124,79,212,0.55)';setTimeout(function(){btn.textContent='Vote More';btn.style.transform='scale(1)';btn.style.background='rgba(124,79,212,0.22)';},1100);}
+    compScoreA+=pts;
+    var sc=document.getElementById('cScoreA');
+    if(sc)sc.textContent=compScoreA;
   } else {
-    compScoreB++;
-    var sc2=document.getElementById('cScoreB');if(sc2)sc2.textContent='V '+compScoreB;
-    var btn2=document.getElementById('compVB');
-    if(btn2){btn2.textContent='Voted!';btn2.style.transform='scale(1.12)';btn2.style.background='rgba(38,232,176,0.4)';setTimeout(function(){btn2.textContent='Vote More';btn2.style.transform='scale(1)';btn2.style.background='rgba(38,232,176,0.15)';},1100);}
+    compScoreB+=pts;
+    var sc2=document.getElementById('cScoreB');
+    if(sc2)sc2.textContent=compScoreB;
   }
-  celebrateVote(side);updateCompBar();
-  if(typeof earnPoint==='function')earnPoint('+1',1);
+  /* VOTE pill flash */
+  var pill=document.getElementById(side==='A'?'compVT':'compVB');
+  if(pill){
+    pill.style.background='rgba(255,215,0,0.45)';
+    pill.style.transform='scale(1.08)';
+    setTimeout(function(){
+      pill.style.background='rgba(255,215,0,0.15)';
+      pill.style.transform='scale(1)';
+    },350);
+  }
+  celebrateVote(side);
+  updateCompBar();
+  if(typeof earnPoint==='function')earnPoint('+'+pts,pts);
 }
 /* Winner fireworks */
 var _celebParts=[],_celebRaf=null;
@@ -2330,13 +2413,15 @@ function startCompete(){
   if(compActive)return;
   compActive=true;compScoreA=0;compScoreB=0;compTimeLeft=COMP_DURATION;
   var sA=document.getElementById('cScoreA'),sB=document.getElementById('cScoreB'),ti=document.getElementById('cTimer');
-  if(sA){sA.textContent='V 0';sA.style.color='';}if(sB){sB.textContent='V 0';sB.style.color='';}
+  if(sA){sA.textContent='0';sA.style.color='';}if(sB){sB.textContent='0';sB.style.color='';}
   if(ti){ti.textContent='3:00';ti.style.color='#fff';ti.style.fontWeight='800';}
   var vt=document.getElementById('compVT'),vb=document.getElementById('compVB');
   if(vt)vt.textContent='Like & Vote';if(vb)vb.textContent='Like & Vote';
   var bA=document.getElementById('compBarA'),bB=document.getElementById('compBarB');
   if(bA)bA.style.flex='1';if(bB)bB.style.flex='1';
   var wo=document.getElementById('compWinner');if(wo)wo.style.display='none';
+  var ball=document.getElementById('compBall');if(ball)ball.style.top='50%';
+  var arr=document.getElementById('compBallArrow');if(arr){arr.style.top='52.5%';arr.style.transform='translateX(2px) rotate(180deg)';}
   document.getElementById('compMode').style.display='flex';
   compDomain1=simDomain;compDomain2=pickOpponentDomain(simDomain);
   var c1=document.getElementById('compCanvas1'),c2=document.getElementById('compCanvas2');
@@ -2375,6 +2460,8 @@ function exitCompete(){
   if(_celebRaf)cancelAnimationFrame(_celebRaf);_celebParts=[];
   var cm=document.getElementById('compMode');if(cm)cm.style.display='none';
   var wo=document.getElementById('compWinner');if(wo)wo.style.display='none';
+  var ball=document.getElementById('compBall');if(ball)ball.style.top='50%';
+  var arr=document.getElementById('compBallArrow');if(arr){arr.style.top='52.5%';arr.style.transform='translateX(2px) rotate(180deg)';}
   var cv=document.getElementById('celebCanvas');if(cv){var ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);}
 }
 /* Rematch */

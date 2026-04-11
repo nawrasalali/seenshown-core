@@ -130,6 +130,11 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   #rightRail{gap:8px}
   .rail-icon{width:30px;height:30px;font-size:.8rem}
 }
+
+#pillStrip{position:fixed;top:46px;left:0;right:0;z-index:120;height:32px;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;background:rgba(2,4,14,0.82);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 6px;gap:5px;}
+#pillStrip::-webkit-scrollbar{display:none}
+.dpill{flex-shrink:0;height:22px;padding:0 11px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);font-size:.58rem;font-weight:700;letter-spacing:.06em;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;user-select:none;}
+.dpill.active{color:#02040e;border-color:transparent;}
 </style>
 </head>
 <body>
@@ -157,6 +162,23 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
   </div>
 </nav>
+
+<div id="pillStrip">
+  <div class="dpill" data-key="fireworks" onclick="switchDomain('fireworks',this)">🎆 Fireworks</div>
+  <div class="dpill active" data-key="bigbang" onclick="switchDomain('bigbang',this)" style="background:#ffeecc;color:#02040e;border-color:#ffeecc">💥 Big Bang</div>
+  <div class="dpill" data-key="heartbreak" onclick="switchDomain('heartbreak',this)">💔 Heartbreak</div>
+  <div class="dpill" data-key="love" onclick="switchDomain('love',this)">❤️ Love</div>
+  <div class="dpill" data-key="grief" onclick="switchDomain('grief',this)">🌧 Grief</div>
+  <div class="dpill" data-key="anger" onclick="switchDomain('anger',this)">🔥 Anger</div>
+  <div class="dpill" data-key="joy" onclick="switchDomain('joy',this)">✨ Joy</div>
+  <div class="dpill" data-key="neuron" onclick="switchDomain('neuron',this)">🧠 Neuroscience</div>
+  <div class="dpill" data-key="immune" onclick="switchDomain('immune',this)">🛡 Immunity</div>
+  <div class="dpill" data-key="amr" onclick="switchDomain('amr',this)">💊 Antibiotic</div>
+  <div class="dpill" data-key="bh" onclick="switchDomain('bh',this)">🌑 Black Hole</div>
+  <div class="dpill" data-key="rumour" onclick="switchDomain('rumour',this)">💬 Rumour</div>
+  <div class="dpill" data-key="urban" onclick="switchDomain('urban',this)">🏙 Urban</div>
+  <div class="dpill" data-key="chem" onclick="switchDomain('chem',this)">⚗️ Chemistry</div>
+</div>
 
 <!-- AUTH MODAL -->
 <div class="ss-modal" id="authModal">
@@ -949,7 +971,7 @@ function shapeFirstStars(n,ox,oy,size){
 /* ── DOMAIN SHAPE SPECS — 5 phases each ── */
 function getSpec(domain,phase,n){
   /* Center in the available simulation area (between nav and bottom panel) */
-  var navH=46,panelH=185,railW=72;
+  var navH=78,panelH=185,railW=72;
   var availW=W()-railW;
   var availH=H()-navH-panelH;
   var x=availW/2; /* horizontal center of sim area */
@@ -1134,7 +1156,7 @@ function initPhase(domain,phase,fromScratch){
       /* First ever load — origin determined by domain energy */
       if(dir==='zero_to_full'||dir==='zoom'||dir==='form'){
         /* Birth at center of SIM area, not canvas center */
-        var _sx=(W()-72)/2,_sy=46+(H()-46-185)/2;
+        var _sx=(W()-72)/2,_sy=78+(H()-78-185)/2;
         pBX[i]=_sx+rnd(-4,4);pBY[i]=_sy+rnd(-4,4);
       } else {
         pBX[i]=s.tx+rnd(-3,3);pBY[i]=s.ty+rnd(-3,3);
@@ -1243,7 +1265,7 @@ function render(dt){
     var _aw=W()-72,_ah=H()-46-185;
     var _fade=0.18; /* 18% fade zone each edge */
     var _ex=fx/(_aw*_fade);
-    var _ey=(fy-46)/(_ah*_fade);
+    var _ey=(fy-78)/(_ah*_fade);
     var _er=(_aw-fx)/(_aw*_fade);
     var _eb=(H()-185-fy)/(_ah*_fade);
     var edgeFade=clamp(_ex,0,1)*clamp(_ey,0,1)*clamp(_er,0,1)*clamp(_eb,0,1);
@@ -1615,6 +1637,9 @@ function switchDomain(key,pill){
   updateNarr(key,0);
   /* Show default question in question bar */
   showQuestionBar(DOMAIN_QUESTIONS[key]||DOMAIN_LABELS[key]);
+  /* Scroll active pill into view */
+  var ap=document.querySelector('.dpill[data-key="'+key+'"]');
+  if(ap)ap.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
 }
 
 function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTimeout(function(){reinitScheduled=false;initPhase(simDomain,simPhase,false);},100);}

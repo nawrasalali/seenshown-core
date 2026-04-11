@@ -375,6 +375,416 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 <div id="phaseFlash"></div>
 <div id="ptToast"></div>
 
+<div id="compMode" style="display:none;position:fixed;inset:0;z-index:300;flex-direction:column;background:#000">
+  <!-- EXIT button — top left under nav -->
+  <button id="compExit" onclick="exitCompete()" style="position:absolute;top:50px;left:12px;z-index:320;background:rgba(2,4,14,0.9);border:1px solid rgba(255,255,255,0.2);border-radius:20px;color:rgba(255,255,255,0.75);font-size:.7rem;font-weight:700;padding:5px 13px;cursor:pointer;letter-spacing:.06em">X EXIT</button>
+  <!-- Timer — top centre -->
+  <div id="cTimer" style="position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:320;font-size:.8rem;font-weight:800;color:#fff;background:rgba(2,4,14,0.85);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:4px 14px;letter-spacing:.08em"></div>
+  <!-- Win bar — left side vertical -->
+  <div id="compBar" style="position:absolute;left:0;top:0;bottom:0;width:5px;z-index:315;display:flex;flex-direction:column;pointer-events:none">
+    <div id="compBarA" style="flex:1;background:rgba(124,79,212,0.55);transition:flex .5s ease"></div>
+    <div id="compBarB" style="flex:1;background:rgba(38,232,176,0.55);transition:flex .5s ease"></div>
+  </div>
+  <!-- Canvas A — top sim -->
+  <div style="position:relative;flex:1;overflow:hidden">
+    <canvas id="compCanvas1" style="width:100%;height:100%;display:block"></canvas>
+    <div id="compFlashA" style="position:absolute;top:8px;left:18px;font-size:.75rem;font-weight:800;color:rgba(124,79,212,.95);pointer-events:none;opacity:0;transition:opacity .3s;z-index:316;max-width:55vw;line-height:1.2"></div>
+    <div id="cScoreA" style="position:absolute;top:8px;right:12px;font-size:.8rem;font-weight:800;color:#c4a0ff"></div>
+    <button id="compVT" onclick="castVote('A')" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(124,79,212,0.22);border:1.5px solid rgba(124,79,212,0.7);border-radius:22px;color:#c4a0ff;font-size:.78rem;font-weight:800;padding:8px 22px;cursor:pointer;z-index:316;transition:all .2s;white-space:nowrap">Like &amp; Vote</button>
+    <div id="floatA" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:314"></div>
+  </div>
+  <!-- Divider -->
+  <div style="height:3px;background:linear-gradient(90deg,rgba(124,79,212,.5),rgba(38,232,176,.5));flex-shrink:0"></div>
+  <!-- Canvas B — bottom sim -->
+  <div style="position:relative;flex:1;overflow:hidden">
+    <canvas id="compCanvas2" style="width:100%;height:100%;display:block"></canvas>
+    <div id="compFlashB" style="position:absolute;top:8px;left:18px;font-size:.75rem;font-weight:800;color:rgba(38,232,176,.95);pointer-events:none;opacity:0;transition:opacity .3s;z-index:316;max-width:55vw;line-height:1.2"></div>
+    <div id="cScoreB" style="position:absolute;top:8px;right:12px;font-size:.8rem;font-weight:800;color:var(--g)"></div>
+    <button id="compVB" onclick="castVote('B')" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(38,232,176,0.15);border:1.5px solid rgba(38,232,176,0.7);border-radius:22px;color:var(--g);font-size:.78rem;font-weight:800;padding:8px 22px;cursor:pointer;z-index:316;transition:all .2s;white-space:nowrap">Like &amp; Vote</button>
+    <div id="floatB" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:314"></div>
+  </div>
+  <!-- Winner overlay -->
+  <div id="compWinner" style="display:none;position:absolute;inset:0;z-index:330;background:rgba(2,4,14,0.88);align-items:center;justify-content:center;flex-direction:column;gap:16px">
+    <canvas id="celebCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+    <div id="compWinnerText" style="font-size:1.5rem;font-weight:900;color:#fff;text-align:center;line-height:1.4;position:relative;z-index:2;text-shadow:0 0 40px rgba(38,232,176,0.5)"></div>
+    <button onclick="rematch()" style="position:relative;z-index:2;background:var(--g);color:#02040e;border:none;border-radius:24px;font-size:.9rem;font-weight:800;padding:13px 34px;cursor:pointer">Rematch</button>
+  </div>
+</div><!-- /compMode -->ang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>SeenShown — Watch Any Question Come Alive</title>
+<meta name="description" content="Type any question. Watch it form in real-time particles.">
+<meta name="theme-color" content="#02040e">
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SeenShown">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+#installBtn{position:fixed;bottom:8px;right:4px;width:66px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;z-index:270;padding:6px 4px;transition:opacity .3s}
+#installBtn:hover{background:rgba(38,232,176,0.22);transform:scale(1.03)}
+#installBtn.show{display:flex}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--border:rgba(38,232,176,0.15);--red:#e05c5c;--gold:#f0c040}
+html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;user-select:none}
+
+/* CANVAS — true full screen, simulation biased to top 65% */
+#simCanvas{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;cursor:crosshair;z-index:0}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:46px;min-height:46px;max-height:46px;background:rgba(2,4,14,0.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.05);overflow:hidden}
+.nav-logo{font-size:1rem;font-weight:800;color:var(--g);text-decoration:none;letter-spacing:-.02em}
+.nav-tabs{display:flex;gap:1px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1;margin:0 6px}.nav-tabs::-webkit-scrollbar{display:none}
+.ntab{padding:4px 9px;border-radius:6px;font-size:.7rem;color:var(--dim);cursor:pointer;border:none;background:transparent;text-decoration:none;display:inline-block;transition:color .18s}
+.ntab.active{color:var(--g);background:rgba(38,232,176,0.08)}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nbadge{font-size:.52rem;background:rgba(124,79,212,0.18);border:1px solid rgba(124,79,212,0.4);color:#c4a0ff;padding:2px 6px;border-radius:12px}
+.inv-btn{font-size:.62rem;background:var(--g);color:#02040e;padding:4px 9px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block}
+
+/* PILLS */
+
+
+
+
+
+/* RIGHT RAIL — responsive, always visible */
+#rightRail{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:150;display:flex;flex-direction:column;align-items:center;gap:20px;padding:14px 8px;width:72px}
+.rail-btn{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}
+.rail-btn:active{transform:scale(.88)}
+.rail-icon{width:56px;height:56px;border-radius:50%;background:rgba(2,4,14,0.5);border:1.5px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1.65rem;transition:border-color .2s,background .2s;-webkit-backdrop-filter:blur(8px)}
+.rail-btn.liked .rail-icon{border-color:var(--red);background:rgba(224,92,92,0.18)}
+.rail-label{font-size:.6rem;color:rgba(255,255,255,.72);font-weight:700;text-align:center;line-height:1.2;max-width:70px;letter-spacing:.01em}
+.rail-label.red{color:var(--red)}
+.rail-label.gold{color:var(--gold)}
+.rail-label.green{color:var(--g)}
+
+/* BOTTOM PANEL — right:56px matches rail width */
+#bottomPanel{position:fixed;bottom:0;left:0;right:72px;z-index:150;pointer-events:none}
+
+
+
+
+
+
+
+
+
+/* PHASE FLASH */
+#phaseFlash{position:fixed;top:140px;left:14px;font-size:clamp(.7rem,2.2vw,1rem);font-weight:800;color:rgba(38,232,176,.95);text-align:left;pointer-events:none;opacity:0;transition:opacity .3s;z-index:90;text-shadow:0 1px 8px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:55vw;line-height:1.2}
+#phaseFlash.show{opacity:1}
+
+/* TOAST */
+#ptToast{position:fixed;top:26%;left:50%;transform:translateX(-50%);background:rgba(240,192,64,0.16);border:1px solid rgba(240,192,64,0.45);border-radius:18px;padding:7px 16px;font-size:.75rem;font-weight:700;color:var(--gold);opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;white-space:nowrap;backdrop-filter:blur(8px)}
+#ptToast.show{opacity:1}
+
+/* LOAD */
+#lodOv{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;transition:opacity .6s;z-index:300}
+#lodOv.gone{opacity:0;pointer-events:none}
+.lring{width:34px;height:34px;border:2px solid rgba(38,232,176,0.12);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MODAL BASE */
+.ss-modal{position:fixed;inset:0;z-index:350;display:none;align-items:center;justify-content:center;background:rgba(2,4,14,0.88);backdrop-filter:blur(14px);padding:20px}
+.ss-modal-box{background:#080d1a;border:1px solid rgba(38,232,176,0.18);border-radius:18px;padding:1.8rem;max-width:420px;width:100%;max-height:90vh;overflow-y:auto}
+.ss-modal-title{font-size:1.1rem;font-weight:800;margin-bottom:.3rem;color:var(--w)}
+.ss-modal-sub{font-size:.78rem;color:var(--dim);line-height:1.6;margin-bottom:1.2rem}
+.ss-modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--dim);font-size:1.1rem;cursor:pointer;padding:4px 8px}
+.ss-input{width:100%;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:var(--w);font-size:.9rem;outline:none;margin-bottom:.8rem;transition:border-color .2s;font-family:inherit}
+.ss-input:focus{border-color:var(--g)}
+.ss-btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;transition:opacity .2s;margin-bottom:.5rem}
+.ss-btn.primary{background:var(--g);color:#02040e}
+.ss-btn.secondary{background:rgba(255,255,255,0.06);color:var(--w);border:1px solid rgba(255,255,255,0.1)}
+.ss-btn.gold{background:var(--gold);color:#02040e}
+.ss-btn.purple{background:var(--p);color:#fff}
+.ss-btn:hover{opacity:.88}
+.ss-btn:disabled{opacity:.4;pointer-events:none}
+.ss-divider{height:1px;background:rgba(255,255,255,0.07);margin:1rem 0}
+.ss-plan-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:.8rem}
+.ss-plan-row:last-child{border-bottom:none}
+
+/* COMPETE */
+#compMode{position:fixed;inset:0;z-index:170;display:none;flex-direction:column}
+#compMode.active{display:flex}
+#compCanvas1,#compCanvas2{flex:1;display:block;width:100%}
+#compDiv{height:3px;background:linear-gradient(90deg,var(--p),var(--g));position:relative;flex-shrink:0}
+#compDiv::after{content:'VS';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000;padding:2px 10px;border:1px solid var(--border);border-radius:8px;font-size:.6rem;font-weight:800;color:var(--g)}
+#compVT{position:fixed;bottom:50%;margin-bottom:8px;left:0;right:0;z-index:175;display:flex;padding:0 20%;pointer-events:all}
+#compVB{position:fixed;top:50%;margin-top:8px;left:0;right:0;z-index:175;display:flex;padding:0 20%;pointer-events:all}
+.cvbtn{flex:1;padding:10px;border:none;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;backdrop-filter:blur(12px)}
+#cvA{background:rgba(124,79,212,0.2);color:#c4a0ff;border:1px solid rgba(124,79,212,0.3)}
+#cvB{background:rgba(38,232,176,0.1);color:var(--g);border:1px solid rgba(38,232,176,0.25)}
+#compHUD{position:fixed;top:54px;left:0;right:0;z-index:175;display:flex;justify-content:space-between;align-items:center;padding:4px 16px;font-size:.68rem;font-weight:700}
+#compClose{position:fixed;top:54px;right:14px;z-index:176;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 9px;font-size:.66rem;color:var(--dim);cursor:pointer}
+
+/* LIVE BADGE */
+#liveBadge{position:fixed;top:54px;left:14px;z-index:160;background:rgba(224,92,92,0.15);border:1px solid rgba(224,92,92,0.4);border-radius:8px;padding:4px 10px;font-size:.64rem;color:var(--red);display:none;align-items:center;gap:5px}
+#liveBadge.show{display:flex}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+#answerTicker{position:relative}
+
+@media(max-width:640px){
+  /* NAV: all tabs visible, scrollable */
+  .ntab{font-size:.64rem;padding:3px 7px}
+  #rightRail{width:64px;gap:14px;padding:10px 4px}
+  .rail-icon{width:48px;height:48px;font-size:1.4rem}
+  .rail-label{font-size:.52rem}
+  #bottomPanel{right:64px}
+  
+}
+@media(max-height:580px){
+  #rightRail{gap:8px}
+  .rail-icon{width:30px;height:30px;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+<canvas id="simCanvas"></canvas>
+
+<!-- PWA INSTALL BUTTON — appears when browser fires beforeinstallprompt -->
+<div id="installBtn" onclick="installPWA()">
+  <div style="width:52px;height:52px;border-radius:50%;background:rgba(38,232,176,0.2);border:2px solid rgba(38,232,176,0.7);display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 16px rgba(38,232,176,0.3)">📲</div>
+  <div style="font-size:.5rem;color:rgba(38,232,176,.9);font-weight:700;letter-spacing:.05em">INSTALL</div>
+</div>
+
+<nav id="nav">
+  <a class="nav-logo" href="/">SeenShown</a>
+  <div class="nav-tabs" style="overflow-x:auto;scrollbar-width:none;flex:1;margin:0 6px;-webkit-overflow-scrolling:touch">
+    <span class="ntab active">Home</span>
+    <a class="ntab" href="/social.html" target="_blank">Social</a>
+    <a class="ntab" href="/community.html" target="_blank">Community</a>
+    <a class="ntab" href="/investors.html" target="_blank">Invest</a>
+    
+    <a class="ntab" href="/dashboard.html" target="_blank">Dashboard</a>
+    
+    <a class="ntab" href="/founder.html" target="_blank" id="adminTab" style="display:none;color:var(--gold)">Admin ⚙️</a>
+  </div>
+  <div class="nav-right">
+    <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
+  </div>
+</nav>
+
+<!-- AUTH MODAL -->
+<div class="ss-modal" id="authModal">
+  <div class="ss-modal-box" style="position:relative;max-width:380px">
+    <button class="ss-modal-close" onclick="hideAuthModal()">✕</button>
+    <div style="font-size:1.5rem;text-align:center;margin-bottom:.5rem">🌌</div>
+    <div class="ss-modal-title" style="text-align:center">Join SeenShown</div>
+    <div class="ss-modal-sub" style="text-align:center" id="authReason">Watch any question come alive</div>
+
+    <!-- GOOGLE -->
+    <button onclick="if(window.SS_AUTH)window.SS_AUTH.signInWithGoogle();else{window.location.href='https://jnvdpmmxlbkxwanqqhfw.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(window.location.origin+'/auth-callback.html')}"
+      style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:.6rem;transition:background .2s"
+      onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+
+    <!-- APPLE -->
+    <button onclick="if(window.SS_AUTH)window.SS_AUTH.signInWithApple();else{window.location.href='https://jnvdpmmxlbkxwanqqhfw.supabase.co/auth/v1/authorize?provider=apple&redirect_to='+encodeURIComponent(window.location.origin+'/auth-callback.html')}"
+      style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:background .2s"
+      onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
+      Continue with Apple
+    </button>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.1)"></div>
+      <span style="font-size:.7rem;color:var(--dim)">or email</span>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.1)"></div>
+    </div>
+
+    <input class="ss-input" id="authEmail" type="email" placeholder="your@email.com"
+      onkeydown="if(event.key==='Enter')window.SS_AUTH.submitAuth()">
+    <button class="ss-btn primary" id="authSubmitBtn" onclick="window.SS_AUTH.submitAuth()">
+      Send magic link →
+    </button>
+    <div id="authMsg" style="font-size:.72rem;margin-top:.3rem;min-height:1em;text-align:center"></div>
+    <div class="ss-divider"></div>
+    <div style="font-size:.68rem;color:var(--dim);text-align:center">Sign in once · stay signed in · like TikTok</div>
+  </div>
+</div>
+
+<!-- SAVE / POST / COMPETE MODAL -->
+<div class="ss-modal" id="saveModal">
+  <div class="ss-modal-box" style="position:relative">
+    <button class="ss-modal-close" onclick="closeSaveModal()">✕</button>
+    <div class="ss-modal-title">Your simulation is ready</div>
+    <div class="ss-modal-sub" id="saveSimTitle">What would you like to do with it?</div>
+    <button class="ss-btn secondary" onclick="doSaveOnly()">💾 Save to library</button>
+    <button class="ss-btn primary" onclick="doSaveAndPost()">🌍 Save & post to feed</button>
+    <button class="ss-btn gold" onclick="doSaveAndRegenerate()">🔄 Regenerate on same topic</button>
+    <button class="ss-btn purple" onclick="doCompeteNow()">⚔️ Save & compete live now</button>
+    <div class="ss-divider"></div>
+    <div style="font-size:.7rem;color:var(--dim);text-align:center" id="simCountLabel">—</div>
+  </div>
+</div>
+
+<!-- UPGRADE / PAYWALL MODAL -->
+<div class="ss-modal" id="upgradeModal">
+  <div class="ss-modal-box" style="position:relative">
+    <button class="ss-modal-close" onclick="closeUpgradeModal()">✕</button>
+    <div style="font-size:2rem;text-align:center;margin-bottom:.75rem">🚀</div>
+    <div class="ss-modal-title" style="text-align:center">Unlock unlimited simulations</div>
+    <div class="ss-modal-sub" style="text-align:center" id="upgradeReason">You've used your free simulations this week.</div>
+    <div class="ss-divider"></div>
+    <div style="font-size:.8rem;font-weight:700;color:var(--dim);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.06em">Choose your plan</div>
+    <div class="ss-plan-row"><span>Scholar<br><span style="color:var(--dim);font-size:.72rem">Unlimited sims · 50 pts/month · Vote</span></span><button class="ss-btn primary" style="width:auto;padding:8px 16px;margin:0" onclick="buyPlan('scholar')">$9/mo</button></div>
+    <div class="ss-plan-row"><span>Studio<br><span style="color:var(--dim);font-size:.72rem">Everything + 200 pts/month · Live compete</span></span><button class="ss-btn primary" style="width:auto;padding:8px 16px;margin:0;background:var(--gold);color:#02040e" onclick="buyPlan('studio')">$29/mo</button></div>
+    <div class="ss-divider"></div>
+    <div style="font-size:.8rem;font-weight:700;color:var(--dim);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.06em">Or buy vote points</div>
+    <div class="ss-plan-row"><span>100 points<br><span style="color:var(--dim);font-size:.72rem">= 100 votes = $10 redeemable</span></span><button class="ss-btn secondary" style="width:auto;padding:8px 16px;margin:0" onclick="buyPoints(100)">$10</button></div>
+    <div class="ss-plan-row"><span>500 points<br><span style="color:var(--dim);font-size:.72rem">Best value · save $5</span></span><button class="ss-btn secondary" style="width:auto;padding:8px 16px;margin:0" onclick="buyPoints(500)">$45</button></div>
+    <div class="ss-plan-row"><span>1,000 points<br><span style="color:var(--dim);font-size:.72rem">Save $15 · earn up to $200</span></span><button class="ss-btn gold" style="width:auto;padding:8px 16px;margin:0" onclick="buyPoints(1000)">$85</button></div>
+    <div class="ss-divider"></div>
+    <div style="font-size:.65rem;color:var(--dim);text-align:center">Free users: 5 sims/week for 4 weeks · then subscribe to continue creating<br>Free users can watch, like, and compete as viewers · Subscribers vote and earn</div>
+  </div>
+</div>
+
+<!-- LIVE COMPETE MODAL -->
+<div class="ss-modal" id="liveModal">
+  <div class="ss-modal-box" style="position:relative;max-width:500px">
+    <button class="ss-modal-close" onclick="closeLiveModal()">✕</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+      <div class="live-dot"></div>
+      <div class="ss-modal-title" style="margin:0">Live Compete Room</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:.75rem;font-size:.78rem;color:var(--dim)">
+      <span id="liveRoomId">Room: —</span>
+      <span id="liveRoleLabel">—</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;align-items:center;background:rgba(255,255,255,0.03);border-radius:10px;padding:.75rem;margin-bottom:1rem">
+      <div style="text-align:center"><div style="font-size:.58rem;color:var(--dim);margin-bottom:.2rem">PLAYER A</div><div style="font-weight:700;color:#c4a0ff" id="liveDomainA">—</div><div style="font-size:.68rem;color:var(--dim)" id="liveVotesA">0 votes</div></div>
+      <div style="font-weight:800;color:var(--g);font-size:.8rem">VS</div>
+      <div style="text-align:center"><div style="font-size:.58rem;color:var(--dim);margin-bottom:.2rem">PLAYER B</div><div style="font-weight:700;color:var(--g)" id="liveDomainB">—</div><div style="font-size:.68rem;color:var(--dim)" id="liveVotesB">0 votes</div></div>
+    </div>
+    <div style="text-align:center;font-size:.72rem;color:var(--dim);margin-bottom:1rem" id="liveViewers">0 watching</div>
+    <!-- Share link (host A only) -->
+    <div id="liveShareRow" style="display:none;align-items:center;gap:.5rem;background:rgba(38,232,176,0.05);border:1px solid rgba(38,232,176,0.15);border-radius:8px;padding:.6rem .8rem;margin-bottom:.75rem">
+      <span style="font-size:.66rem;color:var(--g);font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="liveShareUrl"></span>
+      <button onclick="copyLiveLink()" style="background:var(--g);color:#02040e;border:none;border-radius:6px;padding:4px 10px;font-size:.66rem;font-weight:700;cursor:pointer">Copy</button>
+    </div>
+    <!-- Vote buttons (viewers + host B) -->
+    <div id="liveVoteRow" style="display:none;gap:.75rem">
+      <button id="liveVoteA" onclick="LIVE_API.vote('A')" class="ss-btn secondary" style="flex:1;margin:0;border-color:rgba(124,79,212,0.4);color:#c4a0ff">Vote A</button>
+      <button id="liveVoteB" onclick="LIVE_API.vote('B')" class="ss-btn secondary" style="flex:1;margin:0;border-color:rgba(38,232,176,0.4);color:var(--g)">Vote B</button>
+    </div>
+    <!-- Non-subscriber vote nudge -->
+    <div id="liveVoteNudge" style="display:none;text-align:center;padding:.6rem;background:rgba(240,192,64,0.06);border-radius:8px;margin-top:.5rem;font-size:.72rem;color:var(--gold)">
+      Subscribe to vote and earn · Free users can like 💛
+      <button onclick="showUpgradeModal('voting')" style="background:var(--gold);color:#02040e;border:none;border-radius:6px;padding:3px 8px;font-size:.66rem;font-weight:700;cursor:pointer;margin-left:.4rem">Upgrade</button>
+    </div>
+    <!-- Mic (hosts) -->
+    <div id="liveMicRow" style="display:none;margin-top:.75rem;gap:.5rem">
+      <button id="micBtn" onclick="LIVE_API.startMic()" class="ss-btn secondary" style="flex:1;margin:0">🎙️ Mic</button>
+      <button onclick="LIVE_API.stopMic()" class="ss-btn secondary" style="flex:1;margin:0">🔇 Mute</button>
+    </div>
+    <div class="ss-divider"></div>
+    <button class="ss-btn secondary" onclick="closeLiveModal()">End & leave room</button>
+    <!-- Join existing room -->
+    <div id="joinRoomRow" style="display:none;margin-top:.5rem">
+      <div style="font-size:.72rem;color:var(--dim);margin-bottom:.4rem">Or join an existing room:</div>
+      <div style="display:flex;gap:.5rem">
+        <input class="ss-input" id="joinRoomInput" placeholder="Room ID" style="margin:0;flex:1">
+        <button onclick="joinRoom()" class="ss-btn primary" style="width:auto;padding:10px 14px;margin:0;white-space:nowrap">Join</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE BADGE -->
+<div id="liveBadge"><div class="live-dot"></div><span>LIVE</span></div>
+
+
+
+<div id="rightRail">
+  <div class="rail-btn" id="railLike" onclick="doLike()">
+    <div class="rail-icon">❤️</div>
+    <div class="rail-label red" id="likeCount">0</div>
+  </div>
+  <div class="rail-btn" onclick="openComments()">
+    <div class="rail-icon">💬</div>
+    <div class="rail-label" id="commentCount">Comment</div>
+  </div>
+  <div class="rail-btn" onclick="doShare()">
+    <div class="rail-icon">↗️</div>
+    <div class="rail-label">Share</div>
+  </div>
+  <div class="rail-btn" onclick="startCompete()">
+    <div class="rail-icon">⚔️</div>
+    <div class="rail-label">Compete</div>
+  </div>
+  <div class="rail-btn" onclick="doEarn()">
+    <div class="rail-icon">💰</div>
+    <div class="rail-label green" id="pointsCount">0 pts</div>
+  </div>
+  <div class="rail-btn" id="railSave" onclick="doSaveOnly()" style="opacity:.5">
+    <div class="rail-icon">💾</div>
+    <div class="rail-label">Save</div>
+  </div>
+  <div class="rail-btn" id="railPost" onclick="doSaveAndPost()" style="opacity:.5">
+    <div class="rail-icon">🌍</div>
+    <div class="rail-label green">Post</div>
+  </div>
+</div>
+
+<!-- QUESTION BAR — standalone fixed, above bottom panel -->
+<div id="questionBar" style="position:fixed;bottom:0;left:0;right:72px;z-index:155;padding:7px 14px 6px;background:rgba(6,10,28,0.95);backdrop-filter:blur(20px);border-top:1.5px solid rgba(38,232,176,0.22);display:none;box-shadow:0 -2px 20px rgba(0,0,0,.4)">
+  <div style="font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(38,232,176,.65);margin-bottom:3px;font-weight:700">Question</div>
+  <div id="questionBarText" style="font-size:.85rem;color:#ffffff;line-height:1.4;font-weight:600"></div>
+</div>
+
+<div id="bottomPanel">
+  <!-- QUESTION BAR — fixed, shows current question -->
+  <div id="questionBar" style="pointer-events:all;padding:7px 14px 7px;background:rgba(8,14,36,0.92);backdrop-filter:blur(18px);border-top:1.5px solid rgba(38,232,176,0.18);display:none">
+    <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(38,232,176,.55);margin-bottom:2px">Question</div>
+    <div id="questionBarText" style="font-size:.84rem;color:#fff;line-height:1.4;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.5)"></div>
+  </div>
+  <!-- TICKER BAR — scrolling answer, tap to expand -->
+  <div id="answerTicker"
+    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.52);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
+    ontouchstart="tickerTouchStart(event)"
+    ontouchmove="tickerTouchMove(event)"
+    ontouchend="tickerTouchEnd(event)"
+    onclick="if(!tickerDragging)togglePhasesPanel()">
+    <div id="tickerTrack"
+      style="display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;animation:tickerScroll 200s linear infinite">
+    </div>
+    <div id="tickerPauseInd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.56rem;color:rgba(38,232,176,0.45);pointer-events:none;white-space:nowrap">tap ▼</div>
+  </div>
+  <!-- EXPANDED PHASES PANEL -->
+  <div id="phasesPanel"
+    style="display:none;background:rgba(2,4,14,0.85);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);max-height:40vh;overflow-y:auto;pointer-events:all;-webkit-overflow-scrolling:touch">
+    <div id="phasesList" style="padding:6px 14px 2px"></div>
+    <div onclick="closePhasesPanel()"
+      style="text-align:center;font-size:.6rem;color:var(--dim);padding:7px;cursor:pointer;pointer-events:all;border-top:1px solid rgba(255,255,255,0.05)">▲ Close</div>
+  </div>
+  <!-- SAVE / POST mini-icons — appear after simulation runs -->
+  <div id="simActions" style="pointer-events:all;padding:4px 14px 2px;display:none;gap:10px;align-items:center;background:rgba(2,4,14,0.96);">
+    <button onclick="doSaveOnly()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px;font-size:.72rem;color:var(--w);cursor:pointer;font-weight:600">💾 Save</button>
+    <button onclick="doSaveAndPost()" style="display:flex;align-items:center;gap:5px;background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);border-radius:20px;padding:5px 12px;font-size:.72rem;color:var(--g);cursor:pointer;font-weight:600">🌍 Post</button>
+    <button onclick="doSaveAndRegenerate()" style="display:flex;align-items:center;gap:5px;background:rgba(124,79,212,0.1);border:1px solid rgba(124,79,212,0.3);border-radius:20px;padding:5px 12px;font-size:.72rem;color:#c4a0ff;cursor:pointer;font-weight:600">🔄 Redo</button>
+    <span id="simActionsClose" onclick="hideSimActions()" style="margin-left:auto;color:var(--dim);font-size:.8rem;cursor:pointer;padding:2px 6px">✕</span>
+  </div>
+  <!-- INPUT — bigger, ⚡ inside -->
+  <div id="qRow"
+    style="pointer-events:all;display:flex;align-items:flex-end;padding:6px 12px 12px;background:rgba(2,4,14,0.96);border-top:1px solid rgba(255,255,255,0.06);position:relative">
+    <textarea id="mainQ" placeholder="Ask anything…" maxlength="300" rows="2"
+      style="flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:14px;padding:11px 46px 11px 14px;color:var(--w);font-size:.94rem;outline:none;caret-color:var(--g);resize:none;min-height:54px;max-height:100px;font-family:inherit;line-height:1.45;transition:border-color .2s;width:100%"
+      oninput="autoResizeMQ(this)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion()}" oninput="autoResizeMQ(this)"></textarea>
+    <button id="submitIcon" onclick="askQuestion()" type="button"
+      style="position:absolute;right:20px;bottom:18px;width:32px;height:32px;background:var(--g);border-radius:50%;border:none;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1">⚡</button>
+  </div>
+</div>
+
+<div id="phaseFlash"></div>
+<div id="ptToast"></div>
+
 <div id="compMode">
   <div id="compHUD"><span id="cScoreA" style="color:#c4a0ff">Player A: 0</span><span id="cTimer">⏱ 60s</span><span id="cScoreB" style="color:var(--g)">Player B: 0</span></div>
   <div id="compFlashA" style="position:absolute;top:54px;left:14px;font-size:.8rem;font-weight:800;color:#fff;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:0 1px 10px rgba(124,79,212,.9);z-index:176;max-width:45vw;line-height:1.2"></div>
@@ -1826,120 +2236,153 @@ function togglePause(){
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
 function autoResizeMQ(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
 
-/* ── COMPETE — guaranteed different domains, arrow vote buttons ── */
-var compCtx1,compCtx2,compTimeLeft=60,compDomain1='bigbang',compDomain2='heartbreak';
-/* Particle buffers for compete canvases */
+/* -- COMPETE -- */
+var compCtx1,compCtx2,compTimeLeft=180,compDomain1='bigbang',compDomain2='heartbreak';
+var COMP_DURATION=180;
 var cP1={N:0,X:null,Y:null,TX:null,TY:null,BX:null,BY:null,R:null,G:null,B:null,Sz:null,D:null,T:0};
 var cP2={N:0,X:null,Y:null,TX:null,TY:null,BX:null,BY:null,R:null,G:null,B:null,Sz:null,D:null,T:0};
-
-/* Pick two domains that are visually maximally different */
-var DOMAIN_PAIRS={
-  bigbang:['heartbreak','grief','anger','urban'],
-  heartbreak:['bigbang','joy','bigbang','neuron'],
-  love:['anger','bh','amr','urban'],
-  grief:['joy','fireworks','bigbang','love'],
-  anger:['joy','love','grief','bigbang'],
-  joy:['grief','bh','amr','urban'],
-  neuron:['heartbreak','grief','urban','amr'],
-  immune:['rumour','anger','bigbang','joy'],
-  amr:['love','joy','bigbang','universe'],
-  bh:['joy','love','fireworks','heartbreak'],
-  universe:['grief','amr','heartbreak','anger'],
-  rumour:['bh','grief','immune','chem'],
-  urban:['joy','bigbang','love','fireworks'],
-  chem:['grief','bh','heartbreak','bigbang'],
-  fireworks:['grief','bh','amr','urban']
-};
-
-function pickOpponentDomain(myDomain){
-  var pairs=DOMAIN_PAIRS[myDomain]||DOMAIN_ORDER.filter(function(d){return d!==myDomain;});
-  return pairs[Math.floor(Math.random()*pairs.length)];
-}
-
+var DOMAIN_PAIRS={bigbang:['heartbreak','grief','anger','urban'],heartbreak:['bigbang','joy','neuron'],love:['anger','bh','amr'],grief:['joy','fireworks','bigbang'],anger:['joy','love','grief'],joy:['grief','bh','amr'],neuron:['heartbreak','grief','amr'],immune:['rumour','anger','bigbang'],amr:['love','joy','bigbang'],bh:['joy','love','fireworks'],rumour:['bh','grief','chem'],urban:['joy','bigbang','fireworks'],chem:['grief','bh','bigbang'],fireworks:['grief','bh','amr']};
+function pickOpponentDomain(d){var p=DOMAIN_PAIRS[d]||DOMAIN_ORDER.filter(function(x){return x!==d;});return p[Math.floor(Math.random()*p.length)];}
 function initCompeteParticles(cp,domain,canvas){
-  var n=Math.min(N,20000); /* lighter particle count for compete split screen */
-  cp.N=n;
-  cp.X=new Float32Array(n);cp.Y=new Float32Array(n);
-  cp.TX=new Float32Array(n);cp.TY=new Float32Array(n);
-  cp.BX=new Float32Array(n);cp.BY=new Float32Array(n);
-  cp.R=new Uint8Array(n);cp.G=new Uint8Array(n);cp.B=new Uint8Array(n);
+  var n=Math.min(N,16000);cp.N=n;
+  cp.X=new Float32Array(n);cp.Y=new Float32Array(n);cp.TX=new Float32Array(n);cp.TY=new Float32Array(n);
+  cp.BX=new Float32Array(n);cp.BY=new Float32Array(n);cp.R=new Uint8Array(n);cp.G=new Uint8Array(n);cp.B=new Uint8Array(n);
   cp.Sz=new Float32Array(n);cp.D=new Float32Array(n);cp.T=0;
-  /* Override W/H functions temporarily for getSpec */
-  var _W=W,_H=H;
-  W=function(){return canvas.width;};H=function(){return canvas.height;};
-  var spec=getSpec(domain,0,n);
-  W=_W;H=_H;
-  for(var i=0;i<n;i++){
-    var s=spec[i%spec.length];
-    cp.TX[i]=s.tx;cp.TY[i]=s.ty;
-    cp.R[i]=s.rr||180;cp.G[i]=s.gg||180;cp.B[i]=s.bb||180;
-    cp.Sz[i]=s.r||1;cp.D[i]=Math.random()*2000;
-    cp.BX[i]=canvas.width/2+rnd(-4,4);cp.BY[i]=canvas.height/2+rnd(-4,4);
-    cp.X[i]=cp.BX[i];cp.Y[i]=cp.BY[i];
-  }
+  var _W=W,_H=H;W=function(){return canvas.width;};H=function(){return canvas.height;};
+  var spec=getSpec(domain,0,n);W=_W;H=_H;
+  for(var i=0;i<n;i++){var s=spec[i%spec.length];cp.TX[i]=s.tx;cp.TY[i]=s.ty;cp.R[i]=s.rr||180;cp.G[i]=s.gg||180;cp.B[i]=s.bb||180;cp.Sz[i]=s.r||1;cp.D[i]=Math.random()*2000;cp.BX[i]=canvas.width/2+rnd(-4,4);cp.BY[i]=canvas.height/2+rnd(-4,4);cp.X[i]=cp.BX[i];cp.Y[i]=cp.BY[i];}
 }
-
 function renderCompeteCanvas(ctx2d,canvas,cp,dt){
-  ctx2d.fillStyle='rgba(0,0,0,0.14)';ctx2d.fillRect(0,0,canvas.width,canvas.height);
-  cp.T+=dt;
-  for(var i=0;i<cp.N;i++){
-    var t=clamp((cp.T-cp.D[i])/4000,0,1);
-    var te=easeOut(t);
-    var fx=lerp(cp.BX[i],cp.TX[i],te)+Math.sin(cp.T*.0007+i*.14)*1.5*t;
-    var fy=lerp(cp.BY[i],cp.TY[i],te)+Math.cos(cp.T*.0008+i*.13)*1.5*t;
-    cp.X[i]=fx;cp.Y[i]=fy;
-    ctx2d.globalAlpha=Math.min(t*2,1)*.85;
-    ctx2d.fillStyle='rgb('+cp.R[i]+','+cp.G[i]+','+cp.B[i]+')';
-    ctx2d.beginPath();ctx2d.arc(fx,fy,Math.max(.3,cp.Sz[i]*(0.4+te*.7)),0,6.283);ctx2d.fill();
-  }
+  ctx2d.fillStyle='rgba(2,4,14,0.14)';ctx2d.fillRect(0,0,canvas.width,canvas.height);cp.T+=dt;
+  for(var i=0;i<cp.N;i++){var t=clamp((cp.T-cp.D[i])/4000,0,1),te=easeOut(t);var fx=lerp(cp.BX[i],cp.TX[i],te)+Math.sin(cp.T*.0007+i*.14)*1.4*t,fy=lerp(cp.BY[i],cp.TY[i],te)+Math.cos(cp.T*.0008+i*.13)*1.4*t;cp.X[i]=fx;cp.Y[i]=fy;ctx2d.globalAlpha=Math.min(t*2,1)*.85;ctx2d.fillStyle='rgb('+cp.R[i]+','+cp.G[i]+','+cp.B[i]+')';ctx2d.beginPath();ctx2d.arc(fx,fy,Math.max(.3,cp.Sz[i]*(0.4+te*.7)),0,6.283);ctx2d.fill();}
   ctx2d.globalAlpha=1;
 }
-
+/* Win bar */
+function updateCompBar(){
+  var total=compScoreA+compScoreB;
+  var rA=total>0?compScoreA/total:0.5,rB=total>0?compScoreB/total:0.5;
+  var bA=document.getElementById('compBarA'),bB=document.getElementById('compBarB');
+  if(bA)bA.style.flex=String(Math.max(0.05,rA));if(bB)bB.style.flex=String(Math.max(0.05,rB));
+}
+/* Floating emoji left to right */
+function spawnFloat(side,emoji,xPct,yPct){
+  var c=document.getElementById(side==='A'?'floatA':'floatB');if(!c)return;
+  var el=document.createElement('div');
+  el.style.cssText='position:absolute;left:'+xPct+'%;top:'+yPct+'%;font-size:'+(1.1+Math.random()*.6)+'rem;opacity:1;transition:transform 2s ease-out,opacity 1.8s ease-out;pointer-events:none;z-index:315';
+  el.textContent=emoji;c.appendChild(el);
+  setTimeout(function(){el.style.transform='translateX('+(60+Math.random()*80)+'px) translateY(-'+(20+Math.random()*30)+'px)';el.style.opacity='0';},30);
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2200);
+}
+/* Comment scrolls bottom to top */
+function spawnComment(side,text){
+  var c=document.getElementById(side==='A'?'floatA':'floatB');if(!c)return;
+  var el=document.createElement('div');var lp=5+Math.random()*55;
+  el.style.cssText='position:absolute;bottom:70px;left:'+lp+'%;background:rgba(2,4,14,0.78);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:4px 10px;font-size:.62rem;color:#fff;opacity:0;transition:transform 3s linear,opacity 0.4s;pointer-events:none;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:315';
+  el.textContent=text;c.appendChild(el);
+  setTimeout(function(){el.style.opacity='1';el.style.transform='translateY(-150px)';},30);
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3400);
+}
+/* Vote celebration burst */
+function celebrateVote(side){
+  var em=['!','*','~','+','o','@','#','%'];
+  var emj=['\u2764','\uD83D\uDD25','\u2728','\uD83C\uDF89','\uD83D\uDC4F','\uD83C\uDF1F','\uD83D\uDCAB','\uD83C\uDF08'];
+  for(var i=0;i<9;i++){(function(d,e){setTimeout(function(){spawnFloat(side,e,8+Math.random()*84,15+Math.random()*70);},d);})(i*70,emj[Math.floor(Math.random()*emj.length)]);}
+}
+/* Cast vote — unlimited, per canvas */
+function castVote(side){
+  if(side==='A'){
+    compScoreA++;
+    var sc=document.getElementById('cScoreA');if(sc)sc.textContent='V '+compScoreA;
+    var btn=document.getElementById('compVT');
+    if(btn){btn.textContent='Voted!';btn.style.transform='scale(1.12)';btn.style.background='rgba(124,79,212,0.55)';setTimeout(function(){btn.textContent='Vote More';btn.style.transform='scale(1)';btn.style.background='rgba(124,79,212,0.22)';},1100);}
+  } else {
+    compScoreB++;
+    var sc2=document.getElementById('cScoreB');if(sc2)sc2.textContent='V '+compScoreB;
+    var btn2=document.getElementById('compVB');
+    if(btn2){btn2.textContent='Voted!';btn2.style.transform='scale(1.12)';btn2.style.background='rgba(38,232,176,0.4)';setTimeout(function(){btn2.textContent='Vote More';btn2.style.transform='scale(1)';btn2.style.background='rgba(38,232,176,0.15)';},1100);}
+  }
+  celebrateVote(side);updateCompBar();
+  if(typeof earnPoint==='function')earnPoint('+1',1);
+}
+/* Winner fireworks */
+var _celebParts=[],_celebRaf=null;
+function launchWinnerCelebration(winnerSide){
+  var cv=document.getElementById('celebCanvas');if(!cv)return;
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  var ctx=cv.getContext('2d');
+  var cy=winnerSide==='A'?window.innerHeight*.22:window.innerHeight*.78;
+  var cx=window.innerWidth/2;
+  _celebParts=[];
+  var cols=['#ff4466','#ffaa00','#26e8b0','#c4a0ff','#00aaff','#ff6600','#ffee00','#ff00aa','#fff'];
+  function burst(bx,by,count,spd){for(var i=0;i<count;i++){var a=Math.random()*Math.PI*2,sp=(3+Math.random()*12)*spd;_celebParts.push({x:bx,y:by,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-3,color:cols[Math.floor(Math.random()*cols.length)],r:2+Math.random()*6,life:1,decay:.012+Math.random()*.016,grav:.2});}}
+  burst(cx,cy,220,1);
+  for(var j=0;j<6;j++){(function(jj){setTimeout(function(){burst(window.innerWidth*(0.1+Math.random()*.8),window.innerHeight*(winnerSide==='A'?Math.random()*.5:0.5+Math.random()*.5),60,0.85);},jj*320);})(j);}
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    _celebParts=_celebParts.filter(function(p){return p.life>0;});
+    for(var i=0;i<_celebParts.length;i++){var p=_celebParts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.vx*=.98;p.life-=p.decay;ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,Math.max(.3,p.r*p.life),0,6.283);ctx.fill();ctx.strokeStyle=p.color;ctx.lineWidth=1.2;ctx.globalAlpha=Math.max(0,p.life*.4);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-p.vx*3,p.y-p.vy*2.5);ctx.stroke();}
+    ctx.globalAlpha=1;if(_celebParts.length>0)_celebRaf=requestAnimationFrame(draw);
+  }
+  _celebRaf=requestAnimationFrame(draw);
+}
+/* Start compete */
 function startCompete(){
   if(compActive)return;
-  compActive=true;compScoreA=0;compScoreB=0;compTimeLeft=60;
-  document.getElementById('cScoreA').textContent='↑ 0';
-  document.getElementById('cScoreB').textContent='↓ 0';
-  document.getElementById('cTimer').textContent='60s';
+  compActive=true;compScoreA=0;compScoreB=0;compTimeLeft=COMP_DURATION;
+  var sA=document.getElementById('cScoreA'),sB=document.getElementById('cScoreB'),ti=document.getElementById('cTimer');
+  if(sA){sA.textContent='V 0';sA.style.color='';}if(sB){sB.textContent='V 0';sB.style.color='';}
+  if(ti){ti.textContent='3:00';ti.style.color='#fff';ti.style.fontWeight='800';}
+  var vt=document.getElementById('compVT'),vb=document.getElementById('compVB');
+  if(vt)vt.textContent='Like & Vote';if(vb)vb.textContent='Like & Vote';
+  var bA=document.getElementById('compBarA'),bB=document.getElementById('compBarB');
+  if(bA)bA.style.flex='1';if(bB)bB.style.flex='1';
+  var wo=document.getElementById('compWinner');if(wo)wo.style.display='none';
   document.getElementById('compMode').style.display='flex';
-  document.getElementById('compVT').style.display='flex';
-  document.getElementById('compVB').style.display='flex';
-  document.getElementById('cvA').textContent='↑ Vote Top';
-  document.getElementById('cvB').textContent='↓ Vote Bottom';
-  compDomain1=simDomain;
-  compDomain2=pickOpponentDomain(simDomain); /* guaranteed different, maximally contrast */
-  /* Canvases */
+  compDomain1=simDomain;compDomain2=pickOpponentDomain(simDomain);
   var c1=document.getElementById('compCanvas1'),c2=document.getElementById('compCanvas2');
   c1.width=window.innerWidth;c2.width=window.innerWidth;
   c1.height=Math.floor((window.innerHeight-3)/2);c2.height=Math.floor((window.innerHeight-3)/2);
   compCtx1=c1.getContext('2d');compCtx2=c2.getContext('2d');
-  initCompeteParticles(cP1,compDomain1,c1);
-  initCompeteParticles(cP2,compDomain2,c2);
+  initCompeteParticles(cP1,compDomain1,c1);initCompeteParticles(cP2,compDomain2,c2);
   compTimerInterval=setInterval(function(){
     compTimeLeft--;
-    document.getElementById('cTimer').textContent=compTimeLeft+'s';
+    var m=Math.floor(compTimeLeft/60),s=compTimeLeft%60;
+    var tiEl=document.getElementById('cTimer');
+    if(tiEl){tiEl.textContent=m+':'+(s<10?'0':'')+s;if(compTimeLeft<=30){tiEl.style.color='#ff4444';tiEl.style.fontWeight='900';}}
+    if(compTimeLeft%18===0){var cc=['Amazing!','On fire!','Incredible!','Mind blown!','Love it!','Wow!'];spawnComment(Math.random()>.5?'A':'B',cc[Math.floor(Math.random()*cc.length)]);}
     if(compTimeLeft<=0)endCompete();
   },1000);
   var lastCT=performance.now();
-  (function cl(ts){
-    if(!compActive)return;
-    requestAnimationFrame(cl);
-    var dt=Math.min((ts-lastCT)*simSpeed,40);lastCT=ts;
-    renderCompeteCanvas(compCtx1,c1,cP1,dt);
-    renderCompeteCanvas(compCtx2,c2,cP2,dt);
-  })(performance.now());
+  (function cl(ts){if(!compActive)return;requestAnimationFrame(cl);var dt=Math.min((ts-lastCT)*simSpeed,40);lastCT=ts;renderCompeteCanvas(compCtx1,c1,cP1,dt);renderCompeteCanvas(compCtx2,c2,cP2,dt);})(performance.now());
 }
-function castVote(side){
-  document.getElementById('compVT').style.display='none';
-  document.getElementById('compVB').style.display='none';
-  if(side==='A'){compScoreA++;document.getElementById('cScoreA').textContent='Player A: '+compScoreA;}
-  else{compScoreB++;document.getElementById('cScoreB').textContent='Player B: '+compScoreB;}
-  earnPoint('⚔️ +3 pts',3);
-}
+/* End compete */
 function endCompete(){
   compActive=false;if(compTimerInterval)clearInterval(compTimerInterval);
-  document.getElementById('compMode').style.display='none';
-  showToast('🏆 '+(compScoreA>=compScoreB?'Player A':'Player B')+' wins!');
+  var tie=compScoreA===compScoreB;
+  var wSide=compScoreA>=compScoreB?'A':'B';
+  var wDom=wSide==='A'?compDomain1:compDomain2;
+  var wScore=wSide==='A'?compScoreA:compScoreB,lScore=wSide==='A'?compScoreB:compScoreA;
+  var wLabel=wSide==='A'?'TOP':'BOTTOM';
+  var txt=tie?'TIE!\n'+compScoreA+' each':(wLabel+' WINS!\n'+wDom.toUpperCase()+'\n'+wScore+' vs '+lScore+' votes');
+  var wt=document.getElementById('compWinnerText'),wo=document.getElementById('compWinner');
+  if(wt)wt.innerHTML=txt.replace(/\n/g,'<br>');if(wo)wo.style.display='flex';
+  if(!tie)launchWinnerCelebration(wSide);
+  if(typeof showToast==='function')showToast(tie?'Tie!':(wLabel+' wins!'));
+}
+/* Exit */
+function exitCompete(){
+  compActive=false;if(compTimerInterval)clearInterval(compTimerInterval);
+  if(_celebRaf)cancelAnimationFrame(_celebRaf);_celebParts=[];
+  var cm=document.getElementById('compMode');if(cm)cm.style.display='none';
+  var wo=document.getElementById('compWinner');if(wo)wo.style.display='none';
+  var cv=document.getElementById('celebCanvas');if(cv){var ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);}
+}
+/* Rematch */
+function rematch(){
+  if(_celebRaf)cancelAnimationFrame(_celebRaf);_celebParts=[];
+  var cv=document.getElementById('celebCanvas');if(cv){var ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);}
+  compActive=false;if(compTimerInterval)clearInterval(compTimerInterval);
+  startCompete();
 }
 
 /* ── GESTURE SYSTEM — clean velocity discriminator ── */

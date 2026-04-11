@@ -1238,6 +1238,12 @@ function render(dt){
 
     var fx=pX[i],fy=pY[i];
     var sz=Math.max(0.4,pSz[i]*(0.35+easeOut(t)*.8));
+    /* Edge vignette — fade particles near boundary so no hard edge visible */
+    var _aw=W()-72,_ah=H()-46-185;
+    var _ex=fx/(_aw*0.12), _ey=(fy-46)/(_ah*0.12);
+    var _er=((_aw-fx))/(_aw*0.12), _eb=((H()-185-fy))/(_ah*0.12);
+    var edgeFade=clamp(_ex,0,1)*clamp(_ey,0,1)*clamp(_er,0,1)*clamp(_eb,0,1);
+    alpha*=edgeFade;
 
     var cr=(pR[i]>>3)<<3,cg=(pG[i]>>3)<<3,cb=(pB[i]>>3)<<3;
     var col='rgba('+cr+','+cg+','+cb+','+alpha.toFixed(2)+')';

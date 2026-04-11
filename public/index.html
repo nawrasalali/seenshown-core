@@ -518,6 +518,170 @@ var pX,pY,pTX,pTY,pBX,pBY,pR,pG,pB,pSz,pDelay,pLife;
 /* ── TOUCH INTERACTION ── */
 var touchActive=false;
 var GT={sx:0,sy:0,mx:0,my:0,st:0,moved:false};
+
+/* ── FORMATION GENERATOR — AI-driven custom simulations ── */
+var _simFormation='radial';
+var _simPalette='cosmic';
+var _simIntensity=0.7;
+
+function paletteColor(palette, t, i){
+  /* t=0..1 position in formation, i=particle index */
+  var r,g,b;
+  switch(palette){
+    case 'hot':
+      r=255;g=Math.round(40+t*215);b=Math.round(t*60);break;
+    case 'cool':
+      r=Math.round(40+t*100);g=Math.round(80+t*120);b=255;break;
+    case 'life':
+      r=Math.round(20+t*100);g=Math.round(200+t*55);b=Math.round(40+t*80);break;
+    case 'neural':
+      r=Math.round(30+t*100);g=Math.round(200+t*55);b=255;break;
+    case 'warm':
+      r=255;g=Math.round(160+t*95);b=Math.round(20+t*80);break;
+    case 'dark':
+      r=Math.round(10+t*60);g=Math.round(10+t*40);b=Math.round(40+t*100);break;
+    default: /* cosmic */
+      r=Math.round(80+t*175);g=Math.round(30+t*140);b=255;break;
+  }
+  return {rr:clamp(r,0,255),gg:clamp(g,0,255),bb:clamp(b,0,255)};
+}
+
+function buildFormation(formation, palette, intensity, n){
+  var out=[];
+  var cx=(W()-72)/2;
+  var cy=78+(H()-78-185)/2;
+  var maxR=Math.min((W()-72)*0.44,(H()-78-185)*0.44)*intensity;
+  var i, t, a, d, c, px, py;
+
+  switch(formation){
+    case 'radial':
+      for(i=0;i<n;i++){
+        a=Math.random()*Math.PI*2;
+        d=Math.pow(Math.random(),0.5)*maxR;
+        t=d/maxR;
+        c=paletteColor(palette,t,i);
+        out.push({tx:clamp(cx+Math.cos(a)*d,0,W()-72),ty:clamp(cy+Math.sin(a)*d,46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.3+Math.random()*2*(1-t*0.7)});
+      }
+      break;
+    case 'spiral':
+      for(i=0;i<n;i++){
+        t=i/n;
+        a=t*Math.PI*8;
+        d=t*maxR;
+        var jitter=(Math.random()-0.5)*maxR*0.08;
+        c=paletteColor(palette,t,i);
+        out.push({tx:clamp(cx+Math.cos(a)*(d+jitter),0,W()-72),ty:clamp(cy+Math.sin(a)*(d+jitter)*0.7,46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.3+t*1.8});
+      }
+      break;
+    case 'network':
+      var numNodes=Math.round(6+intensity*8);
+      var nodes=[];
+      for(var k=0;k<numNodes;k++){
+        var na=Math.random()*Math.PI*2;
+        var nd=maxR*0.2+Math.random()*maxR*0.7;
+        nodes.push({x:cx+Math.cos(na)*nd,y:cy+Math.sin(na)*nd*0.75});
+      }
+      for(i=0;i<n;i++){
+        var node=nodes[Math.floor(Math.random()*nodes.length)];
+        t=Math.random();
+        c=paletteColor(palette,t,i);
+        out.push({tx:clamp(node.x+rnd(-maxR*0.12,maxR*0.12),0,W()-72),ty:clamp(node.y+rnd(-maxR*0.1,maxR*0.1),46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.3+Math.random()*1.5});
+      }
+      break;
+    case 'wave':
+      for(i=0;i<n;i++){
+        t=Math.random();
+        var wx=cx-maxR+t*maxR*2;
+        var numWaves=2+Math.round(intensity*3);
+        var wy=cy+Math.sin(t*Math.PI*2*numWaves)*maxR*0.35*(1-Math.pow(Math.abs(t-0.5)*2,2));
+        c=paletteColor(palette,Math.abs(Math.sin(t*Math.PI*numWaves)),i);
+        out.push({tx:clamp(wx,0,W()-72),ty:clamp(wy+rnd(-8,8),46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.4+Math.random()*1.2});
+      }
+      break;
+    case 'tree':
+      for(i=0;i<n;i++){
+        t=Math.pow(Math.random(),0.6);
+        var branches=Math.round(2+intensity*4);
+        var branch=Math.floor(Math.random()*branches);
+        var bAngle=(-0.6+branch/(branches-1)*1.2)*Math.PI*0.5;
+        var bLen=t*maxR*1.1;
+        var bSpread=(1-t)*maxR*0.3;
+        c=paletteColor(palette,t,i);
+        out.push({tx:clamp(cx+Math.sin(bAngle)*bLen+rnd(-bSpread,bSpread),0,W()-72),ty:clamp(cy+maxR*0.4-t*maxR*1.1+rnd(-bSpread*0.3,bSpread*0.3),46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.3+(1-t)*1.5});
+      }
+      break;
+    case 'split':
+      var groups=Math.round(2+intensity*2);
+      for(i=0;i<n;i++){
+        var g=Math.floor(Math.random()*groups);
+        var ga=(g/groups)*Math.PI*2-Math.PI/2;
+        var gd=maxR*0.55+Math.random()*maxR*0.25;
+        t=g/(groups-1||1);
+        c=paletteColor(palette,t,i);
+        out.push({tx:clamp(cx+Math.cos(ga)*gd+rnd(-maxR*0.12,maxR*0.12),0,W()-72),ty:clamp(cy+Math.sin(ga)*gd*0.7+rnd(-maxR*0.1,maxR*0.1),46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.4+Math.random()*1.3});
+      }
+      break;
+    case 'collapse':
+      for(i=0;i<n;i++){
+        t=Math.pow(Math.random(),2);
+        a=Math.random()*Math.PI*2;
+        d=t*maxR;
+        c=paletteColor(palette,1-t,i);
+        out.push({tx:clamp(cx+Math.cos(a)*d,0,W()-72),ty:clamp(cy+Math.sin(a)*d*0.6,46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.2+(1-t)*2.5});
+      }
+      break;
+    case 'scatter':
+      for(i=0;i<n;i++){
+        t=Math.random();
+        c=paletteColor(palette,t,i);
+        out.push({tx:clamp(cx+rnd(-maxR,maxR),0,W()-72),ty:clamp(cy+rnd(-maxR*0.8,maxR*0.8),46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.2+Math.random()*1.2});
+      }
+      break;
+    case 'layers':
+      var numLayers=Math.round(3+intensity*4);
+      for(i=0;i<n;i++){
+        var layer=Math.floor(Math.random()*numLayers);
+        t=layer/(numLayers-1);
+        var ly=cy-maxR*0.7+t*maxR*1.4;
+        var lx=cx+rnd(-maxR*(0.6+t*0.3),maxR*(0.6+t*0.3));
+        c=paletteColor(palette,t,i);
+        out.push({tx:clamp(lx,0,W()-72),ty:clamp(ly+rnd(-maxR*0.05,maxR*0.05),46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.3+Math.random()*1.1});
+      }
+      break;
+    case 'pulse':
+    default:
+      var numRings=Math.round(3+intensity*4);
+      for(i=0;i<n;i++){
+        var ring=Math.floor(Math.random()*numRings);
+        t=ring/(numRings-1);
+        a=Math.random()*Math.PI*2;
+        d=t*maxR+(Math.random()-0.5)*maxR*0.06;
+        c=paletteColor(palette,t,i);
+        out.push({tx:clamp(cx+Math.cos(a)*d,0,W()-72),ty:clamp(cy+Math.sin(a)*d*0.75,46,H()-185),rr:c.rr,gg:c.gg,bb:c.bb,r:0.3+Math.random()*(1.5-t)});
+      }
+      break;
+  }
+  return out;
+}
+
+function applyFormation(formation, palette, intensity){
+  _simFormation=formation;
+  _simPalette=palette;
+  _simIntensity=intensity;
+  var spec=buildFormation(formation,palette,intensity,N);
+  for(var i=0;i<N;i++){
+    var s=spec[i%spec.length];
+    pTX[i]=s.tx;pTY[i]=s.ty;
+    pR[i]=s.rr;pG[i]=s.gg;pB[i]=s.bb;
+    pSz[i]=s.r||1;
+    pDelay[i]=Math.random()*600;
+    pBX[i]=(pX[i]>0||pY[i]>0)?pX[i]:(W()-72)/2;
+    pBY[i]=(pX[i]>0||pY[i]>0)?pY[i]:78+(H()-78-185)/2;
+    pLife[i]=1;
+  }
+  formT=0;
+}
+
 var _bbGrowth=0;
 var _bbState=0;
 var _bbT=0;
@@ -1490,7 +1654,7 @@ var autoPlayOn=true;
 
 function updateNarr(domain,phase){
   _phaseMs=0;
-  var narrs=NARR[domain];if(!narrs)return;
+  var narrs=NARR[domain]||NARR['_question'];if(!narrs)return;
   var ph=narrs[phase]||narrs[0];
   if(document.getElementById('narrPhaseLabel'))document.getElementById('narrPhaseLabel').textContent=ph[0];
   var pct=((phase+1)/narrs.length*100).toFixed(0);
@@ -1703,22 +1867,28 @@ async function askQuestion(){
     /* Store AI narration */
     NARR[aiKey]=clean;
 
-    /* Switch domain and show simulation */
-    simDomain=aiKey;simPhase=0;domIdx=DOMAIN_ORDER.indexOf(aiKey);
+    /* Apply AI-generated formation — no domain needed */
+    _bbPaused=false;
+    _bbState=0;_bbT=0;_bbGrowth=0;hideBBWord();
     if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
-    _phaseMs=0;_bbPaused=false;
+    _phaseMs=0;
 
-    /* Reset BB state if switching away from bigbang */
-    if(aiKey!=='bigbang'){_bbState=0;_bbT=0;_bbGrowth=0;hideBBWord();}
+    var formation=data.formation||'radial';
+    var palette=data.palette||'cosmic';
+    var intensity=data.intensity||0.7;
 
-    initPhase(aiKey,0,true);
+    /* Store narration */
+    var aiKey='_question';
+    NARR[aiKey]=clean;
+    simDomain=aiKey;
+
+    /* Apply the formation geometry */
+    applyFormation(formation, palette, intensity);
     updateNarr(aiKey,0);
     buildTicker(NARR[aiKey]);
 
-    /* Update pill */
+    /* Hide domain pills — not relevant for question mode */
     document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
-    var ap=document.querySelector('.dpill[data-key="'+aiKey+'"]');
-    if(ap){ap.classList.add('active');ap.style.background=DC[aiKey]||'#26e8b0';ap.style.color='#02040e';ap.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
 
     showToast('✨ Answer ready');
     if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}

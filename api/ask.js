@@ -1,4 +1,5 @@
-/* /api/ask — SeenShown AI: question → visual simulation answer */
+/* /api/ask — SeenShown: question → custom simulation
+   AI generates the actual visual geometry, not just text */
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -12,59 +13,66 @@ module.exports = async function handler(req, res) {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return res.status(500).json({ error: 'No API key' });
 
-    const prompt = `You are the intelligence behind SeenShown — an app that makes any question come alive as a particle simulation.
+    const prompt = `You are the simulation engine for SeenShown — an app where ANY question becomes a living particle animation that helps humans understand complex concepts visually.
 
 The user asked: "${question}"
 
-Your job: answer this question in 5 steps that a human can WATCH and FEEL, not just read.
+Your task has TWO parts:
 
-Each step must:
-1. Directly answer part of "${question}"
-2. Have a SHORT vivid title (max 5 words)
-3. Have 2 sentences of explanation — specific, real numbers, real names, real mechanisms
+PART 1 — NARRATION
+Write 5 steps that directly answer "${question}". Each step should reveal something specific, surprising, and true. Think like a documentary narrator — vivid, concrete, scientifically accurate. Each step has a title and 2 sentences.
 
-Also choose the best VISUAL DOMAIN from this list based on what the answer LOOKS like in motion:
-- bigbang: explosion, expansion, origin, creation, cosmic scale
-- heartbreak: separation, drift apart, scatter, loss
-- love: attraction, orbiting, coming together, bonding  
-- neuron: networks, signals, branching, firing, thought
-- immune: attack and defend, invasion, protection
-- grief: slow collapse, weight, falling inward
-- anger: chaotic eruption, fast random motion
-- joy: upward burst, celebration, scatter upward
-- bh: spiral inward, singularity, collapse to center
-- fireworks: explosive colour, celebration, radial burst
-- rumour: cascade, viral spread, chain reaction
-- urban: flow, grid, organised movement
-- chem: bonding, molecules, structured formation
-- amr: spread of resistance, population dynamics
+PART 2 — SIMULATION GEOMETRY  
+Design the particle formation that best represents the STRUCTURE of this answer visually. You have a canvas. Particles will animate from the center to your specified positions.
 
-Return ONLY this JSON — no markdown, no explanation:
+Choose ONE of these formation types that best matches the answer's structure:
+- "radial": particles explode outward from center (explosions, origins, spread)
+- "spiral": particles form a spiral/galaxy (cycles, evolution, time)  
+- "network": particles form connected clusters (brain, social, systems)
+- "wave": particles form wave patterns (sound, light, emotion, ripples)
+- "tree": particles branch upward like a tree (growth, hierarchy, evolution)
+- "split": particles divide into 2-3 distinct groups (conflict, comparison, duality)
+- "collapse": particles fall inward to center (gravity, black holes, grief, endings)
+- "scatter": particles spread randomly then drift (chaos, memory, loss)
+- "layers": particles form horizontal layers (geology, atmosphere, depth)
+- "pulse": particles expand and contract rhythmically (heartbeat, breathing, rhythm)
+
+Also choose a COLOR PALETTE that matches the emotional/scientific tone:
+- "hot": reds, oranges, yellows (energy, fire, anger, heat)
+- "cool": blues, purples, whites (space, mind, calm, cold)
+- "life": greens, teals, yellows (biology, growth, nature)
+- "neural": cyan, white, electric blue (brain, technology, data)
+- "cosmic": deep purple, gold, white (universe, philosophy, time)
+- "warm": amber, gold, cream (love, happiness, warmth)
+- "dark": deep blue, near-black, dim white (grief, mystery, depth)
+
+Return ONLY this JSON:
 {
-  "domain": "domain name from list above",
+  "formation": "one formation type from the list",
+  "palette": "one palette from the list",
+  "intensity": 0.7,
   "narration": [
-    ["Step 1 title", "Sentence 1 directly answering ${question}. Sentence 2 with specific detail."],
-    ["Step 2 title", "Sentence 1. Sentence 2."],
-    ["Step 3 title", "Sentence 1. Sentence 2."],
-    ["Step 4 title", "Sentence 1. Sentence 2."],
-    ["Step 5 title", "Sentence 1. Sentence 2."]
+    ["Title 1", "Sentence 1 directly answering ${question}. Sentence 2 specific detail."],
+    ["Title 2", "Sentence 1. Sentence 2."],
+    ["Title 3", "Sentence 1. Sentence 2."],
+    ["Title 4", "Sentence 1. Sentence 2."],
+    ["Title 5", "Sentence 1. Sentence 2 — the most surprising or profound insight."]
   ]
-}`;
+}
+
+intensity is 0.0-1.0: how explosive/dramatic the formation should be (0=gentle, 1=explosive).`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': key },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1200,
+        max_tokens: 1400,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
-    if (!r.ok) {
-      const t = await r.text();
-      return res.status(502).json({ error: 'Claude error', detail: t.slice(0,200) });
-    }
+    if (!r.ok) return res.status(502).json({ error: 'Claude error', status: r.status });
 
     const data = await r.json();
     const raw = (data.content?.[0]?.text || '').trim();
@@ -74,17 +82,20 @@ Return ONLY this JSON — no markdown, no explanation:
     try { parsed = JSON.parse(clean); }
     catch(e) {
       const m = clean.match(/\{[\s\S]*\}/);
-      if (m) try { parsed = JSON.parse(m[0]); } catch(e2) { return res.status(500).json({ error: 'parse failed', raw: clean.slice(0,200) }); }
-      else return res.status(500).json({ error: 'no JSON', raw: clean.slice(0,200) });
+      if (m) try { parsed = JSON.parse(m[0]); } catch(e2) { return res.status(500).json({ error: 'parse failed', raw: clean.slice(0,300) }); }
+      else return res.status(500).json({ error: 'no JSON', raw: clean.slice(0,300) });
     }
 
-    const DOMAINS = ['bigbang','heartbreak','love','neuron','immune','grief','anger','joy','bh','fireworks','rumour','urban','chem','amr'];
-    const domain = DOMAINS.includes(parsed.domain) ? parsed.domain : 'bigbang';
-    const narration = (parsed.narration || []).filter(x => Array.isArray(x) && x[0] && x[1]);
+    const FORMATIONS = ['radial','spiral','network','wave','tree','split','collapse','scatter','layers','pulse'];
+    const PALETTES = ['hot','cool','life','neural','cosmic','warm','dark'];
 
-    if (narration.length < 3) return res.status(500).json({ error: 'too few steps', got: narration.length });
-
-    return res.status(200).json({ domain, narration, question });
+    return res.status(200).json({
+      formation: FORMATIONS.includes(parsed.formation) ? parsed.formation : 'radial',
+      palette: PALETTES.includes(parsed.palette) ? parsed.palette : 'cosmic',
+      intensity: Math.max(0, Math.min(1, parsed.intensity || 0.7)),
+      narration: (parsed.narration || []).filter(x => Array.isArray(x) && x[0] && x[1]),
+      question
+    });
 
   } catch(e) {
     return res.status(500).json({ error: e.message });

@@ -1,48 +1,58 @@
 /* ═══════════════════════════════════════════════
-   SEENSHOWN AUTH + ECONOMY SYSTEM
-   Supabase Auth, simulation limits, points economy
+   SEENSHOWN AUTH — Google, Apple, Magic Link
+   TikTok-style: sign in once, stay signed in forever
+   Supabase Auth + Economy System
 ═══════════════════════════════════════════════ */
 
 var SB='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
 var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
 
-/* ── CURRENT USER STATE ── */
+/* ── USER STATE ── */
 window.SS={
-  user:null,        /* Supabase user object */
-  profile:null,     /* profiles row */
-  session:null,     /* Supabase session */
-  simsCreated:0,    /* total sims created this session/db */
-  weeklySimsUsed:0, /* sims used this week (free users) */
-  points:0,
-  tier:'free',      /* free | scholar | studio | institutional */
-  isSubscriber:false,
-  weeklyResetDate:null
+  user:null,session:null,profile:null,
+  simsCreated:0,weeklySimsUsed:0,
+  points:0,tier:'free',isSubscriber:false,weeklyResetDate:null
 };
 
 var FREE_SIM_LIMIT=5;
 var FREE_WEEKLY_LIMIT=5;
 var FREE_WEEKS=4;
 
-/* ── INIT AUTH ── */
-async function initAuth(){
-  /* Check existing session */
-  try{
-    var r=await sbFetch('/auth/v1/session',{},'GET');
-    if(r&&r.user){
-      SS.user=r.user;SS.session=r;
-      await loadProfile();
-      updateAuthUI();
-    }
-  }catch(e){}
-}
-
+/* ── SUPABASE FETCH HELPER ── */
 async function sbFetch(path,body,method){
   var opts={method:method||'POST',headers:{'apikey':SBK,'Content-Type':'application/json'}};
-  if(SS.session&&SS.session.access_token)opts.headers['Authorization']='Bearer '+SS.session.access_token;
+  if(SS.session&&SS.session.access_token)
+    opts.headers['Authorization']='Bearer '+SS.session.access_token;
   else opts.headers['Authorization']='Bearer '+SBK;
   if(body&&method!=='GET')opts.body=JSON.stringify(body);
   var r=await fetch(SB+path,opts);
   return r.json();
+}
+
+/* ── INIT — check persisted session (TikTok-style: stay logged in) ── */
+async function initAuth(){
+  /* Check localStorage for persisted session */
+  try{
+    var stored=localStorage.getItem('ss_session');
+    if(stored){
+      var s=JSON.parse(stored);
+      if(s&&s.access_token&&s.expires_at&&Date.now()/1000<s.expires_at-60){
+        SS.session=s;SS.user=s.user;
+        updateAuthUI();
+        await loadProfile();
+        return;
+      }
+    }
+    /* Try to refresh */
+    var r=await sbFetch('/auth/v1/token?grant_type=refresh_token',
+      {refresh_token:(JSON.parse(stored||'{}')).refresh_token});
+    if(r&&r.access_token){
+      SS.session=r;SS.user=r.user;
+      localStorage.setItem('ss_session',JSON.stringify(r));
+      updateAuthUI();
+      await loadProfile();
+    }
+  }catch(e){}
 }
 
 async function loadProfile(){
@@ -63,23 +73,19 @@ async function loadProfile(){
   }catch(e){}
 }
 
-/* ── CAN CREATE SIM? ── */
 function canCreateSim(){
   if(SS.isSubscriber)return{ok:true};
-  /* Free tier logic */
   if(SS.simsCreated<FREE_SIM_LIMIT)return{ok:true};
-  /* Check weekly allowance */
-  var weekNum=getWeekNumber();
-  var weeksSinceFirst=SS.weeklyResetDate?Math.floor((Date.now()-new Date(SS.weeklyResetDate).getTime())/(7*86400000)):0;
+  var weeksSinceFirst=SS.weeklyResetDate?
+    Math.floor((Date.now()-new Date(SS.weeklyResetDate).getTime())/(7*86400000)):0;
   if(weeksSinceFirst<FREE_WEEKS&&SS.weeklySimsUsed<FREE_WEEKLY_LIMIT)return{ok:true,weekly:true};
   return{ok:false,reason:weeksSinceFirst>=FREE_WEEKS?'weeks_expired':'limit'};
 }
 function getWeekNumber(){return Math.floor(Date.now()/(7*86400000));}
 
-/* ── INCREMENT SIM COUNT ── */
 async function recordSimCreated(){
   SS.simsCreated++;
-  if(!SS.user)return; /* anonymous — track in localStorage */
+  if(!SS.user)return;
   try{
     var body=SS.isSubscriber
       ?{sims_created:SS.simsCreated}
@@ -97,28 +103,59 @@ function updateAuthUI(){
   var btn=document.getElementById('authNavBtn');
   if(!btn)return;
   if(SS.user){
-    btn.textContent=SS.user.email.split('@')[0].slice(0,10);
-    btn.style.background='rgba(38,232,176,0.12)';
+    var name=SS.user.user_metadata&&SS.user.user_metadata.full_name
+      ?SS.user.user_metadata.full_name.split(' ')[0]
+      :SS.user.email.split('@')[0];
+    btn.textContent=name.slice(0,12);
     btn.style.color='var(--g)';
-    btn.style.borderColor='rgba(38,232,176,0.3)';
+    btn.style.borderColor='rgba(38,232,176,0.4)';
   } else {
     btn.textContent='Sign in';
-    btn.style.background='';
     btn.style.color='';
     btn.style.borderColor='';
   }
 }
 
-/* ── SIGN IN / UP MODAL ── */
+/* ── SHOW AUTH MODAL ── */
 function showAuthModal(reason){
-  var el=document.getElementById('authModal');
-  if(!el)return;
-  document.getElementById('authReason').textContent=reason||'Sign in to save and share your simulations';
-  el.style.display='flex';
-  document.getElementById('authEmail').focus();
+  var modal=document.getElementById('authModal');
+  if(modal){
+    document.getElementById('authReason').textContent=reason||'Join SeenShown';
+    modal.style.display='flex';
+    setTimeout(function(){document.getElementById('authEmail').focus();},100);
+  }
 }
-function hideAuthModal(){document.getElementById('authModal').style.display='none';}
 
+/* ── GOOGLE OAUTH ── */
+async function signInWithGoogle(){
+  var r=await sbFetch('/auth/v1/authorize',null,'GET'+(
+    '?provider=google&redirect_to='+encodeURIComponent(window.location.origin+'/auth-callback.html')
+  ));
+  /* Supabase returns a URL to redirect to */
+  try{
+    var data=await fetch(SB+'/auth/v1/authorize?provider=google&redirect_to='+
+      encodeURIComponent(window.location.origin+'/auth-callback.html'),
+      {method:'GET',headers:{'apikey':SBK}});
+    if(data.url||data.redirectedUrl){
+      window.location.href=data.url||data.redirectedUrl;
+    } else {
+      /* Direct redirect */
+      window.location.href=SB+'/auth/v1/authorize?provider=google&redirect_to='+
+        encodeURIComponent(window.location.origin+'/auth-callback.html');
+    }
+  }catch(e){
+    window.location.href=SB+'/auth/v1/authorize?provider=google&redirect_to='+
+      encodeURIComponent(window.location.origin+'/auth-callback.html');
+  }
+}
+
+/* ── APPLE OAUTH ── */
+function signInWithApple(){
+  window.location.href=SB+'/auth/v1/authorize?provider=apple&redirect_to='+
+    encodeURIComponent(window.location.origin+'/auth-callback.html');
+}
+
+/* ── MAGIC LINK (email) ── */
 async function submitAuth(){
   var email=(document.getElementById('authEmail').value||'').trim();
   if(!email||!email.includes('@')){showAuthMsg('Enter a valid email address','red');return;}
@@ -127,73 +164,69 @@ async function submitAuth(){
   try{
     var r=await sbFetch('/auth/v1/otp',{email:email,create_user:true});
     if(r.error){showAuthMsg(r.error.message||'Error','red');}
-    else{showAuthMsg('✅ Check your email for a sign-in link','green');btn.textContent='Link sent';}
+    else{showAuthMsg('✅ Check your email — tap the link to sign in','green');btn.textContent='Link sent!';}
   }catch(e){showAuthMsg('Could not send — try again','red');}
   btn.disabled=false;
 }
 
 function showAuthMsg(msg,color){
   var el=document.getElementById('authMsg');
-  el.textContent=msg;
-  el.style.color=color==='red'?'var(--red)':'var(--g)';
+  if(el){el.textContent=msg;el.style.color=color==='red'?'var(--red)':'var(--g)';}
 }
 
 /* ── SIGN OUT ── */
 async function signOut(){
-  try{await sbFetch('/auth/v1/logout',{},'POST');}catch(e){}
-  SS.user=null;SS.session=null;SS.profile=null;SS.isSubscriber=false;
+  localStorage.removeItem('ss_session');
+  try{await sbFetch('/auth/v1/logout',{});}catch(e){}
+  SS.user=null;SS.session=null;SS.profile=null;
   updateAuthUI();
-  showToastGlobal('Signed out');
+  if(typeof showToast==='function')showToast('Signed out');
 }
 
-/* ── POINTS: DEDUCT FOR VOTE ── */
-async function deductVotePoint(){
-  if(!SS.isSubscriber)return false;
-  if(SS.points<1){showToastGlobal('Not enough points — buy more to vote');return false;}
-  SS.points--;
-  updatePointsDisplay();
-  if(SS.user){
-    fetch(SB+'/rest/v1/profiles?user_id=eq.'+SS.user.id,{
+/* ── PROFILE MENU ── */
+function showProfileMenu(){
+  var name=SS.user.user_metadata&&SS.user.user_metadata.full_name
+    ?SS.user.user_metadata.full_name
+    :SS.user.email;
+  if(typeof showToast==='function'){
+    showToast('👤 '+name+' · '+SS.tier+' · '+SS.points+' pts');
+  }
+}
+
+/* ── HANDLE AUTH CALLBACK (called from auth-callback.html) ── */
+function handleAuthCallback(access_token,refresh_token,user){
+  var session={access_token,refresh_token,user,expires_at:Date.now()/1000+3600};
+  SS.session=session;SS.user=user;
+  localStorage.setItem('ss_session',JSON.stringify(session));
+  updateAuthUI();
+  loadProfile();
+  if(typeof showToast==='function')showToast('Welcome to SeenShown! ✅');
+}
+
+/* ── ECONOMY ── */
+async function addPoints(pts){
+  SS.points+=pts;
+  var el=document.getElementById('pointsCount');
+  if(el)el.textContent=SS.points+' pts';
+  if(!SS.user)return;
+  try{
+    await fetch(SB+'/rest/v1/profiles?user_id=eq.'+SS.user.id,{
       method:'PATCH',
       headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,'Content-Type':'application/json'},
       body:JSON.stringify({points:SS.points})
-    }).catch(function(){});
-  }
-  return true;
+    });
+  }catch(e){}
 }
 
-/* ── POINTS: CREDIT WINNER ── */
-async function creditWinnerPoints(simId,amount){
-  /* 20% of votes go to winner — credited by server via Edge Function */
-  fetch(SB+'/functions/v1/credit-winner',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SBK},
-    body:JSON.stringify({sim_id:simId,points:amount})
-  }).catch(function(){});
-}
-
-function updatePointsDisplay(){
-  var el=document.getElementById('pointsCount');
-  if(el)el.textContent=SS.points+' pts';
-  var ep=document.getElementById('earnPts');
-  if(ep)ep.textContent=SS.points+' pts = $'+(SS.points*.10).toFixed(2);
-}
-
-function showToastGlobal(msg){
-  var t=document.getElementById('ptToast');
-  if(!t)return;
-  t.textContent=msg;t.style.opacity='1';
-  setTimeout(function(){t.style.opacity='0';},2800);
-}
-
-/* EXPORT */
+/* ── EXPOSE ── */
 window.SS_AUTH={
   init:initAuth,
-  canCreate:canCreateSim,
-  recordCreated:recordSimCreated,
-  deductVote:deductVotePoint,
   showAuth:showAuthModal,
-  hideAuth:hideAuthModal,
   signOut:signOut,
-  updateUI:updateAuthUI
+  showProfile:showProfileMenu,
+  recordCreated:recordSimCreated,
+  addPoints:addPoints,
+  signInWithGoogle:signInWithGoogle,
+  signInWithApple:signInWithApple,
+  submitAuth:submitAuth
 };

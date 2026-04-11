@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="SeenShown">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
-#installBtn{position:fixed;bottom:190px;left:14px;display:none;align-items:center;gap:7px;background:rgba(38,232,176,0.15);border:1.5px solid rgba(38,232,176,0.6);border-radius:22px;padding:8px 16px;font-size:.76rem;font-weight:700;color:var(--g);cursor:pointer;z-index:260;backdrop-filter:blur(16px);transition:all .2s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5),0 0 30px rgba(38,232,176,.15)}
+#installBtn{position:fixed;bottom:16px;right:0;width:72px;display:none;flex-direction:column;align-items:center;gap:2px;cursor:pointer;z-index:260;padding:8px 6px;transition:all .2s}
 #installBtn:hover{background:rgba(38,232,176,0.22);transform:scale(1.03)}
 #installBtn.show{display:flex}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -63,7 +63,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 
 /* PHASE FLASH */
-#phaseFlash{position:fixed;top:58px;left:50%;transform:translateX(-50%);font-size:clamp(.9rem,3vw,1.5rem);font-weight:900;color:#fff;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;z-index:190;text-shadow:0 2px 24px rgba(38,232,176,0.7),0 0 40px rgba(38,232,176,0.4);letter-spacing:.06em;max-width:90vw;padding:5px 16px;background:rgba(2,4,14,0.6);border-radius:20px;backdrop-filter:blur(8px);border:1px solid rgba(38,232,176,0.25)}
+#phaseFlash{position:fixed;top:52px;left:14px;font-size:clamp(.75rem,2.5vw,1.1rem);font-weight:800;color:#fff;text-align:left;pointer-events:none;opacity:0;transition:opacity .35s;z-index:190;text-shadow:0 1px 12px rgba(38,232,176,0.8);letter-spacing:.04em;max-width:60vw;line-height:1.25}
 #phaseFlash.show{opacity:1}
 
 /* TOAST */
@@ -137,7 +137,8 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <!-- PWA INSTALL BUTTON — appears when browser fires beforeinstallprompt -->
 <div id="installBtn" onclick="installPWA()">
-  <span>📲</span><span>Install App</span>
+  <div style="width:56px;height:56px;border-radius:50%;background:rgba(38,232,176,0.15);border:1.5px solid rgba(38,232,176,0.5);display:flex;align-items:center;justify-content:center;font-size:1.5rem">📲</div>
+  <div style="font-size:.52rem;color:rgba(38,232,176,.8);font-weight:700;margin-top:2px">Install</div>
 </div>
 
 <nav id="nav">
@@ -158,15 +159,42 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <!-- AUTH MODAL -->
 <div class="ss-modal" id="authModal">
-  <div class="ss-modal-box" style="position:relative">
+  <div class="ss-modal-box" style="position:relative;max-width:380px">
     <button class="ss-modal-close" onclick="hideAuthModal()">✕</button>
-    <div class="ss-modal-title">Sign in to SeenShown</div>
-    <div class="ss-modal-sub" id="authReason">Save and share your simulations</div>
-    <input class="ss-input" id="authEmail" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')submitAuth()">
-    <button class="ss-btn primary" id="authSubmitBtn" onclick="submitAuth()">Send magic link →</button>
-    <div id="authMsg" style="font-size:.72rem;margin-top:.3rem;min-height:1em"></div>
+    <div style="font-size:1.5rem;text-align:center;margin-bottom:.5rem">🌌</div>
+    <div class="ss-modal-title" style="text-align:center">Join SeenShown</div>
+    <div class="ss-modal-sub" style="text-align:center" id="authReason">Watch any question come alive</div>
+
+    <!-- GOOGLE -->
+    <button onclick="window.SS_AUTH.signInWithGoogle()"
+      style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:.6rem;transition:background .2s"
+      onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+
+    <!-- APPLE -->
+    <button onclick="window.SS_AUTH.signInWithApple()"
+      style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:background .2s"
+      onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
+      Continue with Apple
+    </button>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.1)"></div>
+      <span style="font-size:.7rem;color:var(--dim)">or email</span>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.1)"></div>
+    </div>
+
+    <input class="ss-input" id="authEmail" type="email" placeholder="your@email.com"
+      onkeydown="if(event.key==='Enter')window.SS_AUTH.submitAuth()">
+    <button class="ss-btn primary" id="authSubmitBtn" onclick="window.SS_AUTH.submitAuth()">
+      Send magic link →
+    </button>
+    <div id="authMsg" style="font-size:.72rem;margin-top:.3rem;min-height:1em;text-align:center"></div>
     <div class="ss-divider"></div>
-    <div style="font-size:.72rem;color:var(--dim);text-align:center">No password needed · Free forever · No spam</div>
+    <div style="font-size:.68rem;color:var(--dim);text-align:center">Sign in once · stay signed in · like TikTok</div>
   </div>
 </div>
 
@@ -338,8 +366,8 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <textarea id="mainQ" placeholder="Ask anything…" maxlength="300" rows="2"
       style="flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:14px;padding:11px 46px 11px 14px;color:var(--w);font-size:.94rem;outline:none;caret-color:var(--g);resize:none;min-height:54px;max-height:100px;font-family:inherit;line-height:1.45;transition:border-color .2s;width:100%"
       oninput="autoResizeMQ(this)"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion()}"></textarea>
-    <button id="submitIcon" onclick="askQuestion()"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askQuestion()}" oninput="autoResizeMQ(this)"></textarea>
+    <button id="submitIcon" onclick="askQuestion()" type="button"
       style="position:absolute;right:20px;bottom:18px;width:32px;height:32px;background:var(--g);border-radius:50%;border:none;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1">⚡</button>
   </div>
 </div>
@@ -349,6 +377,8 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="compMode">
   <div id="compHUD"><span id="cScoreA" style="color:#c4a0ff">Player A: 0</span><span id="cTimer">⏱ 60s</span><span id="cScoreB" style="color:var(--g)">Player B: 0</span></div>
+  <div id="compFlashA" style="position:absolute;top:54px;left:14px;font-size:.8rem;font-weight:800;color:#fff;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:0 1px 10px rgba(124,79,212,.9);z-index:176;max-width:45vw;line-height:1.2"></div>
+  <div id="compFlashB" style="position:absolute;bottom:calc(50% + 60px);left:14px;font-size:.8rem;font-weight:800;color:#fff;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:0 1px 10px rgba(38,232,176,.9);z-index:176;max-width:45vw;line-height:1.2"></div>
   <button id="compClose" onclick="endCompete()">✕ Exit</button>
   <canvas id="compCanvas1"></canvas>
   <div id="compDiv"></div>
@@ -796,8 +826,9 @@ function shapeUniverseHorn(n,ox,oy,size){
 
     /* Size: larger at present end, tiny at Big Bang end */
     var sz2=.2+t*1.8;
-    out.push({tx:clamp(hx,ox-hornLen*.52,ox+hornLen*.52),
-              ty:clamp(hy,oy-maxR*1.05,oy+maxR*1.05),
+    /* Hard clamp to canvas bounds with margin */
+    out.push({tx:clamp(hx,8,W()-80),
+              ty:clamp(hy,52,H()-190),
               rr:clamp(rr,0,255),gg:clamp(gg,0,255),bb:clamp(bb,0,255),r:sz2});
   }
   return out;
@@ -908,7 +939,12 @@ function getSpec(domain,phase,n){
       if(phase===0) return shapePoint(n,x,y,255,255,255);
       if(phase===1){
         var outF=[];
-        for(var i=0;i<n;i++){var a=rnd(0,Math.PI*2),d=Math.random()*sw;outF.push({tx:x+Math.cos(a)*d,ty:y+Math.sin(a)*d,rr:255,gg:255,bb:255,r:.3+Math.random()*2.5});}
+        for(var i=0;i<n;i++){
+          var a=rnd(0,Math.PI*2),d=Math.random()*Math.min(sw*.92,sh*.88);
+          var px=clamp(x+Math.cos(a)*d,8,W()-82);
+          var py=clamp(y+Math.sin(a)*d,52,H()-192);
+          outF.push({tx:px,ty:py,rr:255,gg:255,bb:255,r:.3+Math.random()*2.5});
+        }
         return outF;
       }
       if(phase===2) return shapeExplosion(n,x,y,2,sw*.92,255,80,10,true);
@@ -1314,21 +1350,38 @@ var NARR={
 
 /* ── QUESTION ROUTING ── */
 var QMAP=[
-  {re:/firework|fire.*work|new year|celebrate|celebration|diwali|pyrotech/i,key:'fireworks'},
-  {re:/heartbreak|breakup|break.*up|she left|he left|left me|miss.*them|end.*relation/i,key:'heartbreak'},
-  {re:/love|falling.*love|romance|attraction|soulmate|chemistry.*person/i,key:'love'},
-  {re:/grief|griev|mourn|loss.*person|someone.*died|bereavement|miss.*person/i,key:'grief'},
-  {re:/anger|angry|rage|furious|frustrat|hate/i,key:'anger'},
-  {re:/joy|happy|happiness|euphoria|delight/i,key:'joy'},
-  {re:/neuron|brain|action potential|synap|nerve|myelin|thought|cognit/i,key:'neuron'},
-  {re:/cancer|tumor|t.cell|immune|immunolog|lymph|perforin/i,key:'immune'},
-  {re:/antibiotic|bacteria|amr|resist.*drug|superbug/i,key:'amr'},
-  {re:/black hole|event horizon|singularity|hawking|accretion|schwarzschild/i,key:'bh'},
-  {re:/big bang|bigbang|universe.*begin|origin.*universe|cosmic.*microwave/i,key:'bigbang'},
-  {re:/universe.*scale|multiverse|how big|milky way|observable universe|galaxy.*scale/i,key:'universe'},
-  {re:/rumour|rumor|gossip|fake news|viral.*spread|misinform/i,key:'rumour'},
-  {re:/traffic|gridlock|congest|urban.*flow|transport/i,key:'urban'},
-  {re:/chem|react|molecule|atom|bond|enzyme|catalyst|acid|equilibrium/i,key:'chem'},
+  /* FIREWORKS */
+  {re:/firework|fire.*work|new year|celebrat|diwali|pyrotech|explode.*sky|colour.*sky/i,key:'fireworks'},
+  /* HEARTBREAK */
+  {re:/heartbreak|heart.*break|break.*up|broke.*up|she left|he left|left me|end.*relation|divorce|separation|miss.*them/i,key:'heartbreak'},
+  /* LOVE */
+  {re:/\blove\b|fall.*love|romance|romantic|attract|soulmate|infatuat|crush|partner|relationship.*start/i,key:'love'},
+  /* GRIEF */
+  {re:/grief|griev|mourn|bereavement|loss.*person|someone.*died|death.*loved|cope.*loss|widow/i,key:'grief'},
+  /* ANGER */
+  {re:/anger|angry|rage|furious|frustrat|\bhate\b|aggress|hostil|temper|violence/i,key:'anger'},
+  /* JOY */
+  {re:/\bjoy\b|happy|happiness|euphoria|delight|pleasure|content|wellbeing|smile|laughter/i,key:'joy'},
+  /* NEURON / BRAIN / MIND */
+  {re:/neuron|brain|synap|nerve|myelin|cognit|memory|thought|mind|conscious|sleep|dream|alzheimer|mental|psycholog|learn.*brain/i,key:'neuron'},
+  /* IMMUNE / BACTERIA / VIRUS / DISEASE */
+  {re:/immune|cancer|tumor|virus|infection|bacteria|covid|flu|vaccine|pathogen|disease|illness|cell.*attack|body.*fight|white.*blood/i,key:'immune'},
+  /* AMR / ANTIBIOTIC */
+  {re:/antibiotic|amr|superbug|resist.*drug|bacteria.*resist|penicillin|drug.*resist/i,key:'amr'},
+  /* BLACK HOLE */
+  {re:/black hole|event horizon|hawking|accretion|neutron.*star|supernova|wormhole|spacetime.*curve/i,key:'bh'},
+  /* BIG BANG / UNIVERSE ORIGIN / LIFE ORIGIN */
+  {re:/big bang|bigbang|origin.*universe|universe.*begin|universe.*start|universe.*create|cosmic.*microwave|planck|how.*universe|where.*universe|what.*before.*universe/i,key:'bigbang'},
+  {re:/life.*begin|life.*start|life.*origin|origin.*life|how.*life.*earth|how.*earth.*life|first.*life|abiogenesis|evolution.*start|primordial|how.*did.*life/i,key:'bigbang'},
+  {re:/how.*everything.*begin|how.*exist|why.*here|meaning.*life|where.*come.*from|what.*created|how.*world.*made/i,key:'bigbang'},
+  /* RUMOUR / SOCIAL SPREAD */
+  {re:/rumou?r|gossip|fake.*news|viral.*spread|misinform|disinfo|how.*spread.*internet|social.*media.*spread/i,key:'rumour'},
+  /* URBAN / TRAFFIC */
+  {re:/traffic|gridlock|congest|urban.*flow|transport|city.*flow|road|jam/i,key:'urban'},
+  /* CHEMISTRY / PHYSICS */
+  {re:/chem|react|molecule|atom|bond|enzyme|catalyst|acid|equilibrium|physics|quantum|wave|particle.*physics/i,key:'chem'},
+  /* ASTRONOMY */
+  {re:/star|galaxy|planet|solar.*system|milky.*way|cosmos|space|asteroid|comet|orbit|telescope/i,key:'bigbang'},
 ];
 function smartRoute(q){for(var i=0;i<QMAP.length;i++)if(QMAP[i].re.test(q))return QMAP[i].key;return DOMAIN_ORDER[Math.floor(Math.random()*DOMAIN_ORDER.length)];}
 
@@ -1590,23 +1643,16 @@ async function askQuestion(){
         if(clean.length>=3){NARR[key]=clean;buildTicker(NARR[key]);}
       }
     }).catch(function(){
-      /* Edge fn failed — try Anthropic API directly */
-      fetch('https://api.anthropic.com/v1/messages',{
+      /* Edge fn failed — call our Vercel API proxy */
+      fetch('/api/ask',{
         method:'POST',
-        headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':''},
-        body:JSON.stringify({
-          model:'claude-haiku-4-5-20251001',max_tokens:1200,
-          system:'You are a scientific explainer. Answer the user question in exactly 5 steps. Return ONLY a JSON array: [["Step 1: Title","detailed explanation..."],["Step 2: Title","..."],...]  No other text.',
-          messages:[{role:'user',content:'Question: '+q+' Domain: '+key}]
-        })
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({question:q,domain:key})
       }).then(function(r){return r.json();}).then(function(d){
-        if(d.content&&d.content[0]&&d.content[0].text){
-          try{
-            var parsed=JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
-            if(Array.isArray(parsed)&&parsed.length>=3){NARR[key]=parsed;buildTicker(NARR[key]);}
-          }catch(e){}
+        if(d.narration&&Array.isArray(d.narration)&&d.narration.length>=3){
+          NARR[key]=d.narration;buildTicker(NARR[key]);
         }
-      }).catch(function(){/* keep template narration — it is still scientific */});
+      }).catch(function(){/* keep template — already showing */});
     });
   })();
 
@@ -1630,6 +1676,7 @@ async function saveSimulation(q,domain){
       body:JSON.stringify({title:q,domain:domain,is_public:true,likes:0})
     });
     var d=await r.json();if(d&&d[0])currentSimId=d[0].id;
+    loadCommentCount(); /* update comment count for this sim */
   }catch(e){}
 }
 
@@ -1721,24 +1768,44 @@ function loadComments(){
     list.innerHTML='<div style="color:var(--dim);font-size:.78rem;padding:.5rem;text-align:center">Could not load comments</div>';
   });
 }
+var _commentCount=0;
 async function submitComment(){
   var input=document.getElementById('commentInput');
   var text=(input&&input.value||'').trim();
-  if(!text)return;
-  if(!currentSimId){showToast('Create a simulation first');return;}
+  if(!text){showToast('Type a comment first');return;}
+  /* Allow guest comments without a sim */
   var userName=window.SS&&window.SS.user?window.SS.user.email.split('@')[0]:'Guest';
+  var simId=currentSimId||'general';
   try{
-    await fetch(SB+'/rest/v1/simulation_comments',{
+    var payload={text:text,user_name:userName,created_at:new Date().toISOString()};
+    if(currentSimId)payload.sim_id=currentSimId;
+    var r=await fetch(SB+'/rest/v1/simulation_comments',{
       method:'POST',
       headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({sim_id:currentSimId,text:text,user_name:userName,created_at:new Date().toISOString()})
+      body:JSON.stringify(payload)
     });
+    if(!r.ok){var err=await r.text();throw new Error(err);}
     if(input)input.value='';
+    _commentCount++;
+    updateCommentCount(_commentCount);
     loadComments();
-    /* Update count */
-    var cc=document.getElementById('commentCount');
-    if(cc){var cur=parseInt(cc.textContent)||0;cc.textContent=cur+1;}
-  }catch(e){showToast('Error posting comment');}
+    showToast('💬 Comment posted!');
+  }catch(e){
+    console.error('Comment error:',e);
+    showToast('Could not post — check connection');
+  }
+}
+function updateCommentCount(n){
+  var cc=document.getElementById('commentCount');
+  if(cc)cc.textContent=n>0?n:'💬';
+}
+function loadCommentCount(){
+  if(!currentSimId)return;
+  fetch(SB+'/rest/v1/simulation_comments?sim_id=eq.'+currentSimId+'&select=id',{
+    headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}
+  }).then(function(r){return r.json();}).then(function(d){
+    if(Array.isArray(d)){_commentCount=d.length;updateCommentCount(_commentCount);}
+  }).catch(function(){});
 }
 function earnPoint(msg,pts){userPoints+=(pts||1);document.getElementById('pointsCount').textContent=userPoints+' pts';showToast(msg);}
 function showToast(msg){var t=document.getElementById('ptToast');t.textContent=msg;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},2400);}
@@ -2228,7 +2295,7 @@ function showAuthModal(reason){
   else{document.getElementById('authModal').style.display='flex';document.getElementById('authReason').textContent=reason||'';}
 }
 function hideAuthModal(){document.getElementById('authModal').style.display='none';}
-function submitAuth(){if(window.SS_AUTH)window.SS_AUTH.init&&SS_AUTH.submitAuth?SS_AUTH.submitAuth():submitAuthDirect();}
+function submitAuth(){if(window.SS_AUTH&&window.SS_AUTH.submitAuth)window.SS_AUTH.submitAuth();else submitAuthDirect();}
 async function submitAuthDirect(){
   var email=(document.getElementById('authEmail').value||'').trim();
   if(!email||!email.includes('@')){document.getElementById('authMsg').textContent='Enter a valid email';document.getElementById('authMsg').style.color='var(--red)';return;}
@@ -2376,7 +2443,7 @@ if(urlDomain&&DOMAIN_ORDER.includes(urlDomain))simDomain=urlDomain;
 var liveParam=urlP.get('live');
 
 /* ── INIT AUTH ON LOAD ── */
-if(window.SS_AUTH){window.SS_AUTH.init();}
+if(window.SS_AUTH){window.SS_AUTH.init().then(function(){updateAuthUI&&updateAuthUI();}).catch(function(){});}
 if(liveParam){setTimeout(function(){if(window.LIVE_API)LIVE_API.join(liveParam,simDomain);},1200);}
 
 /* ── QUESTION BAR ── */

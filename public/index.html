@@ -174,13 +174,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
       Continue with Google
     </button>
 
-    <!-- APPLE -->
-    <button onclick="if(window.SS_AUTH)window.SS_AUTH.signInWithApple();else{window.location.href='https://jnvdpmmxlbkxwanqqhfw.supabase.co/auth/v1/authorize?provider=apple&redirect_to='+encodeURIComponent(window.location.origin+'/auth-callback.html')}"
-      style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:background .2s"
-      onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
-      Continue with Apple
-    </button>
+    <!-- Apple sign-in hidden -->
 
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
       <div style="flex:1;height:1px;background:rgba(255,255,255,0.1)"></div>
@@ -637,13 +631,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
       Continue with Google
     </button>
 
-    <!-- APPLE -->
-    <button onclick="if(window.SS_AUTH)window.SS_AUTH.signInWithApple();else{window.location.href='https://jnvdpmmxlbkxwanqqhfw.supabase.co/auth/v1/authorize?provider=apple&redirect_to='+encodeURIComponent(window.location.origin+'/auth-callback.html')}"
-      style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem;transition:background .2s"
-      onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
-      Continue with Apple
-    </button>
+    <!-- Apple sign-in hidden -->
 
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
       <div style="flex:1;height:1px;background:rgba(255,255,255,0.1)"></div>
@@ -1699,12 +1687,27 @@ function render(dt){
 }
 
 /* ── MAIN LOOP ── */
+var _phaseMs=0; /* accumulated ms in current phase — backup advance */
 function loop(ts){
   requestAnimationFrame(loop);
   if(paused)return;
   var dt=Math.min((ts-lastTs)*simSpeed,50);
   lastTs=ts;
   render(dt);
+  /* Backup phase advance — fires if phaseAutoTimer was never set (e.g. boot crash) */
+  if(!compActive&&autoPlayOn){
+    _phaseMs+=dt;
+    var dur=(simDomain==='bigbang'?5200:6700);
+    if(_phaseMs>=dur){
+      _phaseMs=0;
+      if(!phaseAutoTimer){
+        snapshot();
+        simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);
+        initPhase(simDomain,simPhase,false);
+        updateNarr(simDomain,simPhase);
+      }
+    }
+  }
 }
 
 /* ── NARRATION ── */
@@ -1882,6 +1885,7 @@ function streamWords(text,onWord){
 var autoPlayOn=true;
 
 function updateNarr(domain,phase){
+  _phaseMs=0; /* reset backup timer on phase change */
   var narrs=NARR[domain];if(!narrs)return;
   var ph=narrs[phase]||narrs[0];
   if(document.getElementById('narrPhaseLabel'))document.getElementById('narrPhaseLabel').textContent=ph[0];

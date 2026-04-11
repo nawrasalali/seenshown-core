@@ -79,9 +79,15 @@ async function submitAuth() {
       headers: { 'apikey': SBK, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, create_user: true })
     });
+    if (!r.ok && r.status !== 200) {
+      var errText = await r.text();
+      showAuthMsg('Error ' + r.status + ': ' + errText.slice(0,80), 'red');
+      if (btn) { btn.textContent = 'Send link'; btn.disabled = false; }
+      return;
+    }
     var d = await r.json();
-    if (d.error) { showAuthMsg(d.error.message || 'Error', 'red'); }
-    else { showAuthMsg('Check your email for the sign-in link', 'green'); if(btn) btn.textContent = 'Link sent!'; }
+    if (d.error) { showAuthMsg(d.error.message || 'Server error — check Supabase SMTP settings', 'red'); }
+    else { showAuthMsg('Sign-in link sent! Check your inbox (and spam folder)', 'green'); if(btn) btn.textContent = 'Sent!'; }
   } catch(e) { showAuthMsg('Could not send — check connection', 'red'); }
   if (btn) btn.disabled = false;
 }

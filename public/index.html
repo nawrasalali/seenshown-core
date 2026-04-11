@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="SeenShown">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
-#installBtn{position:fixed;bottom:8px;right:4px;width:66px;display:none;flex-direction:column;align-items:center;gap:3px;cursor:pointer;z-index:270;padding:6px 4px;transition:opacity .3s}
+#installBtn{position:fixed;bottom:8px;right:4px;width:66px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;z-index:270;padding:6px 4px;transition:opacity .3s}
 #installBtn:hover{background:rgba(38,232,176,0.22);transform:scale(1.03)}
 #installBtn.show{display:flex}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -848,6 +848,7 @@ function shapeUniverseHorn(n,ox,oy,size){
 
 /* ── COSMIC WEB — large-scale structure of the universe ── */
 function shapeCosmicWeb(n,ox,oy,size){
+  var _xMin=10,_xMax=W()-82,_yMin=52,_yMax=H()-192;
   /* Filaments connecting galaxy cluster nodes — the actual structure of the universe */
   var out=[];
   /* Define cluster nodes */
@@ -2499,14 +2500,13 @@ window.addEventListener('appinstalled',function(){
 });
 /* iOS install hint + general install prompt */
 (function(){
-  /* Show install button unless already installed as PWA */
+  /* Hide install button only if already running as installed PWA */
   var isStandalone=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone===true;
-  if(!isStandalone){
-    var installBtn=document.getElementById('installBtn');
-    if(installBtn)installBtn.style.display='flex';
+  if(isStandalone){
+    var btn=document.getElementById('installBtn');
+    if(btn)btn.style.display='none';
   }
 })();
-
 /* ── SW REGISTRATION ── */
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/sw.js').catch(function(){});

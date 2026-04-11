@@ -836,57 +836,46 @@ function shapeBacteria(n,ox,oy,r,count){
 
 /* ── UNIVERSE HORN — NASA timeline shape (narrow past, wide present) ── */
 function shapeUniverseHorn(n,ox,oy,sz,gf){
-  /* Horn tip fixed at bottom-center, mouth expands upward as gf 0→1 */
+  /* Horn: tip at ox,oy (bottom center), expands UPWARD
+     gf=1 fills full available height above the tip */
   var out=[];
   var tipX=ox;
-  var tipY=H()-185-8;           /* fixed tip at bottom of sim area */
-  var availH=H()-78-185;        /* total available height */
-  var hornH=availH*gf;          /* current horn height */
-  var maxHalfW=(W()-72)*0.46*gf;/* mouth half-width */
+  var tipY=oy; /* use exactly what is passed — fixed point */
+  var topY=78; /* nav bar bottom */
+  var availH=tipY-topY; /* total space above tip */
+  var hornH=availH*gf;
+  var maxHalfW=(W()-72)*0.47;
 
   for(var i=0;i<n;i++){
-    /* t=0 at tip (bottom), t=1 at mouth (top) */
-    var t=Math.pow(Math.random(),0.45); /* bias toward tip for density */
+    /* t=0 at tip, t=1 at mouth (top of horn) */
+    var t=Math.pow(Math.random(),0.42);
     var py=tipY - t*hornH;
-    /* Half-width grows with t — horn shape */
-    var hw=maxHalfW*Math.pow(t,0.65);
-    /* Edge bias for shell look */
+    /* Horn width at this height — narrows to point at tip */
+    var hw=maxHalfW*Math.pow(t,0.6);
     var px;
-    if(Math.random()>0.55){
-      px=tipX+(Math.random()>0.5?1:-1)*hw*(0.9+Math.random()*0.1);
+    if(Math.random()>0.5){
+      /* Shell edge — most particles on the outer edge */
+      px=tipX+(Math.random()>0.5?1:-1)*hw*(0.85+Math.random()*0.15);
     } else {
-      px=tipX+(Math.random()*2-1)*hw*(Math.random());
+      px=tipX+(Math.random()*2-1)*hw*Math.pow(Math.random(),0.5);
     }
-    /* Colour: hot white at tip (singularity), spreading to blue-white at mouth */
+    /* Colour by position: hot bright at tip → orange → blue-white at top */
     var rr,gg,bb,sz2;
-    if(t<0.04){
-      /* Singularity tip — bright white core */
-      rr=255;gg=255;bb=255;sz2=2.5+Math.random()*2;
-    } else if(t<0.15){
-      /* Early inflation — hot orange */
-      rr=255;gg=Math.round(140+t*600);bb=Math.round(30+t*200);sz2=1.2+Math.random()*1.5;
-    } else if(t<0.4){
-      /* Quark plasma — orange fading */
-      rr=255;gg=Math.round(100+t*350);bb=Math.round(20+t*100);sz2=0.6+Math.random()*1.2;
-    } else if(t<0.65){
-      /* First stars — blue-white */
-      rr=Math.round(120+t*135);gg=Math.round(150+t*105);bb=255;sz2=0.4+Math.random()*0.9;
-    } else {
-      /* Galaxy era — cool blue-white, sparse */
-      rr=Math.round(170+t*85);gg=Math.round(185+t*70);bb=Math.round(215+t*40);sz2=0.2+Math.random()*0.6;
-    }
+    if(t<0.05){rr=255;gg=255;bb=255;sz2=3+Math.random()*2;}
+    else if(t<0.18){rr=255;gg=Math.round(160+t*400);bb=Math.round(40+t*150);sz2=1.5+Math.random()*1.5;}
+    else if(t<0.42){rr=255;gg=Math.round(120+t*300);bb=Math.round(30+t*80);sz2=0.7+Math.random()*1.0;}
+    else if(t<0.68){rr=Math.round(130+t*125);gg=Math.round(155+t*100);bb=255;sz2=0.5+Math.random()*0.8;}
+    else{rr=Math.round(175+t*80);gg=Math.round(188+t*67);bb=Math.round(220+t*35);sz2=0.3+Math.random()*0.5;}
     out.push({
-      tx:clamp(px,0,W()-72),
-      ty:clamp(py,46,H()-185),
+      tx:clamp(px,1,W()-73),
+      ty:clamp(py,topY+2,tipY),
       rr:clamp(rr,0,255),gg:clamp(gg,0,255),bb:clamp(bb,0,255),
-      r:Math.max(0.15,sz2*(0.4+gf*0.6))
+      r:Math.max(0.2,sz2)
     });
   }
   return out;
 }
 
-/* ── COSMIC WEB
-/* ── COSMIC WEB
 /* ── COSMIC WEB — large-scale structure of the universe ── */
 function shapeCosmicWeb(n,ox,oy,size){
   var _xMin=0,_xMax=W()-72,_yMin=46,_yMax=H()-185;

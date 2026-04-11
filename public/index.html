@@ -1263,13 +1263,13 @@ function render(dt){
     var sz=Math.max(0.4,pSz[i]*(0.35+easeOut(t)*.8));
     /* Edge vignette — fade particles near all 4 boundaries */
     var _aw=W()-72,_ah=H()-46-185;
-    var _fade=0.18; /* 18% fade zone each edge */
+    var _fade=0.25; /* 18% fade zone each edge */
     var _ex=fx/(_aw*_fade);
     var _ey=(fy-78)/(_ah*_fade);
     var _er=(_aw-fx)/(_aw*_fade);
     var _eb=(H()-185-fy)/(_ah*_fade);
     var edgeFade=clamp(_ex,0,1)*clamp(_ey,0,1)*clamp(_er,0,1)*clamp(_eb,0,1);
-    edgeFade=edgeFade*edgeFade; /* square for softer falloff */
+    edgeFade=edgeFade*edgeFade*edgeFade;
     alpha*=edgeFade;
 
     var cr=(pR[i]>>3)<<3,cg=(pG[i]>>3)<<3,cb=(pB[i]>>3)<<3;
@@ -1683,7 +1683,8 @@ async function askQuestion(){
 
   /* Ask AI — returns best domain AND answer for this specific question */
   try{
-    var res=await fetch('/api/ask',{
+    var apiUrl=(window.location.hostname==='seenshown.com'||window.location.hostname==='seenshown.ai')?'https://www.'+window.location.hostname+'/api/ask':'/api/ask';
+    var res=await fetch(apiUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question:q})

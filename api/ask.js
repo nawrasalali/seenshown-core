@@ -1,4 +1,5 @@
-/* /api/ask — Anthropic proxy for SeenShown question answering */
+/* /api/ask — SeenShown AI answering
+   Returns narration steps + best visual domain for the question */
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -7,35 +8,41 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   try {
-    const { question, domain } = req.body || {};
+    const { question } = req.body || {};
     if (!question) return res.status(400).json({ error: 'question required' });
 
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
 
-    const prompt = `You are a scientific storyteller for SeenShown, a particle visualisation app.
+    const DOMAINS = ['fireworks','bigbang','heartbreak','love','grief','anger','joy','neuron','immune','amr','bh','rumour','urban','chem'];
+
+    const prompt = `You are the narrator of SeenShown — a living particle universe that visualises any question as a beautiful scientific story.
 
 The user asked: "${question}"
 
-Answer THIS SPECIFIC QUESTION in exactly 5 steps that tell the story of the answer.
-Each step should directly address the question — not describe a generic scientific process.
+Your job:
+1. Choose the best visual domain from this list that VISUALLY matches the answer's energy and shape:
+   fireworks (explosive colour), bigbang (expansion from nothing), heartbreak (scatter and drift), love (orbit and attraction), grief (slow collapse), anger (chaotic eruption), joy (upward burst), neuron (network spreading), immune (attack and defence), amr (resistance spread), bh (spiral inward), rumour (viral cascade), urban (flow and grid), chem (molecular bond)
 
-Return ONLY a valid JSON array. No markdown, no preamble, no explanation outside the JSON.
+2. Write 5 story steps that DIRECTLY answer "${question}" — not generic domain science.
 
-Format:
-[
-  ["Step 1: [Short title directly about the question]", "2-3 sentences directly answering part of the question with real science, specific numbers, names, mechanisms."],
-  ["Step 2: [Short title]", "2-3 sentences continuing the story of the answer."],
-  ["Step 3: [Short title]", "2-3 sentences."],
-  ["Step 4: [Short title]", "2-3 sentences."],
-  ["Step 5: [Short title]", "2-3 sentences completing the answer with a surprising or profound insight."]
-]
+Return ONLY this JSON, nothing else:
+{
+  "domain": "one of the domain names above",
+  "narration": [
+    ["Step 1: Title", "2-3 sentences directly answering part of the question. Real science, real numbers, real names."],
+    ["Step 2: Title", "2-3 sentences."],
+    ["Step 3: Title", "2-3 sentences."],
+    ["Step 4: Title", "2-3 sentences."],
+    ["Step 5: Title", "2-3 sentences with a profound or surprising insight about the question."]
+  ]
+}
 
 Rules:
-- Every step must directly answer "${question}" — not be a generic science lesson
-- Use real numbers, real names, real mechanisms
-- Write like you are narrating a documentary, not a textbook
-- No phrases like "the simulation shows" or "in this visualisation"`;
+- domain must be from the list above, exactly as written
+- Every narration step must directly answer "${question}"
+- Write like a documentary narrator — vivid, specific, surprising
+- Never say "the simulation shows" or "the particles represent"`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -62,26 +69,28 @@ Rules:
 
     const clean = raw.replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,'').trim();
 
-    let narration;
+    let parsed;
     try {
-      narration = JSON.parse(clean);
+      parsed = JSON.parse(clean);
     } catch(e) {
-      const m = clean.match(/\[[\s\S]*\]/);
+      const m = clean.match(/\{[\s\S]*\}/);
       if (m) {
-        try { narration = JSON.parse(m[0]); }
+        try { parsed = JSON.parse(m[0]); }
         catch(e2) { return res.status(500).json({ error: 'JSON parse failed', raw: clean.slice(0,300) }); }
       } else {
-        return res.status(500).json({ error: 'No JSON array found', raw: clean.slice(0,300) });
+        return res.status(500).json({ error: 'No JSON found', raw: clean.slice(0,300) });
       }
     }
 
-    if (!Array.isArray(narration)) return res.status(500).json({ error: 'Not an array' });
-
-    narration = narration.filter(item => Array.isArray(item) && item.length >= 2 && item[0] && item[1]);
+    // Validate domain
+    const domain = DOMAINS.includes(parsed.domain) ? parsed.domain : 'bigbang';
+    const narration = (parsed.narration || []).filter(item =>
+      Array.isArray(item) && item.length >= 2 && item[0] && item[1]
+    );
 
     if (narration.length < 3) return res.status(500).json({ error: 'Too few steps', got: narration.length });
 
-    return res.status(200).json({ narration, domain, question });
+    return res.status(200).json({ domain, narration, question });
 
   } catch(e) {
     return res.status(500).json({ error: e.message });

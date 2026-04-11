@@ -1651,81 +1651,71 @@ async function askQuestion(){
   if(!q)return;
 
   /* Show question in bar immediately */
-  if(typeof showQuestionBar==='function')showQuestionBar(q);
+  showQuestionBar(q);
 
-  /* Visual feedback on button */
+  /* Visual feedback */
   var icon=document.getElementById('submitIcon');
   if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='...';}
-
-  /* Route to best domain based on question */
-  var key=smartRoute(q);
-  simDomain=key;simPhase=0;
-  domIdx=DOMAIN_ORDER.indexOf(key);
-
-  /* Update active pill */
-  if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
-  document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
-  var pill=document.querySelector('.dpill[data-key="'+key+'"]');
-
-  /* Start formation IMMEDIATELY — no waiting */
-  initPhase(key,0,true);
-
-  /* Show ticker with template narration while AI loads */
-  buildTicker(NARR[key]);
-
-  /* Start phase auto-advance */
-  updateNarr(key,0);
-  closePhasesPanel();
-
-  /* Restore button immediately — don't block on AI */
-  if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
 
   /* Clear input */
   var mainQ=document.getElementById('mainQ');
   if(mainQ){mainQ.value='';autoResizeMQ(mainQ);}
 
-  /* Track */
+  /* Use bigbang as visual default while AI loads */
+  var key='bigbang';
+  simDomain=key;simPhase=0;domIdx=DOMAIN_ORDER.indexOf(key);
+  if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
+  initPhase(key,0,true);
+  buildTicker(NARR[key]);
+  updateNarr(key,0);
+  closePhasesPanel();
+
+  if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
+
   currentLikes=0;
   var lc=document.getElementById('likeCount');
   if(lc)lc.textContent='0';
-  saveSimulation(q,key);
 
-  /* Activate save/post rail icons after 3s */
   setTimeout(function(){
-    var rs=document.getElementById('railSave');
-    var rp=document.getElementById('railPost');
-    if(rs)rs.style.opacity='1';
-    if(rp)rp.style.opacity='1';
+    var rs=document.getElementById('railSave'),rp=document.getElementById('railPost');
+    if(rs)rs.style.opacity='1';if(rp)rp.style.opacity='1';
   },3000);
 
-  /* Fetch AI answer — call /api/ask directly (Vercel serverless, has Anthropic key) */
+  /* Ask AI — returns best domain AND answer for this specific question */
   try{
     var res=await fetch('/api/ask',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question:q,domain:key})
+      body:JSON.stringify({question:q})
     });
     if(!res.ok)throw new Error('HTTP '+res.status);
     var data=await res.json();
     if(data.narration&&Array.isArray(data.narration)&&data.narration.length>=3){
-      var clean=data.narration.filter(function(p){
-        return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>15;
-      });
-      while(clean.length<5&&clean.length>0)clean.push(clean[clean.length-1]);
-      if(clean.length>=3){
-        NARR[key]=clean;
-        /* Restart narration from phase 0 with AI content */
-        simPhase=0;
-        if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
-        _phaseMs=0;
-        updateNarr(key,0);
-        buildTicker(NARR[key]);
-        showToast('✨ AI answer ready');
+      /* Switch to AI-chosen domain for best visual match */
+      var aiKey=data.domain||key;
+      if(aiKey!==simDomain){
+        simDomain=aiKey;domIdx=DOMAIN_ORDER.indexOf(aiKey);
+        initPhase(aiKey,0,true);
+        /* Update pill */
+        document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
+        var ap=document.querySelector('.dpill[data-key="'+aiKey+'"]');
+        if(ap){ap.classList.add('active');ap.style.background=DC[aiKey]||'#26e8b0';ap.style.color='#02040e';ap.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
       }
+      /* Load AI narration */
+      var clean=data.narration.filter(function(p){return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>10;});
+      while(clean.length<5&&clean.length>0)clean.push(clean[clean.length-1]);
+      NARR[aiKey]=clean;
+      simPhase=0;_phaseMs=0;
+      if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
+      updateNarr(aiKey,0);
+      buildTicker(NARR[aiKey]);
+      showToast('✨ Answer ready');
+      saveSimulation(q,aiKey);
     }
   }catch(e){
-    console.warn('AI fetch failed:',e.message);
-    showToast('AI: '+e.message.slice(0,40));
+    console.warn('AI failed:',e.message);
+    showToast('⚡ '+e.message.slice(0,50));
+    saveSimulation(q,key);
   }
 }
 

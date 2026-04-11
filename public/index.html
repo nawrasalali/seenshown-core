@@ -2203,7 +2203,7 @@ function buildTicker(narrs,loading){
   tickerIsPaused=false;
   void track.offsetWidth;
   /* 1.5s pause so user can read first word, then smooth infinite scroll */
-  var _scrollDur=dur;
+  var _scrollDur=Math.max(120,narrs&&narrs.length?narrs.length*35:120)+"s";
   setTimeout(function(){
     var t2=document.getElementById('tickerTrack');
     if(t2&&!tickerIsPaused){

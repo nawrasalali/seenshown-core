@@ -1714,8 +1714,13 @@ async function askQuestion(){
       while(clean.length<5&&clean.length>0)clean.push(clean[clean.length-1]);
       if(clean.length>=3){
         NARR[key]=clean;
+        /* Restart narration from phase 0 with AI content */
+        simPhase=0;
+        if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
+        _phaseMs=0;
+        updateNarr(key,0);
         buildTicker(NARR[key]);
-        showToast('Answer ready');
+        showToast('✨ AI answer ready');
       }
     }
   }catch(e){

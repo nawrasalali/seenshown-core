@@ -991,15 +991,22 @@ function getSpec(domain,phase,n){
     /* BIG BANG — 12 phases, all white flash on 1, continuous morphing */
     case 'bigbang':{
       var tipX=(W()-72)/2;
-      var tipY=H()-185-12;
-      /* State 0,6: pure black — particles hidden below canvas */
-      if(_bbState===0||_bbState===6){
-        var outN=[];for(var i=0;i<n;i++)outN.push({tx:tipX,ty:H()-185+200,rr:0,gg:0,bb:0,r:0.01});
+      var tipY=H()-185-28; /* just above question bar */
+      /* States 0,7: pure black */
+      if(_bbState===0||_bbState===7){
+        var outN=[];for(var i=0;i<n;i++)outN.push({tx:tipX,ty:H()+200,rr:0,gg:0,bb:0,r:0.01});
         return outN;
       }
-      /* State 1,5: single luminous dot at tip */
-      if(_bbState===1||_bbState===5) return shapePoint(n,tipX,tipY,255,252,240);
-      /* States 2,3,4: expanding/collapsing horn — tip FIXED at bottom */
+      /* States 1,2,6: single dot at tip */
+      if(_bbState===1||_bbState===2||_bbState===6){
+        var outD=[];
+        for(var i=0;i<n;i++){
+          var isCore=i<n*0.15;
+          outD.push({tx:tipX+rnd(isCore?-1:-3,isCore?1:3),ty:tipY+rnd(isCore?-1:-3,isCore?1:3),rr:255,gg:252,bb:220,r:isCore?2.5:0.8});
+        }
+        return outD;
+      }
+      /* States 3,4,5: horn — tip STAYS at tipX,tipY always */
       return shapeUniverseHorn(n,tipX,tipY,sz,_bbGrowth);
     }
 
@@ -1187,7 +1194,7 @@ function qcos(x){return NOISE_TBL[(Math.abs(Math.round(x*651.9))+1024)%4096];}
 
 function render(dt){
   /* Dim trail */
-  var clearAlpha=(simDomain==='bigbang'&&(_bbState===0||_bbState===6))?0.35:0.15;
+  var clearAlpha=(simDomain==='bigbang'&&(_bbState===0||_bbState===7))?0.5:0.15;
   ctx.fillStyle='rgba(0,0,0,'+clearAlpha+')';
   ctx.fillRect(0,0,W(),H());
 
@@ -1282,50 +1289,59 @@ function loop(ts){
   lastTs=ts;
   render(dt);
   if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=7300;if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
-  /* BigBang state machine
-     0: BLACK NOTHING — 2.5s — words appear
-     1: ONE DOT — 2s — singularity holds
-     2: EXPLOSION — horn snaps full instantly then keeps expanding 14s
-     3: HOLD FULL — 2s — "The shape of the universe"
-     4: COLLAPSE — fast 2s back to dot, tip stays fixed
-     5: DOT REMAINS — 0.5s dot visible
-     6: BLACK END — 1s then replay */
+  /* BigBang state machine — exact sequence:
+     0: DARKNESS 6s — all words visible together
+     1: ONE DOT — appears above question bar, holds 3s
+     2: EXPLOSION TEXT — "Big Bang about to explode" 3s
+     3: EXPAND — horn grows upward 10s, dot stays fixed at bottom
+     4: HOLD FULL — 3s — "Universe to collapse back"
+     5: SPLASH BACK — 1s fast collapse to dot
+     6: DOT VANISH — 0.5s dot then gone
+     7: BLACK — 0.5s then replay */
   if(simDomain==='bigbang'&&!compActive){
     _bbT+=dt;
     if(_bbState===0){
-      if(_bbT<50){_bbGrowth=0;initPhase('bigbang',0,false);}
-      /* Show words sequentially during blackness */
-      if(_bbT===50||_bbT<60) showBBWord(0);
-      if(_bbT>=800&&_bbT<850) showBBWord(1);
-      if(_bbT>=1600&&_bbT<1650) showBBWord(2);
-      if(_bbT>=2500){_bbState=1;_bbT=0;initPhase('bigbang',0,false);}
+      /* DARKNESS — show all words together, hold 6s */
+      if(_bbT<80){_bbGrowth=0;initPhase('bigbang',0,false);showBBWord();}
+      if(_bbT>=6000){
+        hideBBWord();
+        _bbState=1;_bbT=0;
+        initPhase('bigbang',0,false);
+      }
     } else if(_bbState===1){
-      /* Single dot holds 2s */
+      /* ONE DOT — 3s */
       _bbGrowth=0;
-      if(_bbT>=2000){_bbState=2;_bbT=0;_bbGrowth=0.92;initPhase('bigbang',0,false);}
+      if(_bbT>=3000){_bbState=2;_bbT=0;showBBExplosionText();}
     } else if(_bbState===2){
-      /* Tip fixed, horn expands steadily from 0.92→1 over 14s */
-      _bbGrowth=Math.min(1,0.92+(_bbT/14000)*0.08);
-      initPhase('bigbang',0,false);
-      if(_bbT>=14000){_bbState=3;_bbT=0;}
-    } else if(_bbState===3){
-      /* Full screen hold 2s */
-      _bbGrowth=1;
-      if(_bbT>=500&&_bbT<600) showToast('The shape of the universe.');
-      if(_bbT>=2000){_bbState=4;_bbT=0;}
-    } else if(_bbState===4){
-      /* Fast collapse — tip stays fixed, horn shrinks upward 2s */
-      _bbGrowth=Math.max(0,1-(_bbT/2000));
-      initPhase('bigbang',0,false);
-      if(_bbT>=2000){_bbGrowth=0;_bbState=5;_bbT=0;initPhase('bigbang',0,false);}
-    } else if(_bbState===5){
-      /* Dot remains visible 0.5s */
+      /* EXPLOSION TEXT — 3s */
       _bbGrowth=0;
-      if(_bbT>=500){_bbState=6;_bbT=0;}
+      if(_bbT>=3000){
+        hideBBWord();
+        _bbState=3;_bbT=0;
+        _bbGrowth=0;
+        initPhase('bigbang',0,false);
+      }
+    } else if(_bbState===3){
+      /* EXPAND — 10s, tip fixed at bottom */
+      _bbGrowth=Math.min(1,_bbT/10000);
+      initPhase('bigbang',0,false);
+      if(_bbT>=10000){_bbState=4;_bbT=0;showBBCollapseText();}
+    } else if(_bbState===4){
+      /* HOLD FULL — 3s */
+      _bbGrowth=1;
+      if(_bbT>=3000){hideBBWord();_bbState=5;_bbT=0;}
+    } else if(_bbState===5){
+      /* SPLASH BACK — 1s fast collapse */
+      _bbGrowth=Math.max(0,1-(_bbT/1000));
+      initPhase('bigbang',0,false);
+      if(_bbT>=1000){_bbGrowth=0;_bbState=6;_bbT=0;initPhase('bigbang',0,false);}
     } else if(_bbState===6){
-      /* Black 1s then replay */
-      if(_bbT<50) initPhase('bigbang',0,false);
-      if(_bbT>=1000){_bbState=0;_bbT=0;}
+      /* DOT VISIBLE 0.5s then vanish */
+      _bbGrowth=0;
+      if(_bbT>=500){_bbState=7;_bbT=0;initPhase('bigbang',0,false);}
+    } else if(_bbState===7){
+      /* BLACK 0.5s then replay */
+      if(_bbT>=500){_bbState=0;_bbT=0;}
     }
   }
 }
@@ -1891,17 +1907,39 @@ function loadCommentCount(){
   }).catch(function(){});
 }
 function earnPoint(msg,pts){userPoints+=(pts||1);document.getElementById('pointsCount').textContent=userPoints+' pts';showToast(msg);}
-var _bbWords=['Before time. Before space. Before light.', 'Nothing.', 'Not even darkness. The absence of absence.'];
-function showBBWord(idx){
-  var existing=document.getElementById('bbWord');
-  if(existing)existing.remove();
+function showBBWord(){
+  hideBBWord();
   var el=document.createElement('div');
   el.id='bbWord';
-  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:400;color:rgba(255,255,255,0.55);font-size:.95rem;font-weight:300;letter-spacing:.22em;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.8s ease;font-style:italic;text-transform:uppercase;';
-  el.textContent=_bbWords[idx]||'';
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 1.2s ease;';
+  el.innerHTML=
+    '<div style="color:rgba(255,255,255,0.7);font-size:1.1rem;font-weight:200;letter-spacing:.3em;text-transform:uppercase;font-style:italic;margin-bottom:18px">There was nothingness.</div>'+
+    '<div style="color:rgba(255,255,255,0.5);font-size:.85rem;font-weight:200;letter-spacing:.25em;text-transform:uppercase;font-style:italic;margin-bottom:14px">Darkness.</div>'+
+    '<div style="color:rgba(255,255,255,0.4);font-size:.78rem;font-weight:200;letter-spacing:.22em;text-transform:uppercase;font-style:italic;">Subtle energy. Silent intelligence.</div>';
   document.body.appendChild(el);
-  setTimeout(function(){el.style.opacity='1';},30);
-  setTimeout(function(){el.style.opacity='0';setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},900);},1800);
+  setTimeout(function(){el.style.opacity='1';},50);
+}
+function showBBExplosionText(){
+  hideBBWord();
+  var el=document.createElement('div');
+  el.id='bbWord';
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.8s ease;';
+  el.innerHTML='<div style="color:rgba(255,200,80,0.85);font-size:.95rem;font-weight:300;letter-spacing:.28em;text-transform:uppercase;font-style:italic;">The Big Bang is about to explode.</div>';
+  document.body.appendChild(el);
+  setTimeout(function(){el.style.opacity='1';},50);
+}
+function showBBCollapseText(){
+  hideBBWord();
+  var el=document.createElement('div');
+  el.id='bbWord';
+  el.style.cssText='position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:400;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.8s ease;';
+  el.innerHTML='<div style="color:rgba(180,220,255,0.8);font-size:.9rem;font-weight:300;letter-spacing:.25em;text-transform:uppercase;font-style:italic;">The universe will collapse back.</div>';
+  document.body.appendChild(el);
+  setTimeout(function(){el.style.opacity='1';},50);
+}
+function hideBBWord(){
+  var el=document.getElementById('bbWord');
+  if(el){el.style.opacity='0';setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},1300);}
 }
 
 function showToast(msg){var t=document.getElementById('ptToast');t.textContent=msg;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},2400);}

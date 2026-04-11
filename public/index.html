@@ -518,9 +518,10 @@ var pX,pY,pTX,pTY,pBX,pBY,pR,pG,pB,pSz,pDelay,pLife;
 /* ── TOUCH INTERACTION ── */
 var touchActive=false;
 var GT={sx:0,sy:0,mx:0,my:0,st:0,moved:false};
-var _bbGrowth=0; /* BigBang growth factor 0=singularity 1=full horn */
-var _bbState=0;  /* 0=dot 1=expanding 2=hold 3=collapse 4=black */
-var _bbT=0;      /* time in current state ms */
+var _bbGrowth=0;
+var _bbState=0;
+var _bbT=0;
+/* BB States: 0=black-nothing 1=dot-appears 2=explosion+expand 3=hold-full 4=collapse 5=black-end */
 var touchX=cx(),touchY=cy();
 var touchForce=0; /* +1 = attract, -1 = repel */
 var touchStartTime=0;
@@ -834,53 +835,57 @@ function shapeBacteria(n,ox,oy,r,count){
 }
 
 /* ── UNIVERSE HORN — NASA timeline shape (narrow past, wide present) ── */
-function shapeUniverseHorn(n,ox,oy,size,growthFactor){
-  /* Horn grows UPWARD — tip at bottom center, mouth expanding toward top.
-     growthFactor 0=tiny seed, 1=full screen filling horn */
-  var gf=growthFactor===undefined?1:growthFactor;
+function shapeUniverseHorn(n,ox,oy,sz,gf){
+  /* Horn tip fixed at bottom-center, mouth expands upward as gf 0→1 */
   var out=[];
-  /* Tip at bottom of sim area, mouth reaches top */
-  var tipY=H()-185-10;           /* bottom of sim area */
-  var hornH=(H()-78-185)*gf;     /* height grows with factor */
-  var maxHalfW=Math.min((W()-72)*0.48, hornH*0.55)*gf; /* mouth width */
-  var minHalfW=2;                /* tip width */
+  var tipX=ox;
+  var tipY=H()-185-8;           /* fixed tip at bottom of sim area */
+  var availH=H()-78-185;        /* total available height */
+  var hornH=availH*gf;          /* current horn height */
+  var maxHalfW=(W()-72)*0.46*gf;/* mouth half-width */
 
   for(var i=0;i<n;i++){
-    /* t=0 = tip (bottom), t=1 = mouth (top) */
-    var t=Math.pow(Math.random(), 0.6); /* bias toward mouth for density */
-    var py=tipY - t*hornH;       /* y position — goes upward */
-    /* Half-width at this height — horn shape */
-    var hw=minHalfW+(maxHalfW-minHalfW)*Math.pow(t, 0.7);
-    /* x scattered within the horn width at this height */
-    var edgeBias=Math.random()>0.65;
+    /* t=0 at tip (bottom), t=1 at mouth (top) */
+    var t=Math.pow(Math.random(),0.45); /* bias toward tip for density */
+    var py=tipY - t*hornH;
+    /* Half-width grows with t — horn shape */
+    var hw=maxHalfW*Math.pow(t,0.65);
+    /* Edge bias for shell look */
     var px;
-    if(edgeBias){
-      px=ox+(Math.random()>0.5?1:-1)*(hw*(0.88+Math.random()*0.12));
+    if(Math.random()>0.55){
+      px=tipX+(Math.random()>0.5?1:-1)*hw*(0.9+Math.random()*0.1);
     } else {
-      px=ox+(Math.random()*2-1)*hw;
+      px=tipX+(Math.random()*2-1)*hw*(Math.random());
     }
-    /* Colour: hot white-orange at tip, cool blue-white at mouth */
-    var rr,gg,bb;
-    if(t<0.08){
-      rr=255;gg=220;bb=180; /* singularity glow */
-    } else if(t<0.3){
-      rr=255;gg=Math.round(120+t*300);bb=Math.round(40+t*120); /* inflation orange */
-    } else if(t<0.55){
-      rr=Math.round(80+t*140);gg=Math.round(80+t*120);bb=255; /* dark ages/first stars blue */
+    /* Colour: hot white at tip (singularity), spreading to blue-white at mouth */
+    var rr,gg,bb,sz2;
+    if(t<0.04){
+      /* Singularity tip — bright white core */
+      rr=255;gg=255;bb=255;sz2=2.5+Math.random()*2;
+    } else if(t<0.15){
+      /* Early inflation — hot orange */
+      rr=255;gg=Math.round(140+t*600);bb=Math.round(30+t*200);sz2=1.2+Math.random()*1.5;
+    } else if(t<0.4){
+      /* Quark plasma — orange fading */
+      rr=255;gg=Math.round(100+t*350);bb=Math.round(20+t*100);sz2=0.6+Math.random()*1.2;
+    } else if(t<0.65){
+      /* First stars — blue-white */
+      rr=Math.round(120+t*135);gg=Math.round(150+t*105);bb=255;sz2=0.4+Math.random()*0.9;
     } else {
-      rr=Math.round(160+t*95);gg=Math.round(180+t*75);bb=Math.round(220+t*35); /* galaxy era white */
+      /* Galaxy era — cool blue-white, sparse */
+      rr=Math.round(170+t*85);gg=Math.round(185+t*70);bb=Math.round(215+t*40);sz2=0.2+Math.random()*0.6;
     }
-    var sz=0.15+t*1.6*gf;
     out.push({
       tx:clamp(px,0,W()-72),
       ty:clamp(py,46,H()-185),
       rr:clamp(rr,0,255),gg:clamp(gg,0,255),bb:clamp(bb,0,255),
-      r:Math.max(0.15,sz)
+      r:Math.max(0.15,sz2*(0.4+gf*0.6))
     });
   }
   return out;
 }
 
+/* ── COSMIC WEB
 /* ── COSMIC WEB
 /* ── COSMIC WEB — large-scale structure of the universe ── */
 function shapeCosmicWeb(n,ox,oy,size){
@@ -985,9 +990,17 @@ function getSpec(domain,phase,n){
 
     /* BIG BANG — 12 phases, all white flash on 1, continuous morphing */
     case 'bigbang':{
-      /* Single continuous phase — growth driven by _bbGrowth in render loop */
-      if(_bbGrowth<0.015) return shapePoint(n,x,H()-185-20,255,255,255);
-      return shapeUniverseHorn(n,x,y,sz,_bbGrowth);
+      var tipX=(W()-72)/2;
+      var tipY=H()-185-8;
+      /* State 0: nothing — invisible particles below screen */
+      if(_bbState===0){
+        var outN=[];for(var i=0;i<n;i++)outN.push({tx:tipX+rnd(-1,1),ty:H()-185+100,rr:0,gg:0,bb:0,r:0.1});
+        return outN;
+      }
+      /* State 1: single dot at tip */
+      if(_bbState===1) return shapePoint(n,tipX,tipY,255,255,255);
+      /* States 2,3,4: horn at current growth */
+      return shapeUniverseHorn(n,tipX,tipY,sz,_bbGrowth);
     }
 
     /* UNIVERSE — scale from quantum to cosmic */
@@ -1268,42 +1281,40 @@ function loop(ts){
   lastTs=ts;
   render(dt);
   if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=7300;if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
-  /* BigBang continuous driver:
-     STATE 0: dot (instant)
-     STATE 1: INSTANT jump to full horn + keep expanding gently for 12s
-     STATE 2: hold at max 2s (pause)
-     STATE 3: fast collapse to dot 1.5s
-     STATE 4: black 0.8s then replay */
+  /* BigBang state machine */
   if(simDomain==='bigbang'&&!compActive){
     _bbT+=dt;
     if(_bbState===0){
-      /* Singularity — tiny dot, held for 0.4s */
-      _bbGrowth=0;
-      if(_bbT>=400){
-        _bbState=1;_bbT=0;
-        _bbGrowth=0.85; /* INSTANT jump to near-full horn */
+      /* NOTHINGNESS — black, 2.5s, word: "In the beginning there was nothing" */
+      if(_bbT<100) initPhase('bigbang',0,false);
+      if(_bbT>=2500){_bbState=1;_bbT=0;initPhase('bigbang',0,false);showToast('In the beginning — a single point.');}
+    } else if(_bbState===1){
+      /* ONE DOT — 2s, word: singularity */
+      if(_bbT>=2000){
+        _bbState=2;_bbT=0;_bbGrowth=0;
         initPhase('bigbang',0,false);
+        showToast('The universe explodes.');
         updateNarr('bigbang',1);
       }
-    } else if(_bbState===1){
-      /* Horn at full size, gently breathing/expanding for 12s */
-      _bbGrowth=Math.min(1, 0.85+(_bbT/12000)*0.15);
-      initPhase('bigbang',0,false);
-      if(_bbT>=12000){_bbState=2;_bbT=0;}
     } else if(_bbState===2){
-      /* Hold at max — 2s pause, horn static */
-      _bbGrowth=1;
-      if(_bbT>=2000){_bbState=3;_bbT=0;}
-    } else if(_bbState===3){
-      /* Fast collapse — 1.5s */
-      _bbGrowth=Math.max(0,1-_bbT/1500);
+      /* EXPLOSION + EXPANSION — horn grows 0→1 over 14s, tip stays fixed */
+      _bbGrowth=Math.min(1,_bbT/14000);
       initPhase('bigbang',0,false);
-      if(_bbT>=1500){_bbGrowth=0;_bbState=4;_bbT=0;updateNarr('bigbang',0);}
+      if(_bbT>=14000){_bbState=3;_bbT=0;showToast('The shape of the universe.');}
+    } else if(_bbState===3){
+      /* HOLD FULL — 2s, word: "The universe will collapse" */
+      _bbGrowth=1;
+      if(_bbT>=2000){_bbState=4;_bbT=0;showToast('The universe collapses.');updateNarr('bigbang',0);}
     } else if(_bbState===4){
-      /* Black — 0.8s */
-      if(_bbT>=800){_bbState=0;_bbT=0;initPhase('bigbang',0,false);}
+      /* FAST COLLAPSE — horn shrinks 1→0 over 2s */
+      _bbGrowth=Math.max(0,1-_bbT/2000);
+      initPhase('bigbang',0,false);
+      if(_bbT>=2000){_bbGrowth=0;_bbState=5;_bbT=0;initPhase('bigbang',0,false);}
+    } else if(_bbState===5){
+      /* BLACK END — 1s then replay */
+      if(_bbT>=1000){_bbState=0;_bbT=0;initPhase('bigbang',0,false);updateNarr('bigbang',0);}
     }
-  }
+  }}
 }
 
 /* ── NARRATION ── */
@@ -1316,8 +1327,8 @@ var NARR={
     ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
-    ['Planck Epoch · T=0','A single point. All matter, energy, space and time compressed into a quantum singularity smaller than a proton. Temperature: 10 to the power of 32 Kelvin. Duration: 10 to the minus 43 seconds.'],
-    ['The Universe · Expanding','Space itself explodes outward — not matter moving through space, but space multiplying. The horn of the observable universe opens from its quantum tip. 13.8 billion years of expansion, stretching from the hot orange singularity to the cool blue vastness of today.']
+    ['Planck Epoch · T=0','In the beginning, nothing. Then a single point — all matter, energy, space and time compressed into a quantum singularity smaller than a proton. Temperature: 10 to the power of 32 Kelvin.'],
+    ['The Universe Expands','The singularity explodes outward. Not matter moving through space — space itself multiplying. The horn of the observable universe opens from its tip. Each particle is a star, a galaxy, a world. 13.8 billion years of expansion, rendered in light.']
   ],
     universe:[
     ['Step 1: Quantum Vacuum','Before anything: quantum vacuum fluctuations — virtual particle pairs blinking in and out of existence. This is the ground state of physics. Nothing, yet seething with probabilistic energy. The Big Bang is one of these fluctuations that did not annihilate.'],

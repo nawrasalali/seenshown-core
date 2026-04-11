@@ -1650,7 +1650,7 @@ var DOMAIN_QUESTIONS={
 };
 
 function switchDomain(key,pill){
-  if(key==='bigbang'){_bbGrowth=0;_bbState=0;_bbT=0;}
+  if(key==='bigbang'){_bbGrowth=0;_bbState=0;_bbT=0;}else{hideBBWord();}
   simDomain=key;simPhase=0;_phaseMs=0;
   if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
   stopVoice();stopSound();
@@ -1709,7 +1709,7 @@ async function askQuestion(){
     _phaseMs=0;_bbPaused=false;
 
     /* Reset BB state if switching away from bigbang */
-    if(aiKey!=='bigbang'){_bbState=0;_bbT=0;_bbGrowth=0;}
+    if(aiKey!=='bigbang'){_bbState=0;_bbT=0;_bbGrowth=0;hideBBWord();}
 
     initPhase(aiKey,0,true);
     updateNarr(aiKey,0);

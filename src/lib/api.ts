@@ -2,7 +2,7 @@
 // SeenShown API Client
 // ========================================
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://seenshown-api-production.up.railway.app';
+const API_URL = import.meta.env.VITE_API_URL || 'https://jnvdpmmxlbkxwanqqhfw.supabase.co';
 
 // ---- Keep-alive ping every 10 minutes so Railway never sleeps ----
 let pingInterval: ReturnType<typeof setInterval> | null = null;

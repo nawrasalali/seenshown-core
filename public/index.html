@@ -25,7 +25,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 #simCanvas{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;cursor:crosshair;z-index:0}
 
 /* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:46px;background:rgba(2,4,14,0.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.05)}
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:46px;min-height:46px;max-height:46px;background:rgba(2,4,14,0.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.05);overflow:hidden}
 .nav-logo{font-size:1rem;font-weight:800;color:var(--g);text-decoration:none;letter-spacing:-.02em}
 .nav-tabs{display:flex;gap:1px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1;margin:0 6px}.nav-tabs::-webkit-scrollbar{display:none}
 .ntab{padding:4px 9px;border-radius:6px;font-size:.7rem;color:var(--dim);cursor:pointer;border:none;background:transparent;text-decoration:none;display:inline-block;transition:color .18s}
@@ -63,7 +63,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 
 /* PHASE FLASH */
-#phaseFlash{position:fixed;top:120px;left:14px;font-size:clamp(.7rem,2.2vw,1rem);font-weight:800;color:rgba(38,232,176,.95);text-align:left;pointer-events:none;opacity:0;transition:opacity .3s;z-index:95;text-shadow:0 1px 8px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:55vw;line-height:1.2}
+#phaseFlash{position:fixed;top:140px;left:14px;font-size:clamp(.7rem,2.2vw,1rem);font-weight:800;color:rgba(38,232,176,.95);text-align:left;pointer-events:none;opacity:0;transition:opacity .3s;z-index:90;text-shadow:0 1px 8px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:55vw;line-height:1.2}
 #phaseFlash.show{opacity:1}
 
 /* TOAST */
@@ -124,7 +124,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   .rail-icon{width:48px;height:48px;font-size:1.4rem}
   .rail-label{font-size:.52rem}
   #bottomPanel{right:64px}
-  #pills{right:64px}
+  
 }
 @media(max-height:580px){
   #rightRail{gap:8px}
@@ -137,8 +137,8 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <!-- PWA INSTALL BUTTON — appears when browser fires beforeinstallprompt -->
 <div id="installBtn" onclick="installPWA()">
-  <div style="width:56px;height:56px;border-radius:50%;background:rgba(38,232,176,0.15);border:1.5px solid rgba(38,232,176,0.5);display:flex;align-items:center;justify-content:center;font-size:1.5rem">📲</div>
-  <div style="font-size:.52rem;color:rgba(38,232,176,.8);font-weight:700;margin-top:2px">Install</div>
+  <div style="width:52px;height:52px;border-radius:50%;background:rgba(38,232,176,0.2);border:2px solid rgba(38,232,176,0.7);display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 16px rgba(38,232,176,0.3)">📲</div>
+  <div style="font-size:.5rem;color:rgba(38,232,176,.9);font-weight:700;letter-spacing:.05em">INSTALL</div>
 </div>
 
 <nav id="nav">
@@ -1578,11 +1578,6 @@ var DOMAIN_QUESTIONS={
 };
 
 function switchDomain(key,pill){
-  /* Scroll the active pill into view */
-  setTimeout(function(){
-    var ap=document.querySelector&&document.querySelector('.dpill.active');
-    if(ap&&ap.scrollIntoView)ap.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-  },80);
   simDomain=key;simPhase=0;
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
   stopVoice();stopSound();
@@ -1616,11 +1611,8 @@ async function askQuestion(){
 
   /* Update active pill */
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
-  document.querySelectorAll('.dpill').forEach(function(p){
-    p.classList.remove('active');p.style.background='';p.style.color='';
-  });
+  document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
   var pill=document.querySelector('.dpill[data-key="'+key+'"]');
-  if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
 
   /* Start formation IMMEDIATELY — no waiting */
   initPhase(key,0,true);
@@ -2003,15 +1995,7 @@ canvas.addEventListener('touchend',function(e){
   if(ady>55&&ady>adx*1.2){
     var dir=dy<0?1:-1; /* swipe up = dy negative = go forward */
     domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
-    switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));
-    dismissGuideHint('swipe');
-    return;
-  }
-  /* SWIPE LEFT/RIGHT — change phase */
-  if(adx>55&&adx>ady*1.2){
-    if(dx<0)nextPhase();else prevPhase(); /* swipe left = dx neg = next */
-    dismissGuideHint('phase');
-    return;
+    switchDomain(DOMAIN_ORDER[domIdx],null);
   }
   /* TAP — heart burst */
   if(dur<280&&adx<25&&ady<25){
@@ -2037,8 +2021,7 @@ canvas.addEventListener('mouseup',function(e){
   if(!MD)return;MD=false;touchActive=false;touchForce=0;
   var dx=e.clientX-MSX,dy=e.clientY-MSY;
   var adx=Math.abs(dx),ady=Math.abs(dy);
-  if(ady>55&&ady>adx*1.2){var dir=dy<0?1:-1;domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
-  else if(adx>55&&adx>ady*1.2){if(dx<0)nextPhase();else prevPhase();}
+  if(ady>55&&ady>adx*1.2){var dir=dy<0?1:-1;domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],null);}
 });
 canvas.addEventListener('dblclick',function(e){
   touchX=e.clientX;touchY=e.clientY;touchForce=-1;touchActive=true;
@@ -2052,8 +2035,7 @@ document.addEventListener('keydown',function(e){
   if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'))return;
   if(e.key==='ArrowRight')nextPhase();
   if(e.key==='ArrowLeft')prevPhase();
-  if(e.key==='ArrowDown'){e.preventDefault();domIdx=(domIdx+1)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
-  if(e.key==='ArrowUp'){e.preventDefault();domIdx=(domIdx-1+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],document.querySelector('.dpill[data-key="'+DOMAIN_ORDER[domIdx]+'"]'));}
+  if(e.key==='ArrowDown'){e.preventDefault();domIdx=(domIdx+1)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],null);}
   if(e.key===' '){e.preventDefault();togglePause();}
   if(e.key==='s')toggleSound();
 });
@@ -2493,8 +2475,6 @@ window.addEventListener('beforeinstallprompt',function(e){
   var btn=document.getElementById('installBtn');
   if(btn){
     btn.style.display='flex';
-    btn.style.bottom='180px';
-    btn.style.left='14px';
     setTimeout(function(){if(btn.style.display!=='none')btn.style.display='none';},15000);
   }
 });
@@ -2519,11 +2499,12 @@ window.addEventListener('appinstalled',function(){
 });
 /* iOS install hint + general install prompt */
 (function(){
-  /* Show install button immediately unless already running as installed PWA */
+  /* Show install button unless already installed as PWA */
   var isStandalone=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone===true;
-  if(isStandalone)return;
-  var btn=document.getElementById('installBtn');
-  if(btn)btn.style.display='flex';
+  if(!isStandalone){
+    var installBtn=document.getElementById('installBtn');
+    if(installBtn)installBtn.style.display='flex';
+  }
 })();
 
 /* ── SW REGISTRATION ── */

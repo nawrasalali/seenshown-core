@@ -1145,7 +1145,7 @@ function initPhase(domain,phase,fromScratch){
   var dir=DOMAIN_ENERGY[domain]&&DOMAIN_ENERGY[domain].dir||'zero_to_full';
   /* Phase 0 from scratch gets staggered birth, all other phases = CONTINUOUS
      — particles leave from exactly where they are now, no restart */
-  var maxDelay=fromScratch&&phase===0?1800:400; /* very short stagger */
+  var maxDelay=(fromScratch&&phase===0)?(domain==='bigbang'?0:1800):400;
   for(var i=0;i<n;i++){
     var s=spec[i%spec.length];
     pTX[i]=s.tx;pTY[i]=s.ty;
@@ -1210,7 +1210,7 @@ function render(dt){
   /* Physics pass — update positions (no draw) */
   for(var i=0;i<N;i++){
     var delay=pDelay[i];
-    var t=clamp((formT-delay)/FORM_DUR,0,1);
+    var formDurNow=(simDomain==='bigbang'&&simPhase===0)?400:FORM_DUR;var t=clamp((formT-delay)/formDurNow,0,1);
     var te=easeOut(t);
 
     var fx=lerp(pBX[i],pTX[i],te);
@@ -1253,7 +1253,7 @@ function render(dt){
   /* pLife tracks per-particle alpha — decoupled from formT */
   for(var i=0;i<N;i++){
     var delay=pDelay[i];
-    var t=clamp((formT-delay)/FORM_DUR,0,1);
+    var formDurNow=(simDomain==='bigbang'&&simPhase===0)?400:FORM_DUR;var t=clamp((formT-delay)/formDurNow,0,1);
     /* Fade in on first birth, stay fully visible on transitions */
     if(pLife[i]<1){pLife[i]=Math.min(pLife[i]+0.04,1);}
     var alpha=pLife[i]*0.9;

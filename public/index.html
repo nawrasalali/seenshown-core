@@ -315,9 +315,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
 </div>
 
-<!-- QUESTION BAR — standalone fixed, above bottom panel -->
-
-
 <div id="bottomPanel">
   <!-- QUESTION BAR — fixed, shows current question -->
   <div id="questionBar" style="pointer-events:all;padding:7px 14px 7px;background:rgba(8,14,36,0.92);backdrop-filter:blur(18px);border-top:1.5px solid rgba(38,232,176,0.18);display:none">
@@ -2000,11 +1997,12 @@ canvas.addEventListener('touchend',function(e){
   var ady=Math.abs(dy);
   var dur=Date.now()-GT.st;
 
-  /* SWIPE UP/DOWN — change domain */
-  if(ady>55&&ady>adx*1.2){
-    var dir=dy<0?1:-1; /* swipe up = dy negative = go forward */
+  /* SWIPE UP/DOWN — change domain (threshold 40px) */
+  if(ady>40&&ady>adx*1.1){
+    var dir=dy<0?1:-1;
     domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
     switchDomain(DOMAIN_ORDER[domIdx],null);
+    return; /* don't also fire tap */
   }
   /* TAP — heart burst */
   if(dur<280&&adx<25&&ady<25){
@@ -2030,7 +2028,7 @@ canvas.addEventListener('mouseup',function(e){
   if(!MD)return;MD=false;touchActive=false;touchForce=0;
   var dx=e.clientX-MSX,dy=e.clientY-MSY;
   var adx=Math.abs(dx),ady=Math.abs(dy);
-  if(ady>55&&ady>adx*1.2){var dir=dy<0?1:-1;domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],null);}
+  if(ady>40&&ady>adx*1.1){var dir=dy<0?1:-1;domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;switchDomain(DOMAIN_ORDER[domIdx],null);}
 });
 canvas.addEventListener('dblclick',function(e){
   touchX=e.clientX;touchY=e.clientY;touchForce=-1;touchActive=true;
@@ -2501,7 +2499,7 @@ function installPWA(){
     });
   } else {
     /* iOS */
-    showToast('On iPhone: tap Share → Add to Home Screen');
+    showToast('Tap Share ↓ then "Add to Home Screen"');
     if(btn)btn.style.display='none';
   }
 }

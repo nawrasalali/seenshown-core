@@ -316,10 +316,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 </div>
 
 <!-- QUESTION BAR — standalone fixed, above bottom panel -->
-<div id="questionBar" style="position:fixed;bottom:0;left:0;right:72px;z-index:155;padding:7px 14px 6px;background:rgba(6,10,28,0.95);backdrop-filter:blur(20px);border-top:1.5px solid rgba(38,232,176,0.22);display:none;box-shadow:0 -2px 20px rgba(0,0,0,.4)">
-  <div style="font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(38,232,176,.65);margin-bottom:3px;font-weight:700">Question</div>
-  <div id="questionBarText" style="font-size:.85rem;color:#ffffff;line-height:1.4;font-weight:600"></div>
-</div>
+
 
 <div id="bottomPanel">
   <!-- QUESTION BAR — fixed, shows current question -->
@@ -1600,8 +1597,8 @@ var DOMAIN_QUESTIONS={
 };
 
 function switchDomain(key,pill){
-  simDomain=key;simPhase=0;
-  if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
+  simDomain=key;simPhase=0;_phaseMs=0;
+  if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
   stopVoice();stopSound();
   document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
   if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
@@ -2475,17 +2472,6 @@ function showQuestionBar(q){
   if(!bar||!txt)return;
   txt.textContent=q.trim();
   bar.style.display='block';
-  /* Push bottomPanel up by question bar height */
-  setTimeout(function(){
-    var bp=document.getElementById('bottomPanel');
-    if(bp)bp.style.paddingBottom='0';
-    /* Position question bar just above ticker */
-    var ticker=document.getElementById('answerTicker');
-    if(ticker){
-      var rect=ticker.getBoundingClientRect();
-      bar.style.bottom=(window.innerHeight-rect.top)+'px';
-    }
-  },50);
 }
 
 /* ── SIM ACTIONS (save/post bar) ── */

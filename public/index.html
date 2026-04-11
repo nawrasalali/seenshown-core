@@ -2211,28 +2211,43 @@ function buildChips(){
 
 /* ── CONTEXTUAL GUIDE — tooltips pointing to actual UI ── */
 var HINTS=[
-  {id:'tap',    text:'Tap the sim to show love ❤️',    pos:'bottom:42%;left:50%;transform:translateX(-50%)', arrow:'▼',arrowPos:'top:100%;left:50%;transform:translateX(-50%)'},
-  {id:'swipe',  text:'Swipe up/down to change topic ↕', pos:'bottom:42%;left:50%;transform:translateX(-50%)', arrow:'▼',arrowPos:'top:100%;left:50%;transform:translateX(-50%)'},
-  {id:'phase',  text:'Swipe left/right for phases ↔',   pos:'bottom:42%;left:50%;transform:translateX(-50%)', arrow:'▼',arrowPos:'top:100%;left:50%;transform:translateX(-50%)'},
-  {id:'ask',    text:'Ask any question here ✍️',        pos:'bottom:155px;left:50%;transform:translateX(-50%)', arrow:'▼',arrowPos:'top:100%;left:50%;transform:translateX(-50%)'},
-  {id:'compete',text:'Compete live ⚔️',                pos:'right:68px;top:50%;transform:translateY(-50%) translateX(-100%)', arrow:'▶',arrowPos:'top:50%;left:100%;transform:translateY(-50%)'},
+  /* Tap hint — points down to canvas centre */
+  {id:'tap',
+   text:'Tap the sim to show love ❤️',
+   pos:'top:160px;left:18px',
+   arrow:'▲',arrowPos:'bottom:100%;left:22px'},
+  /* Swipe hint — points down toward canvas */
+  {id:'swipe',
+   text:'Swipe up / down to change topic',
+   pos:'top:160px;left:18px',
+   arrow:'▲',arrowPos:'bottom:100%;left:22px'},
+  /* Ask hint — sits just above the input bar, arrow points down to it */
+  {id:'ask',
+   text:'Ask any question here ✍️',
+   pos:'bottom:200px;left:18px',
+   arrow:'▼',arrowPos:'top:100%;left:22px'},
+  /* Compete hint — sits left of the rail, arrow points right to compete icon */
+  {id:'compete',
+   text:'Compete live ⚔️',
+   pos:'top:50%;right:80px;transform:translateY(-50%)',
+   arrow:'▶',arrowPos:'top:50%;left:100%;transform:translateY(-50%)'},
 ];
 var hintQueue=[],activeHint=null,hintTimer=null;
 
 function initGuide(){
-  if(localStorage.getItem('ss_v9_done'))return;
-  var seen=JSON.parse(localStorage.getItem('ss_v9_seen')||'[]');
+  if(localStorage.getItem('ss_v10_done'))return;
+  var seen=JSON.parse(localStorage.getItem('ss_v10_seen')||'[]');
   HINTS.forEach(function(h){if(seen.indexOf(h.id)<0)hintQueue.push(h);});
   if(hintQueue.length)setTimeout(showNextHint,2500);
 }
 
 function showNextHint(){
-  if(!hintQueue.length){localStorage.setItem('ss_v9_done','1');return;}
+  if(!hintQueue.length){localStorage.setItem('ss_v10_done','1');return;}
   activeHint=hintQueue[0];
   var old=document.getElementById('hintBubble');if(old)old.remove();
   var el=document.createElement('div');
   el.id='hintBubble';
-  el.style.cssText='position:fixed;'+activeHint.pos+';z-index:260;background:rgba(2,4,14,0.93);border:1.5px solid rgba(38,232,176,0.85);border-radius:14px;padding:8px 14px;font-size:.8rem;color:#fff;font-weight:600;pointer-events:none;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(38,232,176,0.25),0 4px 20px rgba(0,0,0,.6);white-space:nowrap;opacity:0;transition:opacity .3s';
+  el.style.cssText='position:fixed;'+activeHint.pos+';z-index:260;background:rgba(2,4,14,0.95);border:1.5px solid rgba(38,232,176,0.85);border-radius:12px;padding:8px 14px 8px 12px;font-size:.78rem;color:#fff;font-weight:600;cursor:pointer;backdrop-filter:blur(14px);box-shadow:0 0 20px rgba(38,232,176,0.2),0 4px 20px rgba(0,0,0,.6);white-space:nowrap;opacity:0;transition:opacity .3s;max-width:220px;white-space:normal;line-height:1.35';
   el.textContent=activeHint.text;
   /* Arrow */
   var arrow=document.createElement('div');
@@ -2250,9 +2265,9 @@ function dismissGuideHint(id,auto){
   if(hintTimer)clearTimeout(hintTimer);
   var el=document.getElementById('hintBubble');
   if(el){el.style.opacity='0';setTimeout(function(){if(el&&el.parentNode)el.remove();},350);}
-  var seen=JSON.parse(localStorage.getItem('ss_v9_seen')||'[]');
+  var seen=JSON.parse(localStorage.getItem('ss_v10_seen')||'[]');
   if(seen.indexOf(activeHint.id)<0)seen.push(activeHint.id);
-  localStorage.setItem('ss_v9_seen',JSON.stringify(seen));
+  localStorage.setItem('ss_v10_seen',JSON.stringify(seen));
   hintQueue.shift();activeHint=null;
   setTimeout(showNextHint,1200);
 }

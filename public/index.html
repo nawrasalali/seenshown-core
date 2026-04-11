@@ -364,7 +364,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="compMode" style="display:none;position:fixed;inset:0;z-index:300;flex-direction:column;background:#000">
   <button id="compExit" onclick="exitCompete()" style="position:absolute;top:50px;left:12px;z-index:325;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.25);border-radius:18px;color:rgba(255,255,255,0.8);font-size:.68rem;font-weight:800;padding:5px 13px;cursor:pointer;letter-spacing:.1em">X EXIT</button>
-  <div id="cTimer" style="position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:325;font-size:.95rem;font-weight:900;color:#fff;background:rgba(0,0,0,0.75);border:2px solid rgba(255,220,0,0.6);border-radius:20px;padding:4px 18px;min-width:70px;text-align:center"></div>
+  <div id="cTimer" style="position:absolute;top:4px;left:50%;transform:translateX(-50%);z-index:325;font-size:.95rem;font-weight:900;color:#fff;background:rgba(0,0,0,0.75);border:2px solid rgba(255,220,0,0.6);border-radius:20px;padding:4px 18px;min-width:70px;text-align:center"></div>
   <div id="compVT" onclick="castVote('A')" style="position:absolute;left:50%;transform:translateX(-50%);bottom:calc(50% + 19px);z-index:326;background:rgba(255,215,0,0.18);border:2px solid #ffd700;border-radius:100px;color:#ffd700;font-size:.8rem;font-weight:900;padding:8px 28px;cursor:pointer;letter-spacing:.14em;white-space:nowrap;user-select:none">VOTE</div>
   <div id="compPointerTrack" style="position:absolute;left:0;top:0;bottom:0;width:28px;z-index:320;pointer-events:none">
     <div style="position:absolute;left:13px;top:5%;bottom:5%;width:2px;background:rgba(255,255,255,0.12)"></div>
@@ -540,16 +540,16 @@ function shapePoint(n,x,y,rr,gg,bb){
 function shapeExplosion(n,ox,oy,minD,maxD,rr,gg,bb,hot){
   var out=[];
   /* Cap maxD so no particle can exit screen regardless of center position */
-  var safeMaxX=Math.min(ox-10, W()-ox-82);
-  var safeMaxY=Math.min(oy-52, H()-oy-192);
+  var safeMaxX=Math.min(ox, W()-ox-72);
+  var safeMaxY=Math.min(oy-46, H()-oy-185);
   var safeMax=Math.min(maxD, safeMaxX, safeMaxY);
   if(safeMax<minD)safeMax=minD+4;
   for(var i=0;i<n;i++){
     var a=rnd(0,Math.PI*2),d=minD+Math.pow(Math.random(),.5)*(safeMax-minD);
     var heat=hot?1-d/safeMax:0;
     out.push({
-      tx:clamp(ox+Math.cos(a)*d,10,W()-82),
-      ty:clamp(oy+Math.sin(a)*d,52,H()-192),
+      tx:clamp(ox+Math.cos(a)*d, 0, W()-72),
+      ty:clamp(oy+Math.sin(a)*d, 46, H()-185),
       rr:Math.round(clamp(rr+heat*80,0,255)),
       gg:Math.round(clamp(gg-heat*60,0,255)),
       bb:Math.round(clamp(bb-heat*80,0,255)),
@@ -814,7 +814,7 @@ function shapeUniverseHorn(n,ox,oy,size){
      vast at the present-day end. We render this as a cone/horn cross-section
      with the CMB sphere at the left tip. */
   var out=[];
-  var hornLen=Math.min(size*.82,W()-90); /* cap to screen width minus rail */
+  var hornLen=Math.min(size*.92,W()-72); /* cap to screen width minus rail */
   var maxR=Math.min(size*.36,H()*.26);   /* cap to screen height */
   var minR=size*.015;
 
@@ -851,8 +851,8 @@ function shapeUniverseHorn(n,ox,oy,size){
     /* Size: larger at present end, tiny at Big Bang end */
     var sz2=.2+t*1.8;
     /* Hard clamp to canvas bounds with margin */
-    out.push({tx:clamp(hx,8,W()-80),
-              ty:clamp(hy,52,H()-190),
+    out.push({tx:clamp(hx, 0, W()-72),
+              ty:clamp(hy, 46, H()-185),
               rr:clamp(rr,0,255),gg:clamp(gg,0,255),bb:clamp(bb,0,255),r:sz2});
   }
   return out;
@@ -860,7 +860,7 @@ function shapeUniverseHorn(n,ox,oy,size){
 
 /* ── COSMIC WEB — large-scale structure of the universe ── */
 function shapeCosmicWeb(n,ox,oy,size){
-  var _xMin=10,_xMax=W()-82,_yMin=52,_yMax=H()-192;
+  var _xMin=0,_xMax=W()-72,_yMin=46,_yMax=H()-185;
   /* Filaments connecting galaxy cluster nodes — the actual structure of the universe */
   var out=[];
   /* Define cluster nodes */
@@ -954,8 +954,8 @@ function getSpec(domain,phase,n){
   var x=availW/2; /* horizontal center of sim area */
   var y=navH+availH/2; /* vertical center of sim area */
   var sz=Math.min(availW,availH); /* largest square that fits */
-  var sw=availW*.92; /* safe width */
-  var sh=availH*.90; /* safe height */
+  var sw=availW*.98;
+  var sh=availH*.96;
 
   switch(domain){
 
@@ -966,8 +966,8 @@ function getSpec(domain,phase,n){
         var outF=[];
         for(var i=0;i<n;i++){
           var a=rnd(0,Math.PI*2),d=Math.random()*Math.min(sw*.92,sh*.88);
-          var px=clamp(x+Math.cos(a)*d,8,W()-82);
-          var py=clamp(y+Math.sin(a)*d,52,H()-192);
+          var px=clamp(x+Math.cos(a)*d, 0, W()-72);
+          var py=clamp(y+Math.sin(a)*d, 46, H()-185);
           outF.push({tx:px,ty:py,rr:255,gg:255,bb:255,r:.3+Math.random()*2.5});
         }
         return outF;
@@ -1852,11 +1852,11 @@ function initCompeteParticles(cp,domain,canvas){
   var n=Math.min(N,16000);cp.N=n;cp.X=new Float32Array(n);cp.Y=new Float32Array(n);cp.TX=new Float32Array(n);cp.TY=new Float32Array(n);cp.BX=new Float32Array(n);cp.BY=new Float32Array(n);cp.R=new Uint8Array(n);cp.G=new Uint8Array(n);cp.B=new Uint8Array(n);cp.Sz=new Float32Array(n);cp.D=new Float32Array(n);cp.T=0;
   var _W=W,_H=H;W=function(){return canvas.width;};H=function(){return canvas.height;};
   var spec=getSpec(domain,0,n);W=_W;H=_H;
-  for(var i=0;i<n;i++){var s=spec[i%spec.length];cp.TX[i]=s.tx;cp.TY[i]=s.ty;cp.R[i]=s.rr||180;cp.G[i]=s.gg||180;cp.B[i]=s.bb||180;cp.Sz[i]=s.r||1;cp.D[i]=Math.random()*2000;cp.BX[i]=canvas.width/2+rnd(-4,4);cp.BY[i]=canvas.height/2+rnd(-4,4);cp.X[i]=cp.BX[i];cp.Y[i]=cp.BY[i];}
+  for(var i=0;i<n;i++){var s=spec[i%spec.length];cp.TX[i]=s.tx;cp.TY[i]=s.ty;cp.R[i]=s.rr||180;cp.G[i]=s.gg||180;cp.B[i]=s.bb||180;cp.Sz[i]=s.r||1;cp.D[i]=Math.random()*400;cp.BX[i]=canvas.width/2+rnd(-4,4);cp.BY[i]=canvas.height/2+rnd(-4,4);cp.X[i]=cp.BX[i];cp.Y[i]=cp.BY[i];}
 }
 function renderCompeteCanvas(ctx2d,canvas,cp,dt){
   ctx2d.fillStyle='rgba(2,4,14,0.14)';ctx2d.fillRect(0,0,canvas.width,canvas.height);cp.T+=dt;
-  for(var i=0;i<cp.N;i++){var t=clamp((cp.T-cp.D[i])/4000,0,1),te=easeOut(t);var fx=lerp(cp.BX[i],cp.TX[i],te)+Math.sin(cp.T*.0007+i*.14)*1.4*t,fy=lerp(cp.BY[i],cp.TY[i],te)+Math.cos(cp.T*.0008+i*.13)*1.4*t;cp.X[i]=fx;cp.Y[i]=fy;ctx2d.globalAlpha=Math.min(t*2,1)*.85;ctx2d.fillStyle='rgb('+cp.R[i]+','+cp.G[i]+','+cp.B[i]+')';ctx2d.beginPath();ctx2d.arc(fx,fy,Math.max(.3,cp.Sz[i]*(0.4+te*.7)),0,6.283);ctx2d.fill();}
+  for(var i=0;i<cp.N;i++){var t=clamp((cp.T-cp.D[i])/1800,0,1),te=easeOut(t);var fx=lerp(cp.BX[i],cp.TX[i],te)+Math.sin(cp.T*.0012+i*.14)*2.0*t,fy=lerp(cp.BY[i],cp.TY[i],te)+Math.cos(cp.T*.0011+i*.13)*2.0*t;cp.X[i]=fx;cp.Y[i]=fy;ctx2d.globalAlpha=Math.min(t*2,1)*.85;ctx2d.fillStyle='rgb('+cp.R[i]+','+cp.G[i]+','+cp.B[i]+')';ctx2d.beginPath();ctx2d.arc(fx,fy,Math.max(.3,cp.Sz[i]*(0.4+te*.7)),0,6.283);ctx2d.fill();}
   ctx2d.globalAlpha=1;
 }
 function updateCompBar(){
@@ -1870,9 +1870,30 @@ function updateCompBar(){
 }
 function spawnFloat(side,emoji,xPct,yPct){
   var c=document.getElementById(side==='A'?'floatA':'floatB');if(!c)return;
-  var el=document.createElement('div');el.style.cssText='position:absolute;left:'+xPct+'%;top:'+yPct+'%;font-size:'+(1.1+Math.random()*.6)+'rem;opacity:1;transition:transform 2s ease-out,opacity 1.8s ease-out;pointer-events:none;z-index:315';el.textContent=emoji;c.appendChild(el);
-  setTimeout(function(){el.style.transform='translateX('+(60+Math.random()*80)+'px) translateY(-'+(20+Math.random()*30)+'px)';el.style.opacity='0';},30);
-  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2200);
+  var el=document.createElement('div');
+  el.style.cssText='position:absolute;left:'+xPct+'%;top:'+yPct+'%;font-size:'+(1.3+Math.random()*.7)+'rem;opacity:1;transition:transform 2.2s ease-out,opacity 2s ease-out;pointer-events:none;z-index:315';
+  el.innerHTML=emoji;c.appendChild(el);
+  setTimeout(function(){
+    var dx=(Math.random()>.5?1:-1)*(40+Math.random()*100);
+    el.style.transform='translateX('+dx+'px) translateY(-'+(50+Math.random()*80)+'px) scale(0.4)';
+    el.style.opacity='0';
+  },30);
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2400);
+}
+function spawnFloatBig(side,emoji,xPct,yPct){
+  var c=document.getElementById(side==='A'?'floatA':'floatB');if(!c)return;
+  var el=document.createElement('div');
+  var sz=(1.8+Math.random()*1.6)+'rem';
+  el.style.cssText='position:absolute;left:'+xPct+'%;top:'+yPct+'%;font-size:'+sz+';opacity:0;transform:scale(0.2);transition:transform 0.3s cubic-bezier(.34,1.56,.64,1),opacity 0.25s;pointer-events:none;z-index:318';
+  el.innerHTML=emoji;c.appendChild(el);
+  setTimeout(function(){el.style.opacity='1';el.style.transform='scale(1)';},20);
+  setTimeout(function(){
+    el.style.transition='transform 1.9s ease-out,opacity 1.7s ease-out';
+    var dx=(Math.random()>.5?1:-1)*(30+Math.random()*90);
+    el.style.transform='translateX('+dx+'px) translateY(-'+(70+Math.random()*110)+'px) scale(0.4)';
+    el.style.opacity='0';
+  },320);
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},2300);
 }
 function spawnComment(side,text){
   var c=document.getElementById(side==='A'?'floatA':'floatB');if(!c)return;
@@ -1881,8 +1902,12 @@ function spawnComment(side,text){
   setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},3400);
 }
 function celebrateVote(side){
-  var em=['*','!','@','#','$','%','^','&'];
-  for(var i=0;i<9;i++){(function(d,e){setTimeout(function(){spawnFloat(side,e,8+Math.random()*84,15+Math.random()*70);},d);})(i*70,em[Math.floor(Math.random()*em.length)]);}
+  var emojis=['&#x2764;&#xFE0F;','&#x1F525;','&#x1F338;','&#x1F339;','&#x1F33A;','&#x2728;','&#x1F31F;','&#x1F4AB;','&#x1F389;','&#x1F388;','&#x1F496;','&#x1F49C;','&#x1F49A;','&#x1F490;','&#x1F37E;','&#x1F942;','&#x1F337;'];
+  for(var i=0;i<18;i++){
+    (function(delay,emoji,x,y){
+      setTimeout(function(){spawnFloatBig(side,emoji,x,y);},delay);
+    })(i*55, emojis[Math.floor(Math.random()*emojis.length)], 4+Math.random()*88, 8+Math.random()*76);
+  }
 }
 function castVote(side){
   var pts=3;

@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="SeenShown">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
-#installBtn{position:fixed;bottom:16px;right:0;width:72px;display:none;flex-direction:column;align-items:center;gap:2px;cursor:pointer;z-index:260;padding:8px 6px;transition:all .2s}
+#installBtn{position:fixed;bottom:8px;right:4px;width:66px;display:none;flex-direction:column;align-items:center;gap:3px;cursor:pointer;z-index:270;padding:6px 4px;transition:opacity .3s}
 #installBtn:hover{background:rgba(38,232,176,0.22);transform:scale(1.03)}
 #installBtn.show{display:flex}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -63,7 +63,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 
 /* PHASE FLASH */
-#phaseFlash{position:fixed;top:52px;left:14px;font-size:clamp(.75rem,2.5vw,1.1rem);font-weight:800;color:#fff;text-align:left;pointer-events:none;opacity:0;transition:opacity .35s;z-index:190;text-shadow:0 1px 12px rgba(38,232,176,0.8);letter-spacing:.04em;max-width:60vw;line-height:1.25}
+#phaseFlash{position:fixed;top:100px;left:14px;font-size:clamp(.7rem,2.2vw,1rem);font-weight:800;color:rgba(38,232,176,.95);text-align:left;pointer-events:none;opacity:0;transition:opacity .3s;z-index:95;text-shadow:0 1px 8px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:55vw;line-height:1.2}
 #phaseFlash.show{opacity:1}
 
 /* TOAST */
@@ -1598,84 +1598,84 @@ function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTime
 async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();
   if(!q)return;
-  /* Gate anon users */
-  var anonCount=parseInt(localStorage.getItem('ss_anon_sims')||'0');
-  if(anonCount>=5&&(!window.SS||!window.SS.isSubscriber)){showUpgradeModal('limit');return;}
 
-  /* 1. Show question in bar IMMEDIATELY */
-  showQuestionBar(q);
-  hideSimActions();
+  /* Show question in bar immediately */
+  if(typeof showQuestionBar==='function')showQuestionBar(q);
 
-  /* 2. Visual feedback */
+  /* Visual feedback on button */
   var icon=document.getElementById('submitIcon');
-  if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='…';}
+  if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='...';}
 
-  /* 3. Route to domain */
+  /* Route to best domain based on question */
   var key=smartRoute(q);
   simDomain=key;simPhase=0;
   domIdx=DOMAIN_ORDER.indexOf(key);
 
-  /* 4. Update domain pill */
+  /* Update active pill */
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
-  document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
+  document.querySelectorAll('.dpill').forEach(function(p){
+    p.classList.remove('active');p.style.background='';p.style.color='';
+  });
   var pill=document.querySelector('.dpill[data-key="'+key+'"]');
   if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
 
-  /* 5. START FORMATION IMMEDIATELY — don't wait for AI */
+  /* Start formation IMMEDIATELY — no waiting */
   initPhase(key,0,true);
 
-  /* 6. Show existing narration in ticker while AI fetches */
+  /* Show ticker with template narration while AI loads */
   buildTicker(NARR[key]);
 
-  /* 7. Start auto-advance through phases */
+  /* Start phase auto-advance */
   updateNarr(key,0);
   closePhasesPanel();
 
-  /* 8. Fetch AI narration in background — update ticker when ready */
-  (function fetchNarration(){
-    /* Try Supabase Edge Function first */
-    fetch(SB+'/functions/v1/simulate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SBK},
-      body:JSON.stringify({question:q,domain:key})
-    }).then(function(res){
-      if(!res.ok)throw new Error('edge fn failed');
-      return res.json();
-    }).then(function(data){
-      if(data.narration&&Array.isArray(data.narration)&&data.narration.length>=3){
-        var clean=data.narration.filter(function(p){
-          return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>20
-            &&!p[1].toLowerCase().includes('this simulation')
-            &&!p[1].toLowerCase().includes('the simulation');
-        });
-        while(clean.length<5&&clean.length>0)clean.push(clean[clean.length-1]);
-        if(clean.length>=3){NARR[key]=clean;buildTicker(NARR[key]);}
-      }
-    }).catch(function(){
-      /* Edge fn failed — call our Vercel API proxy */
-      fetch('/api/ask',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({question:q,domain:key})
-      }).then(function(r){return r.json();}).then(function(d){
-        if(d.narration&&Array.isArray(d.narration)&&d.narration.length>=3){
-          NARR[key]=d.narration;buildTicker(NARR[key]);
-        }
-      }).catch(function(){/* keep template — already showing */});
-    });
-  })();
-
-  /* 9. Restore submit icon */
+  /* Restore button immediately — don't block on AI */
   if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
 
-  /* 10. Track and save */
-  currentLikes=0;document.getElementById('likeCount').textContent='0';
-  localStorage.setItem('ss_anon_sims',anonCount+1);
+  /* Clear input */
+  var mainQ=document.getElementById('mainQ');
+  if(mainQ){mainQ.value='';autoResizeMQ(mainQ);}
+
+  /* Track */
+  currentLikes=0;
+  var lc=document.getElementById('likeCount');
+  if(lc)lc.textContent='0';
   saveSimulation(q,key);
 
-  /* 11. Offer save after 12s */
-  if(q)setTimeout(function(){offerSaveModal(q,simDomain);},12000);
+  /* Activate save/post rail icons after 3s */
+  setTimeout(function(){
+    var rs=document.getElementById('railSave');
+    var rp=document.getElementById('railPost');
+    if(rs)rs.style.opacity='1';
+    if(rp)rp.style.opacity='1';
+  },3000);
+
+  /* Fetch AI answer — call /api/ask directly (Vercel serverless, has Anthropic key) */
+  try{
+    var res=await fetch('/api/ask',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:q,domain:key})
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    var data=await res.json();
+    if(data.narration&&Array.isArray(data.narration)&&data.narration.length>=3){
+      var clean=data.narration.filter(function(p){
+        return Array.isArray(p)&&p[0]&&p[1]&&p[1].length>15;
+      });
+      while(clean.length<5&&clean.length>0)clean.push(clean[clean.length-1]);
+      if(clean.length>=3){
+        NARR[key]=clean;
+        buildTicker(NARR[key]);
+        showToast('Answer ready');
+      }
+    }
+  }catch(e){
+    /* /api/ask failed — keep template narration which is already showing */
+    console.warn('AI fetch failed:',e.message);
+  }
 }
+
 
 async function saveSimulation(q,domain){
   try{
@@ -2336,11 +2336,15 @@ function showProfileMenu(){
 var pendingSaveQ='',pendingSaveDomain='';
 function offerSaveModal(q,domain){
   pendingSaveQ=q;pendingSaveDomain=domain;
-  var total=totalSimsCreated();
-  document.getElementById('saveSimTitle').textContent='"'+q.slice(0,50)+(q.length>50?'…':'')+'"';
-  document.getElementById('simCountLabel').textContent='You have created '+total+' simulation'+(total===1?'':'s')+' · '+weeklySimsLeft()+' free remaining this week';
-  document.getElementById('saveModal').style.display='flex';
+  /* Activate save/post rail icons only — no popup */
+  var rs=document.getElementById('railSave');
+  var rp=document.getElementById('railPost');
+  if(rs){rs.style.opacity='1';rs.title='Save this simulation';}
+  if(rp){rp.style.opacity='1';rp.title='Post to feed';}
+  /* Show subtle toast hint — not a modal */
+  showToast('💾 Tap Save or 🌍 Post in the side panel');
 }
+
 function closeSaveModal(){document.getElementById('saveModal').style.display='none';}
 
 async function doSaveOnly(){
@@ -2521,9 +2525,9 @@ window.addEventListener('appinstalled',function(){
 });
 /* iOS install hint + general install prompt */
 (function(){
-  var isStandalone=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone;
-  if(isStandalone)return; /* already installed — hide button */
-  /* Always show install button — stays until user installs */
+  /* Show install button immediately unless already running as installed PWA */
+  var isStandalone=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone===true;
+  if(isStandalone)return;
   var btn=document.getElementById('installBtn');
   if(btn)btn.style.display='flex';
 })();

@@ -1,6 +1,8 @@
 {
   "outputDirectory": "public",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://seenshown-api-production.up.railway.app/$1" }
-  ]
+  "functions": {
+    "public/api/*.js": {
+      "runtime": "nodejs20.x"
+    }
+  }
 }

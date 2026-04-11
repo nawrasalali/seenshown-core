@@ -1896,12 +1896,13 @@ function updateNarr(domain,phase){
   /* Process step label — show as particle cloud forms the step */
   var flash=document.getElementById('phaseFlash');
   var stepName=(ph[0].split('·')[1]||ph[0]).trim().toUpperCase();
-  flash.textContent=stepName;
-  flash.style.opacity='1';
-  flash.style.letterSpacing='.12em';
-  /* Hold for 1.5s then fade — particles still forming during this time */
-  clearTimeout(flash._fadeTimer);
-  flash._fadeTimer=setTimeout(function(){flash.style.opacity='0';},2200);
+  if(flash){
+    flash.textContent=stepName;
+    flash.style.opacity='1';
+    flash.style.letterSpacing='.12em';
+    clearTimeout(flash._fadeTimer);
+    flash._fadeTimer=setTimeout(function(){flash.style.opacity='0';},2200);
+  }
   /* Dots */
   var dots=document.getElementById('narrDots');if(dots){dots.innerHTML='';
   for(var i=0;i<narrs.length;i++){

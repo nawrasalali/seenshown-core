@@ -519,8 +519,8 @@ var pX,pY,pTX,pTY,pBX,pBY,pR,pG,pB,pSz,pDelay,pLife;
 var touchActive=false;
 var GT={sx:0,sy:0,mx:0,my:0,st:0,moved:false};
 var _bbGrowth=0; /* BigBang growth factor 0=singularity 1=full horn */
-var _bbDir=1;    /* 1=expanding -1=collapsing */
-var _bbBlack=0;  /* black pause timer ms */
+var _bbState=0;  /* 0=dot 1=expanding 2=hold 3=collapse 4=black */
+var _bbT=0;      /* time in current state ms */
 var touchX=cx(),touchY=cy();
 var touchForce=0; /* +1 = attract, -1 = repel */
 var touchStartTime=0;
@@ -1268,18 +1268,40 @@ function loop(ts){
   lastTs=ts;
   render(dt);
   if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=7300;if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
-  /* BigBang continuous growth driver */
+  /* BigBang continuous driver:
+     STATE 0: dot (instant)
+     STATE 1: INSTANT jump to full horn + keep expanding gently for 12s
+     STATE 2: hold at max 2s (pause)
+     STATE 3: fast collapse to dot 1.5s
+     STATE 4: black 0.8s then replay */
   if(simDomain==='bigbang'&&!compActive){
-    if(_bbBlack>0){
-      _bbBlack-=dt;
-      if(_bbBlack<=0){_bbGrowth=0;_bbDir=1;initPhase('bigbang',0,false);updateNarr('bigbang',0);}
-    } else if(_bbDir===1){
-      _bbGrowth+=dt/18000; /* expand over 18s */
-      if(_bbGrowth>=1){_bbGrowth=1;_bbDir=-1;updateNarr('bigbang',1);}
-      if(_bbGrowth>0.01) initPhase('bigbang',0,false);
-    } else {
-      _bbGrowth-=dt/3000; /* collapse over 3s */
-      if(_bbGrowth<=0){_bbGrowth=0;_bbBlack=800;} /* 0.8s black pause */
+    _bbT+=dt;
+    if(_bbState===0){
+      /* Singularity — tiny dot, held for 0.4s */
+      _bbGrowth=0;
+      if(_bbT>=400){
+        _bbState=1;_bbT=0;
+        _bbGrowth=0.85; /* INSTANT jump to near-full horn */
+        initPhase('bigbang',0,false);
+        updateNarr('bigbang',1);
+      }
+    } else if(_bbState===1){
+      /* Horn at full size, gently breathing/expanding for 12s */
+      _bbGrowth=Math.min(1, 0.85+(_bbT/12000)*0.15);
+      initPhase('bigbang',0,false);
+      if(_bbT>=12000){_bbState=2;_bbT=0;}
+    } else if(_bbState===2){
+      /* Hold at max — 2s pause, horn static */
+      _bbGrowth=1;
+      if(_bbT>=2000){_bbState=3;_bbT=0;}
+    } else if(_bbState===3){
+      /* Fast collapse — 1.5s */
+      _bbGrowth=Math.max(0,1-_bbT/1500);
+      initPhase('bigbang',0,false);
+      if(_bbT>=1500){_bbGrowth=0;_bbState=4;_bbT=0;updateNarr('bigbang',0);}
+    } else if(_bbState===4){
+      /* Black — 0.8s */
+      if(_bbT>=800){_bbState=0;_bbT=0;initPhase('bigbang',0,false);}
     }
   }
 }
@@ -1294,8 +1316,8 @@ var NARR={
     ['1 · Now','The sky opens. Strontium red, barium green, copper blue, magnesium white — each colour a different metal burning at a different temperature. The sound arrives a second later. A new year begins.']
   ],
   bigbang:[
-    ['Planck Epoch · T=0','A single point. All matter, energy, space and time compressed into a quantum singularity. Temperature 10 to the 32 Kelvin. The four forces are unified. This moment lasts 10 to the minus 43 seconds.'],
-    ['The Universe Expands','Space itself multiplies. The horn of the observable universe opens — tip at the Big Bang, mouth at the present day. Quarks, atoms, stars, galaxies. 13.8 billion years of expansion, rendered in light.']
+    ['Planck Epoch · T=0','A single point. All matter, energy, space and time compressed into a quantum singularity smaller than a proton. Temperature: 10 to the power of 32 Kelvin. Duration: 10 to the minus 43 seconds.'],
+    ['The Universe · Expanding','Space itself explodes outward — not matter moving through space, but space multiplying. The horn of the observable universe opens from its quantum tip. 13.8 billion years of expansion, stretching from the hot orange singularity to the cool blue vastness of today.']
   ],
     universe:[
     ['Step 1: Quantum Vacuum','Before anything: quantum vacuum fluctuations — virtual particle pairs blinking in and out of existence. This is the ground state of physics. Nothing, yet seething with probabilistic energy. The Big Bang is one of these fluctuations that did not annihilate.'],
@@ -1610,7 +1632,7 @@ var DOMAIN_QUESTIONS={
 };
 
 function switchDomain(key,pill){
-  if(key==='bigbang'){_bbGrowth=0;_bbDir=1;_bbBlack=0;}
+  if(key==='bigbang'){_bbGrowth=0;_bbState=0;_bbT=0;}
   simDomain=key;simPhase=0;_phaseMs=0;
   if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
   stopVoice();stopSound();

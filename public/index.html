@@ -980,25 +980,26 @@ function getSpec(domain,phase,n){
     /* BIG BANG — 12 phases, all white flash on 1, continuous morphing */
     case 'bigbang':{
       var tipX=(W()-72)/2;
-      var tipY=H()-185-28; /* just above question bar */
-      /* States 0,7: pure black */
-      if(_bbState===0||_bbState===7){
-        var outN=[];for(var i=0;i<n;i++)outN.push({tx:tipX,ty:H()+200,rr:0,gg:0,bb:0,r:0.01});
-        return outN;
+      var tipY=H()-185-28; /* fixed tip just above question bar */
+      if(_bbState===0||_bbState===6){
+        /* BLACK — park particles far below */
+        var outB=[];for(var i=0;i<n;i++)outB.push({tx:tipX,ty:H()+500,rr:0,gg:0,bb:0,r:0.01});
+        return outB;
       }
-      /* States 1,2,6: single dot at tip */
-      if(_bbState===1||_bbState===2||_bbState===6){
+      if(_bbState===1||_bbState===2||_bbState===5){
+        /* SINGLE DOT at tip */
         var outD=[];
         for(var i=0;i<n;i++){
-          var isCore=i<n*0.15;
-          outD.push({tx:tipX+rnd(isCore?-1:-3,isCore?1:3),ty:tipY+rnd(isCore?-1:-3,isCore?1:3),rr:255,gg:252,bb:220,r:isCore?2.5:0.8});
+          var core=i<n*0.2;
+          outD.push({tx:tipX+rnd(core?-1.5:-4,core?1.5:4),ty:tipY+rnd(core?-1.5:-4,core?1.5:4),rr:255,gg:252,bb:215,r:core?3:1});
         }
         return outD;
       }
-      /* States 3,4,5: horn — tip STAYS at tipX,tipY always */
-      return shapeUniverseHorn(n,tipX,tipY,sz,_bbGrowth);
+      /* States 3,4: FULL HORN */
+      return shapeUniverseHorn(n,tipX,tipY,sz,1);
     }
 
+    /* UNIVERSE
     /* UNIVERSE — scale from quantum to cosmic */
     case 'universe':
       if(phase===0) return shapeScatter(n,x,y,sz*.08,180,180,255); /* quantum foam — tiny */
@@ -1183,7 +1184,7 @@ function qcos(x){return NOISE_TBL[(Math.abs(Math.round(x*651.9))+1024)%4096];}
 
 function render(dt){
   /* Dim trail */
-  var clearAlpha=(simDomain==='bigbang'&&(_bbState===0||_bbState===7))?0.6:(simDomain==='bigbang'&&_bbState===5)?0.9:0.15;
+  var clearAlpha=(simDomain==='bigbang'&&(_bbState===0||_bbState===6))?0.6:0.15;
   ctx.fillStyle='rgba(0,0,0,'+clearAlpha+')';
   ctx.fillRect(0,0,W(),H());
 
@@ -1278,48 +1279,46 @@ function loop(ts){
   lastTs=ts;
   render(dt);
   if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=7300;if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
-  /* BigBang state machine:
-     0: DARKNESS 6s — 3 lines visible
+  /* BigBang state machine — correct animation approach:
+     initPhase called ONCE per state transition, formT ticks naturally
+     For instant flash: set formT=FORM_DUR after initPhase
+     States:
+     0: DARKNESS 6s + words
      1: ONE DOT 3s
-     2: EXPLOSION TEXT 3s — "Big Bang about to explode"
-     3: FAST EXPLOSION + CONTINUOUS EXPAND — 0→full in 3s, then keep expanding feel for 7s more (10s total)
-     4: HOLD FULL 5s — then show "will collapse back to origin"
-     5: THUNDER COLLAPSE — 0.4s (lightning fast)
-     6: DOT + "back to nothingness" text — 3s
+     2: "BIG BANG ABOUT TO EXPLODE" 3s
+     3: FLASH → HORN (instant, one frame)
+     4: HOLD FULL 5s glowing + collapse text at 1s
+     5: THUNDER COLLAPSE back to dot (instant)
+     6: DOT + "back to nothingness" 3s
      7: BLACK 1s → replay */
   if(simDomain==='bigbang'&&!compActive){
     _bbT+=dt;
     if(_bbState===0){
-      if(_bbT<80){_bbGrowth=0;initPhase('bigbang',0,false);showBBWord();}
-      if(_bbT>=6000){hideBBWord();_bbState=1;_bbT=0;initPhase('bigbang',0,false);}
+      if(_bbT<80) showBBWord();
+      if(_bbT>=6000){hideBBWord();_bbState=1;_bbT=0;
+        /* Init dot */
+        _bbGrowth=0;initPhase('bigbang',0,false);formT=FORM_DUR;}
     } else if(_bbState===1){
-      _bbGrowth=0;
       if(_bbT>=3000){_bbState=2;_bbT=0;showBBExplosionText();}
     } else if(_bbState===2){
-      _bbGrowth=0;
-      if(_bbT>=3000){hideBBWord();_bbState=3;_bbT=0;_bbGrowth=0;initPhase('bigbang',0,false);}
+      if(_bbT>=3000){hideBBWord();_bbState=3;_bbT=0;
+        /* INSTANT HORN — init then skip to end of animation */
+        _bbGrowth=1;initPhase('bigbang',0,false);formT=FORM_DUR;}
     } else if(_bbState===3){
-      /* INSTANT flash to full — no gradual growth */
-      _bbGrowth=1;
-      if(_bbT<50) initPhase('bigbang',0,false);
-      if(_bbT>=5000){_bbState=4;_bbT=0;}
+      /* Horn holds — no initPhase calls, just let it breathe */
+      if(_bbT>=5000){_bbState=4;_bbT=0;showBBCollapseText();}
     } else if(_bbState===4){
-      /* Hold full 5s, show collapse text after 1s */
-      _bbGrowth=1;
-      if(_bbT>=1000&&_bbT<1100) showBBCollapseText();
-      if(_bbT>=5000){hideBBWord();_bbState=5;_bbT=0;}
+      if(_bbT>=3000){hideBBWord();_bbState=5;_bbT=0;
+        /* INSTANT COLLAPSE to dot */
+        _bbGrowth=0;initPhase('bigbang',0,false);formT=FORM_DUR;
+        showBBNothingText();}
     } else if(_bbState===5){
-      /* THUNDER — 0.4s lightning collapse */
-      _bbGrowth=Math.max(0,1-(_bbT/400));
-      initPhase('bigbang',0,false);
-      if(_bbT>=400){_bbGrowth=0;_bbState=6;_bbT=0;initPhase('bigbang',0,false);showBBNothingText();}
+      /* Dot holds with nothing text */
+      if(_bbT>=3000){hideBBWord();_bbState=6;_bbT=0;}
     } else if(_bbState===6){
-      /* Dot + nothingness text — 3s */
-      _bbGrowth=0;
-      if(_bbT>=3000){hideBBWord();_bbState=7;_bbT=0;initPhase('bigbang',0,false);}
-    } else if(_bbState===7){
-      /* Black 1s then replay */
-      if(_bbT>=1000){_bbState=0;_bbT=0;}
+      /* Black 1s */
+      if(_bbT>=1000){_bbState=0;_bbT=0;
+        _bbGrowth=0;initPhase('bigbang',0,false);formT=FORM_DUR;}
     }
   }
 }

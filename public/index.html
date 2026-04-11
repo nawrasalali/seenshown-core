@@ -1288,7 +1288,7 @@ function loop(ts){
   var dt=Math.min((ts-lastTs)*simSpeed,50);
   lastTs=ts;
   render(dt);
-  if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=(simDomain==='bigbang'?600:7300);if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
+  if(!compActive&&autoPlayOn){_phaseMs+=dt;var phaseDur=(simDomain==='bigbang'&&simPhase===0)?600:7300;if(_phaseMs>=phaseDur&&!phaseAutoTimer){_phaseMs=0;snapshot();simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);initPhase(simDomain,simPhase,false);updateNarr(simDomain,simPhase);}}
 }
 
 /* ── NARRATION ── */
@@ -1510,7 +1510,7 @@ function updateNarr(domain,phase){
     simPhase=(simPhase+1)%narrsLen;
     initPhase(simDomain,simPhase,false);
     updateNarr(simDomain,simPhase);
-  },domain==='bigbang'?500:6500); /* bigbang 0.5s T0, others 6.5s */
+  },(domain==='bigbang'&&simPhase===0)?500:6500); /* bigbang T0=0.5s, all others 6.5s */
 }
 
 function toggleAutoPlay(){

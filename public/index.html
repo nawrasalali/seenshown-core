@@ -1706,7 +1706,7 @@ async function askQuestion(){
 
   /* Ask AI — returns best domain AND answer for this specific question */
   try{
-    var apiUrl=(window.location.hostname==='seenshown.com'||window.location.hostname==='seenshown.ai')?'https://www.'+window.location.hostname+'/api/ask':'/api/ask';
+    var apiUrl=window.location.origin+'/api/ask';
     var res=await fetch(apiUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json'},

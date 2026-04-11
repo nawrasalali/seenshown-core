@@ -151,6 +151,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <a class="ntab" href="/investor-portal.html" target="_blank">My&nbsp;SAFE</a>
     <a class="ntab" href="/dashboard.html" target="_blank">Dashboard</a>
     <a class="ntab" href="/partners.html" target="_blank">Partners</a>
+    <a class="ntab" href="/founder.html" target="_blank" id="adminTab" style="display:none;color:var(--gold)">Admin ⚙️</a>
   </div>
   <div class="nav-right">
     <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
@@ -354,7 +355,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
       style="text-align:center;font-size:.6rem;color:var(--dim);padding:7px;cursor:pointer;pointer-events:all;border-top:1px solid rgba(255,255,255,0.05)">▲ Close</div>
   </div>
   <!-- SAVE / POST mini-icons — appear after simulation runs -->
-  <div id="simActions" style="display:none;pointer-events:all;padding:4px 14px 0;display:none;gap:10px;align-items:center;background:rgba(2,4,14,0.96)">
+  <div id="simActions" style="pointer-events:all;padding:4px 14px 2px;display:none;gap:10px;align-items:center;background:rgba(2,4,14,0.96);">
     <button onclick="doSaveOnly()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px;font-size:.72rem;color:var(--w);cursor:pointer;font-weight:600">💾 Save</button>
     <button onclick="doSaveAndPost()" style="display:flex;align-items:center;gap:5px;background:rgba(38,232,176,0.1);border:1px solid rgba(38,232,176,0.3);border-radius:20px;padding:5px 12px;font-size:.72rem;color:var(--g);cursor:pointer;font-weight:600">🌍 Post</button>
     <button onclick="doSaveAndRegenerate()" style="display:flex;align-items:center;gap:5px;background:rgba(124,79,212,0.1);border:1px solid rgba(124,79,212,0.3);border-radius:20px;padding:5px 12px;font-size:.72rem;color:#c4a0ff;cursor:pointer;font-weight:600">🔄 Redo</button>
@@ -527,10 +528,18 @@ function shapePoint(n,x,y,rr,gg,bb){
 }
 function shapeExplosion(n,ox,oy,minD,maxD,rr,gg,bb,hot){
   var out=[];
+  var _xMin=10,_xMax=W()-82,_yMin=52,_yMax=H()-192;
   for(var i=0;i<n;i++){
     var a=rnd(0,Math.PI*2),d=minD+Math.pow(Math.random(),.5)*(maxD-minD);
     var heat=hot?1-d/maxD:0;
-    out.push({tx:ox+Math.cos(a)*d,ty:oy+Math.sin(a)*d,rr:Math.round(clamp(rr+heat*80,0,255)),gg:Math.round(clamp(gg-heat*60,0,255)),bb:Math.round(clamp(bb-heat*80,0,255)),r:.4+Math.random()*2.2});
+    out.push({
+      tx:clamp(ox+Math.cos(a)*d,_xMin,_xMax),
+      ty:clamp(oy+Math.sin(a)*d,_yMin,_yMax),
+      rr:Math.round(clamp(rr+heat*80,0,255)),
+      gg:Math.round(clamp(gg-heat*60,0,255)),
+      bb:Math.round(clamp(bb-heat*80,0,255)),
+      r:.4+Math.random()*2.2
+    });
   }
   return out;
 }
@@ -790,9 +799,9 @@ function shapeUniverseHorn(n,ox,oy,size){
      vast at the present-day end. We render this as a cone/horn cross-section
      with the CMB sphere at the left tip. */
   var out=[];
-  var hornLen=size*.92; /* total horizontal length */
-  var maxR=size*.44;    /* maximum radius at right (present) end */
-  var minR=size*.018;   /* minimum radius at left (CMB) end */
+  var hornLen=Math.min(size*.82,W()-90); /* cap to screen width minus rail */
+  var maxR=Math.min(size*.36,H()*.26);   /* cap to screen height */
+  var minR=size*.015;
 
   for(var i=0;i<n;i++){
     /* t=0 = Big Bang end (left), t=1 = present day (right) */
@@ -1773,7 +1782,7 @@ async function submitComment(){
   var input=document.getElementById('commentInput');
   var text=(input&&input.value||'').trim();
   if(!text){showToast('Type a comment first');return;}
-  /* Allow guest comments without a sim */
+  /* Open to all — free tier, no auth required */
   var userName=window.SS&&window.SS.user?window.SS.user.email.split('@')[0]:'Guest';
   var simId=currentSimId||'general';
   try{
@@ -2080,11 +2089,16 @@ function buildTicker(narrs,loading){
   track.style.transform='translateX(0)';
   tickerIsPaused=false;
   void track.offsetWidth;
+  /* 1.5s pause so user can read first word, then smooth infinite scroll */
+  var _scrollDur=dur;
   setTimeout(function(){
-    if(tickerIsPaused)return;
-    var dur=Math.max(180,narrs.length*40)+'s';
-    track.style.animation='tickerScroll '+dur+' linear infinite';
-  },2000);
+    var t2=document.getElementById('tickerTrack');
+    if(t2&&!tickerIsPaused){
+      t2.style.animation='none';
+      void t2.offsetWidth;
+      t2.style.animation='tickerScroll '+_scrollDur+' linear infinite';
+    }
+  },1500);
 }
 
 function tickerTap(){
@@ -2288,7 +2302,7 @@ function weeklySimsLeft(){
 /* Show auth modal or profile depending on state */
 function showAuthOrProfile(){
   if(window.SS&&window.SS.user){showProfileMenu();}
-  else{showAuthModal('Sign in to save your simulations and earn points');}
+  else{showAuthModal('Join SeenShown');}
 }
 function showAuthModal(reason){
   if(window.SS_AUTH)window.SS_AUTH.showAuth(reason);
@@ -2507,25 +2521,11 @@ window.addEventListener('appinstalled',function(){
 });
 /* iOS install hint + general install prompt */
 (function(){
-  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
   var isStandalone=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone;
-  if(isStandalone)return; /* already installed */
-  if(isIOS&&!localStorage.getItem('ss_ios_hint')){
-    setTimeout(function(){
-      var btn=document.getElementById('installBtn');
-      if(btn){btn.style.display='flex';}
-      localStorage.setItem('ss_ios_hint','1');
-    },4000);
-  } else if(!isIOS){
-    /* Show install button after 6s if beforeinstallprompt fired */
-    setTimeout(function(){
-      var btn=document.getElementById('installBtn');
-      if(btn&&btn.style.display==='none'&&!isStandalone){
-        /* Only show if PWA prompt available */
-        if(_pwaPrompt)btn.style.display='flex';
-      }
-    },6000);
-  }
+  if(isStandalone)return; /* already installed — hide button */
+  /* Always show install button — stays until user installs */
+  var btn=document.getElementById('installBtn');
+  if(btn)btn.style.display='flex';
 })();
 
 /* ── SW REGISTRATION ── */

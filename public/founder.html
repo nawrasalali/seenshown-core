@@ -3,471 +3,379 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SeenShown — Founder Dashboard</title>
+<title>SeenShown — Admin Dashboard</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--card:#080d1a;--border:rgba(38,232,176,0.12);--gold:#f0c040;--blue:#4a9eff;--red:#e05c5c}
-body{background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:rgba(2,4,14,0.97);border-bottom:1px solid var(--border)}
-.nav-logo{font-size:1rem;font-weight:800;color:var(--g)}
-.nav-right{display:flex;align-items:center;gap:12px}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--g);animation:blink 1.5s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.live-label{font-size:.68rem;color:var(--g);font-weight:600}
-.refresh-btn{font-size:.7rem;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:var(--dim);padding:4px 10px;cursor:pointer;transition:all .18s}
-.refresh-btn:hover{color:var(--g);border-color:var(--g)}
-.nav-badge{font-size:.6rem;background:rgba(124,79,212,0.2);border:1px solid rgba(124,79,212,0.4);color:#c4a0ff;padding:2px 8px;border-radius:10px}
-
-/* LAYOUT */
-.page{padding:72px 24px 40px;max-width:1400px;margin:0 auto}
-.page-title{font-size:1.4rem;font-weight:800;margin-bottom:.2rem}
-.page-sub{font-size:.78rem;color:var(--dim);margin-bottom:2rem}
-
-/* METRIC STRIP */
-.metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.5rem}
-.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem}
-.metric-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:.4rem}
-.metric-val{font-size:1.8rem;font-weight:900;line-height:1;color:var(--g)}
-.metric-val.gold{color:var(--gold)}
-.metric-val.blue{color:var(--blue)}
-.metric-val.red{color:var(--red)}
-.metric-val.white{color:var(--w)}
-.metric-sub{font-size:.65rem;color:var(--dim);margin-top:.3rem}
-.metric-delta{font-size:.65rem;margin-top:.2rem}
-.metric-delta.up{color:var(--g)}
-.metric-delta.dn{color:var(--red)}
-
-/* GRID */
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem}
-.grid-full{margin-bottom:.75rem}
-
-/* CARD */
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem}
-.card-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
-.card-title span{color:var(--w)}
-
-/* INVESTMENT PROGRESS */
-.inv-prog-wrap{margin-bottom:1rem}
-.inv-prog-label{display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:.5rem}
-.inv-prog-label .amt{color:var(--g);font-weight:700}
-.inv-bar{height:10px;background:rgba(255,255,255,0.06);border-radius:5px;overflow:hidden;margin-bottom:.5rem}
-.inv-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--blue));border-radius:5px;transition:width 1s ease}
-.inv-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:.75rem}
-.inv-tier{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;text-align:center}
-.inv-tier-name{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:.2rem}
-.inv-tier-val{font-size:1rem;font-weight:800;color:var(--g)}
-.inv-tier-seats{font-size:.6rem;color:var(--dim)}
-
-/* INVESTOR TABLE */
-.inv-table{width:100%;border-collapse:collapse;font-size:.75rem}
-.inv-table th{text-align:left;color:var(--dim);font-weight:600;font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;padding:.5rem .75rem;border-bottom:1px solid var(--border)}
-.inv-table td{padding:.6rem .75rem;border-bottom:1px solid rgba(255,255,255,0.04)}
-.inv-table tr:hover td{background:rgba(255,255,255,0.02)}
-.status-badge{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.06em}
-.status-completed{background:rgba(38,232,176,0.1);color:var(--g)}
-.status-pending{background:rgba(240,192,64,0.1);color:var(--gold)}
-.status-waitlist{background:rgba(74,158,255,0.1);color:var(--blue)}
-
-/* CHART PLACEHOLDER */
-.sparkline{height:48px;display:flex;align-items:flex-end;gap:2px;margin-top:.5rem}
-.spark-bar{flex:1;background:rgba(38,232,176,0.25);border-radius:2px 2px 0 0;min-height:4px;transition:height .3s}
-.spark-bar.active{background:var(--g)}
-
-/* SIM HEALTH */
-.sim-row{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:.76rem}
-.sim-row:last-child{border-bottom:none}
-.sim-name{color:var(--w);font-weight:500;flex:1}
-.sim-count{color:var(--g);font-weight:700;font-size:.8rem;min-width:50px;text-align:right}
-.sim-bar-wrap{flex:2;margin:0 .75rem;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
-.sim-bar-fill{height:100%;background:var(--g);border-radius:2px}
-
-/* ALERT RAIL */
-.alert-item{display:flex;align-items:flex-start;gap:.6rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:.74rem}
-.alert-item:last-child{border-bottom:none}
-.alert-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px}
-.alert-dot.ok{background:var(--g)}
-.alert-dot.warn{background:var(--gold)}
-.alert-dot.err{background:var(--red)}
-.alert-text{color:var(--w);line-height:1.5}
-.alert-time{font-size:.62rem;color:var(--dim);margin-top:.1rem}
-
-/* REFERRAL LEADERBOARD */
-.ref-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:.75rem}
-.ref-row:last-child{border-bottom:none}
-.ref-rank{width:20px;text-align:center;color:var(--dim);font-weight:700;font-size:.7rem}
-.ref-name{flex:1;color:var(--w)}
-.ref-users{color:var(--dim);font-size:.7rem}
-.ref-earn{color:var(--g);font-weight:700}
-
-/* EMPTY STATE */
-.empty{text-align:center;padding:2rem;color:var(--dim);font-size:.78rem}
-.empty-icon{font-size:2rem;margin-bottom:.5rem;opacity:.4}
-
-/* LOADING */
-.loading{display:flex;align-items:center;gap:.5rem;color:var(--dim);font-size:.76rem;padding:.5rem 0}
-.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.1);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+:root{--bg:#02040e;--g:#26e8b0;--p:#7C4FD4;--w:#e8eaf0;--dim:#6b7280;--red:#e05c5c;--gold:#f0c040;--card:rgba(255,255,255,0.04)}
+body{background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding:0}
+nav{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(2,4,14,0.95);border-bottom:1px solid rgba(38,232,176,0.15);position:sticky;top:0;z-index:100}
+.logo{font-size:1.1rem;font-weight:800;color:var(--g)}.logo span{color:var(--w);font-size:.7rem;opacity:.6;margin-left:6px}
+.nav-r{display:flex;gap:10px;align-items:center}
+.btn{padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--w);transition:.2s}
+.btn:hover{background:rgba(255,255,255,.12)}
+.btn.primary{background:var(--g);color:#02040e;border-color:transparent}
+main{padding:24px;max-width:1200px;margin:0 auto}
+h1{font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.sub{font-size:.82rem;color:var(--dim);margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px}
+.card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px}
+.card-label{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.card-value{font-size:1.8rem;font-weight:800;color:var(--w)}
+.card-value.green{color:var(--g)}.card-value.gold{color:var(--gold)}.card-value.red{color:var(--red)}
+.card-sub{font-size:.7rem;color:var(--dim);margin-top:4px}
+.section{margin-bottom:28px}
+.section h2{font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--w);display:flex;align-items:center;gap:8px}
+.section h2 span{font-size:.65rem;background:rgba(38,232,176,.15);color:var(--g);padding:2px 8px;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;padding:8px 12px;color:var(--dim);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.07)}
+td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.03)}
+.badge{padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:700;display:inline-block}
+.badge.admin{background:rgba(240,192,64,.15);color:var(--gold);border:1px solid rgba(240,192,64,.3)}
+.badge.scholar{background:rgba(38,232,176,.1);color:var(--g);border:1px solid rgba(38,232,176,.2)}
+.badge.studio{background:rgba(124,79,212,.15);color:#c4a0ff;border:1px solid rgba(124,79,212,.3)}
+.badge.free{background:rgba(255,255,255,.06);color:var(--dim);border:1px solid rgba(255,255,255,.1)}
+.action-btn{padding:3px 10px;border-radius:6px;font-size:.66rem;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--dim);transition:.2s}
+.action-btn:hover{border-color:var(--g);color:var(--g)}
+.action-btn.danger{border-color:rgba(224,92,92,.3);color:var(--red)}
+.tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07);padding-bottom:0}
+.tab{padding:8px 16px;font-size:.8rem;cursor:pointer;color:var(--dim);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.18s}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+.panel{display:none}.panel.active{display:block}
+.input{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:var(--w);font-size:.82rem;outline:none;transition:.2s;font-family:inherit}
+.input:focus{border-color:var(--g)}
+.search-row{display:flex;gap:8px;margin-bottom:14px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(38,232,176,.15);border:1px solid rgba(38,232,176,.4);border-radius:12px;padding:8px 18px;font-size:.8rem;color:var(--g);opacity:0;transition:.3s;pointer-events:none;z-index:500}
+.toast.show{opacity:1}
+.alert{background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);border-radius:10px;padding:12px 16px;font-size:.8rem;color:var(--red);margin-bottom:16px}
+.info{background:rgba(38,232,176,.08);border:1px solid rgba(38,232,176,.2);border-radius:10px;padding:12px 16px;font-size:.8rem;color:var(--g);margin-bottom:16px}
+.loading{color:var(--dim);font-size:.8rem;padding:20px;text-align:center}
+@media(max-width:640px){main{padding:14px}.grid{grid-template-columns:1fr 1fr}table{font-size:.72rem}th,td{padding:7px 8px}}
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="nav-logo">⚡ Founder Dashboard</div>
-  <div class="nav-right">
-    <div class="live-dot"></div>
-    <span class="live-label">LIVE</span>
-    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
-    <span class="nav-badge">CEO Eyes Only</span>
+  <div class="logo">SeenShown <span>Admin</span></div>
+  <div class="nav-r">
+    <span id="adminEmail" style="font-size:.72rem;color:var(--dim)"></span>
+    <a href="/" class="btn">← App</a>
+    <button class="btn" onclick="signOutAdmin()">Sign out</button>
   </div>
 </nav>
 
-<div class="page">
-  <div class="page-title">SeenShown Mission Control</div>
-  <div class="page-sub" id="last-updated">Loading…</div>
+<main>
+  <h1>Mission Control</h1>
+  <p class="sub" id="lastRefresh">Loading…</p>
 
-  <!-- METRIC STRIP -->
-  <div class="metric-strip">
-    <div class="metric">
-      <div class="metric-label">Live Users Now</div>
-      <div class="metric-val" id="m-live">—</div>
-      <div class="metric-sub">on seenshown.com</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Sims Today</div>
-      <div class="metric-val" id="m-sims">—</div>
-      <div class="metric-sub">custom questions asked</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Total Users</div>
-      <div class="metric-val white" id="m-users">—</div>
-      <div class="metric-sub" id="m-users-sub">loading…</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">MRR</div>
-      <div class="metric-val gold" id="m-mrr">—</div>
-      <div class="metric-sub">monthly recurring</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Investment Raised</div>
-      <div class="metric-val blue" id="m-inv">—</div>
-      <div class="metric-sub" id="m-inv-sub">of $2M target</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Commissions Paid</div>
-      <div class="metric-val" id="m-comm">—</div>
-      <div class="metric-sub">referral payouts</div>
-    </div>
+  <!-- ACCESS GATE -->
+  <div id="accessGate" style="display:none;text-align:center;padding:60px 20px">
+    <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+    <div style="font-size:1rem;font-weight:700;margin-bottom:8px">Admin Access Required</div>
+    <div style="font-size:.82rem;color:var(--dim);margin-bottom:20px">Only nawraselali@gmail.com can access this dashboard</div>
+    <button class="btn primary" onclick="window.location.href='/'">← Back to SeenShown</button>
   </div>
 
-  <!-- ROW 1 -->
-  <div class="grid-2">
+  <div id="dashContent" style="display:none">
 
-    <!-- INVESTMENT PROGRESS -->
-    <div class="card">
-      <div class="card-title">💰 Seed Round Progress <span id="inv-pct-badge">—</span></div>
-      <div class="inv-prog-wrap">
-        <div class="inv-prog-label">
-          <span id="inv-raised">$0 raised</span>
-          <span class="amt">$2,000,000 target</span>
-        </div>
-        <div class="inv-bar"><div class="inv-fill" id="inv-bar-fill" style="width:0%"></div></div>
-        <div class="inv-tiers">
-          <div class="inv-tier">
-            <div class="inv-tier-name">Entry $1K</div>
-            <div class="inv-tier-val" id="tier-entry-amt">$0</div>
-            <div class="inv-tier-seats" id="tier-entry-seats">0 seats</div>
-          </div>
-          <div class="inv-tier">
-            <div class="inv-tier-name">Growth $10K</div>
-            <div class="inv-tier-val" id="tier-growth-amt">$0</div>
-            <div class="inv-tier-seats" id="tier-growth-seats">0 seats</div>
-          </div>
-          <div class="inv-tier">
-            <div class="inv-tier-name">Lead $100K</div>
-            <div class="inv-tier-val" id="tier-lead-amt">$0</div>
-            <div class="inv-tier-seats" id="tier-lead-seats">0 seats</div>
-          </div>
-        </div>
+  <!-- METRICS -->
+  <div class="grid" id="metricsGrid">
+    <div class="card"><div class="card-label">Total Users</div><div class="card-value green" id="mTotal">—</div></div>
+    <div class="card"><div class="card-label">Paid Users</div><div class="card-value gold" id="mPaid">—</div></div>
+    <div class="card"><div class="card-label">Free Users</div><div class="card-value" id="mFree">—</div></div>
+    <div class="card"><div class="card-label">Simulations</div><div class="card-value" id="mSims">—</div></div>
+    <div class="card"><div class="card-label">Comments</div><div class="card-value" id="mComments">—</div></div>
+    <div class="card"><div class="card-label">Total Points</div><div class="card-value gold" id="mPoints">—</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('users',this)">Users</div>
+    <div class="tab" onclick="switchTab('sims',this)">Simulations</div>
+    <div class="tab" onclick="switchTab('comments',this)">Comments</div>
+    <div class="tab" onclick="switchTab('settings',this)">Settings</div>
+  </div>
+
+  <!-- USERS PANEL -->
+  <div class="panel active" id="panel-users">
+    <div class="search-row">
+      <input class="input" id="userSearch" placeholder="Search by email or name…" oninput="filterUsers(this.value)" style="flex:1">
+      <button class="btn primary" onclick="loadUsers()">Refresh</button>
+    </div>
+    <div id="usersTable"><div class="loading">Loading users…</div></div>
+  </div>
+
+  <!-- SIMULATIONS PANEL -->
+  <div class="panel" id="panel-sims">
+    <div class="search-row">
+      <input class="input" id="simSearch" placeholder="Search simulations…" style="flex:1">
+      <button class="btn primary" onclick="loadSims()">Refresh</button>
+    </div>
+    <div id="simsTable"><div class="loading">Loading simulations…</div></div>
+  </div>
+
+  <!-- COMMENTS PANEL -->
+  <div class="panel" id="panel-comments">
+    <button class="btn primary" onclick="loadComments()" style="margin-bottom:14px">Refresh</button>
+    <div id="commentsTable"><div class="loading">Loading comments…</div></div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="section">
+      <h2>Admin Actions</h2>
+      <div class="info">You are signed in as admin. You have unlimited access to all features.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <button class="btn primary" onclick="grantAdminAccess()">Grant admin to email</button>
+        <button class="btn" onclick="resetWeeklyLimits()">Reset weekly limits</button>
+        <button class="btn" onclick="exportData()">Export CSV</button>
       </div>
     </div>
-
-    <!-- USER GROWTH -->
-    <div class="card">
-      <div class="card-title">📈 User Growth <span id="growth-sub">last 7 days</span></div>
-      <div class="metric-strip" style="grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.75rem">
-        <div class="metric" style="padding:.7rem">
-          <div class="metric-label">Free</div>
-          <div class="metric-val" style="font-size:1.4rem" id="g-free">—</div>
-        </div>
-        <div class="metric" style="padding:.7rem">
-          <div class="metric-label">Paid</div>
-          <div class="metric-val gold" style="font-size:1.4rem" id="g-paid">—</div>
-        </div>
-        <div class="metric" style="padding:.7rem">
-          <div class="metric-label">Conv %</div>
-          <div class="metric-val" style="font-size:1.4rem" id="g-conv">—</div>
-        </div>
+    <div class="section" style="margin-top:20px">
+      <h2>Grant Tier</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="input" id="grantEmail" placeholder="user@email.com" style="flex:1;min-width:200px">
+        <select class="input" id="grantTier">
+          <option value="free">Free</option>
+          <option value="scholar">Scholar</option>
+          <option value="studio">Studio</option>
+          <option value="institutional">Institutional</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button class="btn primary" onclick="grantTier()">Apply</button>
       </div>
-      <div class="sparkline" id="sparkline">
-        <!-- bars injected by JS -->
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--dim);margin-top:.3rem">
-        <span>7 days ago</span><span>Today</span>
+    </div>
+    <div class="section" style="margin-top:20px">
+      <h2>Grant Points</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="input" id="pointsEmail" placeholder="user@email.com" style="flex:1;min-width:200px">
+        <input class="input" id="pointsAmount" placeholder="Points" type="number" style="width:100px">
+        <button class="btn primary" onclick="grantPoints()">Give points</button>
       </div>
     </div>
   </div>
 
-  <!-- ROW 2 -->
-  <div class="grid-3">
+  </div><!-- /dashContent -->
+</main>
 
-    <!-- REVENUE BY TIER -->
-    <div class="card">
-      <div class="card-title">💳 Revenue by Tier</div>
-      <div id="revenue-tiers">
-        <div class="loading"><div class="spin"></div> Loading Stripe data…</div>
-      </div>
-    </div>
-
-    <!-- SIM HEALTH -->
-    <div class="card">
-      <div class="card-title">🧬 Top Simulations</div>
-      <div id="sim-health">
-        <div class="loading"><div class="spin"></div> Loading…</div>
-      </div>
-    </div>
-
-    <!-- REFERRAL ECONOMY -->
-    <div class="card">
-      <div class="card-title">🔗 Top Referrers</div>
-      <div id="referral-leaderboard">
-        <div class="loading"><div class="spin"></div> Loading…</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ROW 3 -->
-  <div class="grid-2">
-
-    <!-- INVESTOR CRM -->
-    <div class="card">
-      <div class="card-title">🏦 Investor CRM <span id="inv-count-badge">—</span></div>
-      <div id="investor-crm" style="overflow-x:auto">
-        <div class="loading"><div class="spin"></div> Loading investors…</div>
-      </div>
-    </div>
-
-    <!-- ALERT RAIL -->
-    <div class="card">
-      <div class="card-title">🚨 System Alerts</div>
-      <div id="alert-rail">
-        <div class="loading"><div class="spin"></div> Checking systems…</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ROW 4 — REFERRAL PARTNERS -->
-  <div class="grid-full">
-    <div class="card">
-      <div class="card-title">👥 Referral Partners <span id="partner-count">—</span></div>
-      <div id="partner-table" style="overflow-x:auto">
-        <div class="loading"><div class="spin"></div> Loading partners…</div>
-      </div>
-    </div>
-  </div>
-
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
 var SB='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
-var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
-var H={'apikey':KEY,'Authorization':'Bearer '+KEY};
+var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
+var ADMIN_EMAIL='nawraselali@gmail.com';
+var session=null;
+var allUsers=[];
 
-function fmt(n){if(n>=1000000)return '$'+(n/1000000).toFixed(1)+'M';if(n>=1000)return '$'+(n/1000).toFixed(1)+'K';return '$'+n.toLocaleString();}
-function num(n){if(n>=1000000)return (n/1000000).toFixed(1)+'M';if(n>=1000)return (n/1000).toFixed(0)+'K';return n.toLocaleString();}
+/* ── AUTH CHECK ── */
+async function init(){
+  try{
+    var stored=localStorage.getItem('ss_session');
+    if(stored){
+      var s=JSON.parse(stored);
+      if(s&&s.access_token&&s.user){
+        session=s;
+        var email=s.user.email||'';
+        if(email!==ADMIN_EMAIL){
+          document.getElementById('accessGate').style.display='block';
+          return;
+        }
+        document.getElementById('adminEmail').textContent=email;
+        document.getElementById('dashContent').style.display='block';
+        loadAll();
+        return;
+      }
+    }
+    /* Not signed in */
+    document.getElementById('accessGate').style.display='block';
+  }catch(e){document.getElementById('accessGate').style.display='block';}
+}
 
-async function sb(path){
-  var r=await fetch(SB+'/rest/v1/'+path,{headers:H});
+async function sb(path,method,body){
+  var h={'apikey':SBK,'Authorization':'Bearer '+(session?session.access_token:SBK),'Content-Type':'application/json'};
+  var opts={method:method||'GET',headers:h};
+  if(body)opts.body=JSON.stringify(body);
+  var r=await fetch(SB+path,opts);
   return r.json();
 }
 
-async function loadInvestment(){
-  try{
-    var data=await sb('investor_registrations?select=package,seats,status,email,investor_type,created_at&order=created_at.desc');
-    if(!Array.isArray(data)){throw new Error('no data');}
-    var total=0,entryAmt=0,growthAmt=0,leadAmt=0;
-    var entrySeats=0,growthSeats=0,leadSeats=0;
-    var completed=data.filter(function(r){return r.status==='completed';});
-    completed.forEach(function(r){
-      var s=parseInt(r.seats)||1;
-      var a=r.package==='entry'?1000*s:r.package==='growth'?10000*s:100000*s;
-      total+=a;
-      if(r.package==='entry'){entryAmt+=a;entrySeats+=s;}
-      else if(r.package==='growth'){growthAmt+=a;growthSeats+=s;}
-      else{leadAmt+=a;leadSeats+=s;}
-    });
-    var pct=Math.min(Math.round(total/2000000*100),100);
-    document.getElementById('m-inv').textContent=fmt(total);
-    document.getElementById('inv-raised').textContent=fmt(total)+' raised';
-    document.getElementById('inv-pct-badge').textContent=pct+'%';
-    document.getElementById('inv-bar-fill').style.width=pct+'%';
-    document.getElementById('tier-entry-amt').textContent=fmt(entryAmt);
-    document.getElementById('tier-entry-seats').textContent=entrySeats+' seats';
-    document.getElementById('tier-growth-amt').textContent=fmt(growthAmt);
-    document.getElementById('tier-growth-seats').textContent=growthSeats+' seats';
-    document.getElementById('tier-lead-amt').textContent=fmt(leadAmt);
-    document.getElementById('tier-lead-seats').textContent=leadSeats+' seats';
+/* ── LOAD ALL DATA ── */
+async function loadAll(){
+  document.getElementById('lastRefresh').textContent='Loading all data…';
+  await Promise.all([loadMetrics(),loadUsers(),loadSims(),loadComments()]);
+  document.getElementById('lastRefresh').textContent='Last refreshed: '+new Date().toLocaleTimeString();
+}
 
-    // CRM table
-    document.getElementById('inv-count-badge').textContent=data.length+' total';
-    if(data.length===0){
-      document.getElementById('investor-crm').innerHTML='<div class="empty"><div class="empty-icon">📭</div>No investors yet — share the investor page</div>';
-      return;
+async function loadMetrics(){
+  try{
+    var [users,sims,comments]= await Promise.all([
+      sb('/rest/v1/profiles?select=tier,points&limit=1000'),
+      sb('/rest/v1/simulations?select=id&limit=1'),
+      sb('/rest/v1/simulation_comments?select=id&limit=1')
+    ]);
+    if(Array.isArray(users)){
+      document.getElementById('mTotal').textContent=users.length;
+      document.getElementById('mPaid').textContent=users.filter(u=>u.tier!=='free'&&u.tier!=='admin').length;
+      document.getElementById('mFree').textContent=users.filter(u=>u.tier==='free').length;
+      document.getElementById('mPoints').textContent=users.reduce((a,u)=>a+(u.points||0),0).toLocaleString();
     }
-    var rows=data.slice(0,10).map(function(r){
-      var amt=fmt((parseInt(r.seats)||1)*(r.package==='entry'?1000:r.package==='growth'?10000:100000));
-      var badge='<span class="status-badge status-'+(r.status||'pending')+'">'+( r.status||'pending')+'</span>';
-      return '<tr><td>'+(r.email||'—')+'</td><td>'+r.package+'</td><td>'+(r.seats||1)+' seat(s)</td><td>'+amt+'</td><td>'+r.investor_type+'</td><td>'+badge+'</td><td style="color:var(--dim);font-size:.68rem">'+(r.created_at?r.created_at.slice(0,10):'—')+'</td></tr>';
-    }).join('');
-    document.getElementById('investor-crm').innerHTML='<table class="inv-table"><thead><tr><th>Email</th><th>Package</th><th>Seats</th><th>Amount</th><th>Type</th><th>Status</th><th>Date</th></tr></thead><tbody>'+rows+'</tbody></table>';
-  }catch(e){
-    document.getElementById('investor-crm').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>Could not load investor data</div>';
-  }
+    /* Get counts from headers */
+    var simR=await fetch(SB+'/rest/v1/simulations?select=id',{headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,'Prefer':'count=exact'}});
+    var simCount=simR.headers.get('Content-Range')||'0';
+    document.getElementById('mSims').textContent=simCount.split('/')[1]||'—';
+    var comR=await fetch(SB+'/rest/v1/simulation_comments?select=id',{headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,'Prefer':'count=exact'}});
+    var comCount=comR.headers.get('Content-Range')||'0';
+    document.getElementById('mComments').textContent=comCount.split('/')[1]||'—';
+  }catch(e){console.error(e);}
 }
 
 async function loadUsers(){
+  document.getElementById('usersTable').innerHTML='<div class="loading">Loading…</div>';
   try{
-    var profiles=await sb('profiles?select=tier,created_at');
-    if(!Array.isArray(profiles))throw new Error();
-    var total=profiles.length;
-    var paid=profiles.filter(function(p){return p.tier&&p.tier!=='spark';}).length;
-    var free=total-paid;
-    var conv=total>0?Math.round(paid/total*100):0;
-    document.getElementById('m-users').textContent=num(total);
-    document.getElementById('m-users-sub').textContent='total registered';
-    document.getElementById('g-free').textContent=num(free);
-    document.getElementById('g-paid').textContent=num(paid);
-    document.getElementById('g-conv').textContent=conv+'%';
-    // MRR estimate
-    var mrr=profiles.filter(function(p){return p.tier==='scholar';}).length*9
-           +profiles.filter(function(p){return p.tier==='studio';}).length*29
-           +profiles.filter(function(p){return p.tier==='institutional';}).length*499;
-    document.getElementById('m-mrr').textContent=fmt(mrr);
-    // Sparkline — group by day last 7
-    var now=Date.now();
-    var bars=Array(7).fill(0);
-    profiles.forEach(function(p){
-      if(!p.created_at)return;
-      var d=Math.floor((now-new Date(p.created_at).getTime())/86400000);
-      if(d>=0&&d<7)bars[6-d]++;
+    var data=await sb('/rest/v1/profiles?select=*&order=created_at.desc&limit=200');
+    allUsers=Array.isArray(data)?data:[];
+    renderUsers(allUsers);
+  }catch(e){document.getElementById('usersTable').innerHTML='<div class="alert">Failed to load users</div>';}
+}
+
+function renderUsers(users){
+  if(!users.length){document.getElementById('usersTable').innerHTML='<div class="loading">No users yet</div>';return;}
+  var html='<table><tr><th>Email</th><th>Name</th><th>Tier</th><th>Points</th><th>Sims</th><th>Joined</th><th>Actions</th></tr>';
+  users.forEach(function(u){
+    html+='<tr>'
+      +'<td>'+esc(u.email||'—')+'</td>'
+      +'<td>'+esc(u.full_name||'—')+'</td>'
+      +'<td><span class="badge '+esc(u.tier||'free')+'">'+esc(u.tier||'free')+'</span></td>'
+      +'<td>'+((u.points||0).toLocaleString())+'</td>'
+      +'<td>'+(u.sims_created||0)+'</td>'
+      +'<td>'+new Date(u.created_at).toLocaleDateString()+'</td>'
+      +'<td>'
+      +'<button class="action-btn" onclick="quickGrant(\''+esc(u.email)+'\',\'scholar\')">Scholar</button> '
+      +'<button class="action-btn" onclick="quickGrant(\''+esc(u.email)+'\',\'studio\')">Studio</button> '
+      +'<button class="action-btn danger" onclick="deleteUser(\''+esc(u.user_id)+'\')">Delete</button>'
+      +'</td></tr>';
+  });
+  html+='</table>';
+  document.getElementById('usersTable').innerHTML=html;
+}
+
+function filterUsers(q){
+  var filtered=allUsers.filter(function(u){
+    return (u.email||'').includes(q)||(u.full_name||'').toLowerCase().includes(q.toLowerCase());
+  });
+  renderUsers(filtered);
+}
+
+async function loadSims(){
+  document.getElementById('simsTable').innerHTML='<div class="loading">Loading…</div>';
+  try{
+    var data=await sb('/rest/v1/simulations?select=id,title,domain,likes,views,is_public,created_at&order=created_at.desc&limit=100');
+    if(!Array.isArray(data)||!data.length){document.getElementById('simsTable').innerHTML='<div class="loading">No simulations yet</div>';return;}
+    var html='<table><tr><th>Title</th><th>Domain</th><th>Likes</th><th>Public</th><th>Created</th><th>Action</th></tr>';
+    data.forEach(function(s){
+      html+='<tr>'
+        +'<td>'+esc((s.title||'').slice(0,50))+'</td>'
+        +'<td>'+esc(s.domain||'—')+'</td>'
+        +'<td>'+(s.likes||0)+'</td>'
+        +'<td>'+(s.is_public?'✅':'🔒')+'</td>'
+        +'<td>'+new Date(s.created_at).toLocaleDateString()+'</td>'
+        +'<td><button class="action-btn danger" onclick="deleteSim(\''+s.id+'\')">Delete</button></td></tr>';
     });
-    var max=Math.max.apply(null,bars)||1;
-    document.getElementById('sparkline').innerHTML=bars.map(function(v,i){
-      var h=Math.max(8,Math.round(v/max*48));
-      return '<div class="spark-bar'+(i===6?' active':'')+ '" style="height:'+h+'px" title="'+v+' signups"></div>';
-    }).join('');
-    // Revenue by tier
-    var tierData=[
-      {name:'Scholar',color:'var(--p)',count:profiles.filter(function(p){return p.tier==='scholar';}).length,price:9},
-      {name:'Studio',color:'var(--gold)',count:profiles.filter(function(p){return p.tier==='studio';}).length,price:29},
-      {name:'Institutional',color:'var(--blue)',count:profiles.filter(function(p){return p.tier==='institutional';}).length,price:499},
-    ];
-    var totalMRR=tierData.reduce(function(s,t){return s+t.count*t.price;},0)||1;
-    document.getElementById('revenue-tiers').innerHTML=tierData.map(function(t){
-      var pct=Math.round(t.count*t.price/totalMRR*100);
-      return '<div style="margin-bottom:.85rem"><div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.3rem"><span style="color:var(--w);font-weight:600">'+t.name+'</span><span style="color:'+t.color+';font-weight:700">'+fmt(t.count*t.price)+'/mo</span></div><div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+t.color+';border-radius:3px"></div></div><div style="font-size:.62rem;color:var(--dim);margin-top:.2rem">'+t.count+' subscribers · $'+t.price+'/mo</div></div>';
-    }).join('');
-  }catch(e){
-    document.getElementById('m-users').textContent='—';
-    document.getElementById('revenue-tiers').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>No subscriber data yet</div>';
-  }
+    html+='</table>';
+    document.getElementById('simsTable').innerHTML=html;
+  }catch(e){document.getElementById('simsTable').innerHTML='<div class="alert">Failed to load simulations</div>';}
 }
 
-async function loadSimulations(){
+async function loadComments(){
+  document.getElementById('commentsTable').innerHTML='<div class="loading">Loading…</div>';
   try{
-    var sims=await sb('simulations?select=title,domain&limit=200&order=created_at.desc');
-    if(!Array.isArray(sims)||sims.length===0){
-      document.getElementById('sim-health').innerHTML='<div class="empty"><div class="empty-icon">🧬</div>No simulations run yet</div>';
-      document.getElementById('m-sims').textContent='0';
-      return;
-    }
-    document.getElementById('m-sims').textContent=num(sims.length);
-    // count by domain
-    var counts={};
-    sims.forEach(function(s){var d=s.domain||'unknown';counts[d]=(counts[d]||0)+1;});
-    var sorted=Object.entries(counts).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
-    var max=sorted[0]?sorted[0][1]:1;
-    document.getElementById('sim-health').innerHTML=sorted.map(function(e){
-      var pct=Math.round(e[1]/max*100);
-      return '<div class="sim-row"><span class="sim-name">'+e[0]+'</span><div class="sim-bar-wrap"><div class="sim-bar-fill" style="width:'+pct+'%"></div></div><span class="sim-count">'+e[1]+'</span></div>';
-    }).join('');
-  }catch(e){
-    document.getElementById('sim-health').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>No simulation data</div>';
-    document.getElementById('m-sims').textContent='—';
-  }
+    var data=await sb('/rest/v1/simulation_comments?select=*&order=created_at.desc&limit=100');
+    if(!Array.isArray(data)||!data.length){document.getElementById('commentsTable').innerHTML='<div class="loading">No comments yet</div>';return;}
+    var html='<table><tr><th>User</th><th>Comment</th><th>Time</th><th>Action</th></tr>';
+    data.forEach(function(c){
+      html+='<tr>'
+        +'<td>'+esc(c.user_name||'Guest')+'</td>'
+        +'<td>'+esc((c.text||'').slice(0,80))+'</td>'
+        +'<td>'+new Date(c.created_at).toLocaleDateString()+'</td>'
+        +'<td><button class="action-btn danger" onclick="deleteComment(\''+c.id+'\')">Delete</button></td></tr>';
+    });
+    html+='</table>';
+    document.getElementById('commentsTable').innerHTML=html;
+  }catch(e){document.getElementById('commentsTable').innerHTML='<div class="alert">Failed to load comments</div>';}
 }
 
-async function loadReferrals(){
-  try{
-    var partners=await sb('referral_partners?select=name,email,track,created_at&order=created_at.desc');
-    document.getElementById('partner-count').textContent=Array.isArray(partners)?partners.length+' registered':'—';
-    document.getElementById('m-comm').textContent='$0';
-    if(!Array.isArray(partners)||partners.length===0){
-      document.getElementById('referral-leaderboard').innerHTML='<div class="empty"><div class="empty-icon">🔗</div>No referral partners yet</div>';
-      document.getElementById('partner-table').innerHTML='<div class="empty"><div class="empty-icon">👥</div>No partners registered yet</div>';
-      return;
-    }
-    // Leaderboard (placeholder — no conversion tracking yet)
-    document.getElementById('referral-leaderboard').innerHTML=partners.slice(0,5).map(function(p,i){
-      return '<div class="ref-row"><span class="ref-rank">'+(i+1)+'</span><span class="ref-name">'+p.name+'</span><span class="ref-users">'+p.track+'</span><span class="ref-earn">$0</span></div>';
-    }).join('');
-    // Full table
-    var rows=partners.map(function(p){
-      return '<tr><td>'+p.name+'</td><td style="color:var(--dim)">'+p.email+'</td><td>'+p.track+'</td><td style="color:var(--dim);font-size:.68rem">'+(p.created_at?p.created_at.slice(0,10):'—')+'</td><td style="color:var(--g);font-weight:700">$0</td></tr>';
-    }).join('');
-    document.getElementById('partner-table').innerHTML='<table class="inv-table"><thead><tr><th>Name</th><th>Email</th><th>Track</th><th>Joined</th><th>Earned</th></tr></thead><tbody>'+rows+'</tbody></table>';
-  }catch(e){
-    document.getElementById('referral-leaderboard').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>Error loading</div>';
-  }
+/* ── ADMIN ACTIONS ── */
+async function quickGrant(email,tier){
+  await sb('/rest/v1/profiles?email=eq.'+encodeURIComponent(email),'PATCH',{tier:tier});
+  toast('✅ '+email+' → '+tier);
+  loadUsers();
+}
+async function grantTier(){
+  var email=document.getElementById('grantEmail').value.trim();
+  var tier=document.getElementById('grantTier').value;
+  if(!email){toast('Enter email');return;}
+  await sb('/rest/v1/profiles?email=eq.'+encodeURIComponent(email),'PATCH',{tier:tier,is_admin:(tier==='admin')});
+  toast('✅ '+email+' → '+tier);
+  loadUsers();
+}
+async function grantPoints(){
+  var email=document.getElementById('pointsEmail').value.trim();
+  var pts=parseInt(document.getElementById('pointsAmount').value)||0;
+  if(!email||!pts){toast('Enter email and amount');return;}
+  await sb('/rest/v1/profiles?email=eq.'+encodeURIComponent(email),'PATCH',{points:pts});
+  toast('✅ '+pts+' points → '+email);
+  loadUsers();
+}
+async function deleteUser(uid){
+  if(!confirm('Delete user? This cannot be undone.'))return;
+  await sb('/rest/v1/profiles?user_id=eq.'+uid,'DELETE');
+  toast('User deleted');
+  loadUsers();
+}
+async function deleteSim(id){
+  if(!confirm('Delete simulation?'))return;
+  await sb('/rest/v1/simulations?id=eq.'+id,'DELETE');
+  toast('Simulation deleted');
+  loadSims();
+}
+async function deleteComment(id){
+  await sb('/rest/v1/simulation_comments?id=eq.'+id,'DELETE');
+  toast('Comment deleted');
+  loadComments();
+}
+function resetWeeklyLimits(){
+  sb('/rest/v1/profiles?tier=eq.free','PATCH',{weekly_sims_used:0});
+  toast('Weekly limits reset for all free users');
+}
+function exportData(){
+  var rows=allUsers.map(function(u){return[u.email,u.full_name,u.tier,u.points,u.sims_created,u.created_at].join(',');});
+  var csv='Email,Name,Tier,Points,Sims,Joined\n'+rows.join('\n');
+  var a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='seenshown_users_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+function grantAdminAccess(){
+  var email=prompt('Email to grant admin:');
+  if(email)quickGrant(email,'admin');
 }
 
-function loadAlerts(){
-  // Static system health checks
-  var alerts=[
-    {dot:'ok',text:'Vercel deployment — all functions healthy',time:'Just now'},
-    {dot:'ok',text:'Supabase Edge Function simulate — operational',time:'Just now'},
-    {dot:'ok',text:'Stripe webhook — receiving events',time:'Just now'},
-    {dot:'ok',text:'investors.html — live and accessible',time:'Just now'},
-    {dot:'ok',text:'community.html — Stripe checkout active',time:'Just now'},
-    {dot:'warn',text:'Supabase Auth — not yet implemented. Users cannot log in.',time:'Pending'},
-    {dot:'warn',text:'USDT payment rail — pending AUSTRAC DCE registration',time:'Pending'},
-    {dot:'warn',text:'SAFE PDF auto-generation — not yet wired to email',time:'Next build'},
-  ];
-  document.getElementById('alert-rail').innerHTML=alerts.map(function(a){
-    return '<div class="alert-item"><div class="alert-dot '+a.dot+'"></div><div><div class="alert-text">'+a.text+'</div><div class="alert-time">'+a.time+'</div></div></div>';
-  }).join('');
+/* ── UI ── */
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
 }
-
-function loadLiveUsers(){
-  // Simulated live count — replace with websocket/realtime when auth is live
-  document.getElementById('m-live').textContent=Math.floor(Math.random()*12)+3;
-  setInterval(function(){
-    document.getElementById('m-live').textContent=Math.floor(Math.random()*12)+3;
-  },30000);
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2400);
 }
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function signOutAdmin(){localStorage.removeItem('ss_session');window.location.href='/';}
 
-async function loadAll(){
-  document.getElementById('last-updated').textContent='Last updated: '+new Date().toLocaleTimeString('en-AU');
-  await Promise.all([loadInvestment(),loadUsers(),loadSimulations(),loadReferrals()]);
-  loadAlerts();
-  loadLiveUsers();
-}
-
-loadAll();
+init();
 </script>
 </body>
 </html>

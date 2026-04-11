@@ -1,105 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SeenShown — Signing you in…</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#02040e;color:#e8eaf0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.box{text-align:center;padding:2rem}
-.spin{width:44px;height:44px;border:3px solid rgba(38,232,176,0.15);border-top-color:#26e8b0;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.2rem}
+body{background:#02040e;color:#26e8b0;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px}
+.ring{width:40px;height:40px;border:3px solid rgba(38,232,176,.2);border-top-color:#26e8b0;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.title{font-size:1.2rem;font-weight:700;color:#26e8b0;margin-bottom:.5rem}
-.sub{font-size:.82rem;color:#6b7280;line-height:1.6}
-.error{color:#e05c5c;font-size:.82rem;margin-top:1rem}
+p{font-size:.9rem;opacity:.7}
 </style>
 </head>
 <body>
-<div class="box">
-  <div class="spin"></div>
-  <div class="title" id="title">Signing you in…</div>
-  <div class="sub" id="sub">Just a moment</div>
-  <div class="error" id="err"></div>
-</div>
+<div class="ring"></div>
+<p>Signing you in…</p>
 <script>
-/* Supabase magic link callback handler
-   The URL hash contains #access_token=...&refresh_token=...&type=magiclink */
-var SB='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
-var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
+/* Handle Supabase OAuth callback — extracts tokens from URL hash or search params */
+(function(){
+  var SB='https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+  var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
 
-async function handleCallback(){
-  /* Parse hash params */
-  var hash=window.location.hash.slice(1);
-  var params={};
-  hash.split('&').forEach(function(p){var kv=p.split('=');params[decodeURIComponent(kv[0])]=decodeURIComponent(kv[1]||'');});
+  /* Extract tokens from URL fragment (#access_token=...&refresh_token=...) */
+  var hash = window.location.hash.substring(1);
+  var params = new URLSearchParams(hash||window.location.search);
 
-  var access_token=params.access_token;
-  var refresh_token=params.refresh_token;
-  var type=params.type||params.token_type;
+  var access_token = params.get('access_token');
+  var refresh_token = params.get('refresh_token');
+  var error = params.get('error_description')||params.get('error');
 
-  if(!access_token){
-    /* Try URL search params (some flows use these) */
-    var sp=new URLSearchParams(window.location.search);
-    access_token=sp.get('access_token')||sp.get('token');
-    type=sp.get('type');
-  }
-
-  if(!access_token){
-    document.getElementById('err').textContent='No auth token found. Please request a new sign-in link.';
-    document.getElementById('title').textContent='Sign-in failed';
+  if(error){
+    document.querySelector('p').textContent = 'Error: '+error;
     setTimeout(function(){window.location.href='/';},3000);
     return;
   }
 
-  try{
-    /* Exchange token for user session */
-    var r=await fetch(SB+'/auth/v1/user',{
+  if(access_token){
+    /* Get user info */
+    fetch(SB+'/auth/v1/user',{
       headers:{'apikey':SBK,'Authorization':'Bearer '+access_token}
-    });
-    var user=await r.json();
-
-    if(user&&user.id){
-      /* Store session in localStorage so index.html picks it up */
-      var session={access_token,refresh_token,user};
+    }).then(function(r){return r.json();}).then(function(user){
+      var session={
+        access_token:access_token,
+        refresh_token:refresh_token||'',
+        user:user,
+        expires_at:Date.now()/1000+3600
+      };
       localStorage.setItem('ss_session',JSON.stringify(session));
-      localStorage.setItem('ss_user_id',user.id);
-      localStorage.setItem('ss_user_email',user.email);
-
-      /* Upsert profile row */
-      await fetch(SB+'/rest/v1/profiles',{
-        method:'POST',
-        headers:{'apikey':SBK,'Authorization':'Bearer '+access_token,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
-        body:JSON.stringify({
-          user_id:user.id,
-          email:user.email,
-          tier:'free',
-          points:0,
-          sims_created:0,
-          weekly_sims_used:0,
-          weekly_reset_date:new Date().toISOString()
-        })
-      });
-
-      document.getElementById('title').textContent='Welcome to SeenShown ✨';
-      document.getElementById('sub').textContent='Signed in as '+user.email+'\nRedirecting…';
-      document.getElementById('spin')&&(document.getElementById('spin').style.borderTopColor='#26e8b0');
-
-      /* Redirect to intended page or home */
-      var redirect=localStorage.getItem('ss_auth_redirect')||'/';
-      localStorage.removeItem('ss_auth_redirect');
-      setTimeout(function(){window.location.href=redirect;},1200);
-    } else {
-      throw new Error(user.error_description||'Auth failed');
-    }
-  }catch(e){
-    document.getElementById('err').textContent='Sign-in error: '+e.message;
-    document.getElementById('title').textContent='Something went wrong';
-    setTimeout(function(){window.location.href='/';},3000);
+      /* Redirect back to app */
+      window.location.href='/';
+    }).catch(function(){
+      window.location.href='/';
+    });
+  } else {
+    /* No token — might be magic link email confirmation */
+    /* Try to get session from Supabase */
+    fetch(SB+'/auth/v1/session',{
+      headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}
+    }).then(function(r){return r.json();}).then(function(s){
+      if(s&&s.access_token){
+        localStorage.setItem('ss_session',JSON.stringify(s));
+      }
+      window.location.href='/';
+    }).catch(function(){
+      window.location.href='/';
+    });
   }
-}
-
-handleCallback();
+})();
 </script>
 </body>
 </html>

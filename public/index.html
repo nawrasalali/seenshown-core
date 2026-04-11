@@ -114,7 +114,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 #liveBadge.show{display:flex}
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes vsPulse{0%,100%{text-shadow:0 0 20px rgba(255,215,0,.9),0 0 40px rgba(255,215,0,.4);transform:translate(-50%,-50%) scale(1)}50%{text-shadow:0 0 30px rgba(255,215,0,1),0 0 60px rgba(255,215,0,.7);transform:translate(-50%,-50%) scale(1.08)}}@keyframes ballGlow{0%,100%{box-shadow:0 0 14px rgba(255,215,0,.9),0 0 30px rgba(255,215,0,.4)}50%{box-shadow:0 0 22px rgba(255,215,0,1),0 0 45px rgba(255,215,0,.7)}}@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes vsPulse{0%,100%{text-shadow:0 0 16px rgba(255,0,0,.9),0 0 32px rgba(255,0,0,.4)}50%{text-shadow:0 0 28px rgba(255,0,0,1),0 0 56px rgba(255,0,0,.7)}}@keyframes ballGlow{0%,100%{box-shadow:0 0 14px rgba(255,215,0,.9),0 0 30px rgba(255,215,0,.4)}50%{box-shadow:0 0 22px rgba(255,215,0,1),0 0 45px rgba(255,215,0,.7)}}@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 #answerTicker{position:relative}
 
 @media(max-width:640px){
@@ -316,16 +316,10 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
 </div>
 
-<!-- QUESTION BAR — standalone fixed, above bottom panel -->
-<div id="questionBar" style="position:fixed;bottom:0;left:0;right:72px;z-index:155;padding:7px 14px 6px;background:rgba(6,10,28,0.95);backdrop-filter:blur(20px);border-top:1.5px solid rgba(38,232,176,0.22);display:none;box-shadow:0 -2px 20px rgba(0,0,0,.4)">
-  <div style="font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(38,232,176,.65);margin-bottom:3px;font-weight:700">Question</div>
-  <div id="questionBarText" style="font-size:.85rem;color:#ffffff;line-height:1.4;font-weight:600"></div>
-</div>
-
 <div id="bottomPanel">
   <!-- QUESTION BAR — fixed, shows current question -->
-  <div id="questionBar" style="pointer-events:all;padding:7px 14px 7px;background:rgba(8,14,36,0.92);backdrop-filter:blur(18px);border-top:1.5px solid rgba(38,232,176,0.18);display:none">
-    <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(38,232,176,.55);margin-bottom:2px">Question</div>
+  <div id="questionBar" style="pointer-events:all;padding:6px 14px 6px;background:rgba(8,14,36,0.94);border-top:1.5px solid rgba(38,232,176,0.2);display:none">
+    <div style="font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(38,232,176,.6);margin-bottom:2px;font-weight:700">Question</div>
     <div id="questionBarText" style="font-size:.84rem;color:#fff;line-height:1.4;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.5)"></div>
   </div>
   <!-- TICKER BAR — scrolling answer, tap to expand -->
@@ -382,11 +376,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     style="position:absolute;top:46px;left:50%;transform:translateX(-50%);z-index:325;font-size:1rem;font-weight:900;color:#fff;background:rgba(0,0,0,0.75);border:2px solid rgba(255,220,0,0.6);border-radius:20px;padding:4px 18px;letter-spacing:.12em;text-shadow:0 0 16px rgba(255,220,0,.6);min-width:70px;text-align:center">
   </div>
 
-  <!-- VS — dead centre, sporty gaming -->
-  <div id="compVS"
-    style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:325;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:2px">
-    <div style="font-size:1.6rem;font-weight:900;color:#ffd700;letter-spacing:.15em;line-height:1;animation:vsPulse 2s ease-in-out infinite">VS</div>
-  </div>
+
 
   <!-- BALL POINTER — replaces side bar -->
   <!-- The ball slides up/down between the two halves based on votes -->
@@ -419,15 +409,19 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div id="cScoreA" style="position:absolute;top:6px;right:10px;font-size:.9rem;font-weight:900;color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,.7);letter-spacing:.06em"></div>
     <!-- VOTE pill -->
     <div id="compVT"
-      style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,0.15);border:2px solid #ffd700;border-radius:100px;color:#ffd700;font-size:.8rem;font-weight:900;padding:9px 28px;pointer-events:none;letter-spacing:.1em;text-shadow:0 0 12px rgba(255,215,0,.5);box-shadow:0 0 18px rgba(255,215,0,.2);white-space:nowrap">
+      style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,0.15);border:2px solid #ffd700;border-radius:100px;color:#ffd700;font-size:.78rem;font-weight:900;padding:7px 26px;pointer-events:none;letter-spacing:.12em;text-shadow:0 0 10px rgba(255,215,0,.6);box-shadow:0 0 16px rgba(255,215,0,.25);white-space:nowrap;z-index:316">
       VOTE
     </div>
     <!-- Float layer -->
     <div id="floatA" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:314"></div>
   </div>
 
-  <!-- DIVIDER with VS glow -->
-  <div style="height:3px;background:linear-gradient(90deg,rgba(124,79,212,.6),rgba(255,215,0,.8),rgba(38,232,176,.6));flex-shrink:0;box-shadow:0 0 12px rgba(255,215,0,.4)"></div>
+  <!-- DIVIDER — VS on the line, red -->
+  <div style="position:relative;height:30px;flex-shrink:0;display:flex;align-items:center;background:rgba(2,4,14,0.95);z-index:316">
+    <div style="flex:1;height:2px;background:linear-gradient(90deg,rgba(124,79,212,.6),rgba(220,0,0,.7))"></div>
+    <div id="compVS" style="padding:0 12px;font-size:1rem;font-weight:900;color:#ff1111;letter-spacing:.22em;text-shadow:0 0 14px rgba(255,0,0,.9),0 0 28px rgba(255,0,0,.5);animation:vsPulse 2s ease-in-out infinite;flex-shrink:0;line-height:1">VS</div>
+    <div style="flex:1;height:2px;background:linear-gradient(90deg,rgba(220,0,0,.7),rgba(38,232,176,.6))"></div>
+  </div>
 
   <!-- CANVAS B — bottom sim — CLICK ANYWHERE = vote -->
   <div id="compAreaB" style="position:relative;flex:1;overflow:hidden;cursor:pointer"
@@ -439,7 +433,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div id="cScoreB" style="position:absolute;top:6px;right:10px;font-size:.9rem;font-weight:900;color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,.7);letter-spacing:.06em"></div>
     <!-- VOTE pill — same as top, yellow -->
     <div id="compVB"
-      style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,0.15);border:2px solid #ffd700;border-radius:100px;color:#ffd700;font-size:.8rem;font-weight:900;padding:9px 28px;pointer-events:none;letter-spacing:.1em;text-shadow:0 0 12px rgba(255,215,0,.5);box-shadow:0 0 18px rgba(255,215,0,.2);white-space:nowrap">
+      style="position:absolute;top:4px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,0.15);border:2px solid #ffd700;border-radius:100px;color:#ffd700;font-size:.78rem;font-weight:900;padding:7px 26px;pointer-events:none;letter-spacing:.12em;text-shadow:0 0 10px rgba(255,215,0,.6);box-shadow:0 0 16px rgba(255,215,0,.25);white-space:nowrap;z-index:316">
       VOTE
     </div>
     <!-- Float layer -->
@@ -571,7 +565,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 #liveBadge.show{display:flex}
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes vsPulse{0%,100%{text-shadow:0 0 20px rgba(255,215,0,.9),0 0 40px rgba(255,215,0,.4);transform:translate(-50%,-50%) scale(1)}50%{text-shadow:0 0 30px rgba(255,215,0,1),0 0 60px rgba(255,215,0,.7);transform:translate(-50%,-50%) scale(1.08)}}@keyframes ballGlow{0%,100%{box-shadow:0 0 14px rgba(255,215,0,.9),0 0 30px rgba(255,215,0,.4)}50%{box-shadow:0 0 22px rgba(255,215,0,1),0 0 45px rgba(255,215,0,.7)}}@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes vsPulse{0%,100%{text-shadow:0 0 16px rgba(255,0,0,.9),0 0 32px rgba(255,0,0,.4)}50%{text-shadow:0 0 28px rgba(255,0,0,1),0 0 56px rgba(255,0,0,.7)}}@keyframes ballGlow{0%,100%{box-shadow:0 0 14px rgba(255,215,0,.9),0 0 30px rgba(255,215,0,.4)}50%{box-shadow:0 0 22px rgba(255,215,0,1),0 0 45px rgba(255,215,0,.7)}}@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 #answerTicker{position:relative}
 
 @media(max-width:640px){
@@ -773,16 +767,10 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
 </div>
 
-<!-- QUESTION BAR — standalone fixed, above bottom panel -->
-<div id="questionBar" style="position:fixed;bottom:0;left:0;right:72px;z-index:155;padding:7px 14px 6px;background:rgba(6,10,28,0.95);backdrop-filter:blur(20px);border-top:1.5px solid rgba(38,232,176,0.22);display:none;box-shadow:0 -2px 20px rgba(0,0,0,.4)">
-  <div style="font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(38,232,176,.65);margin-bottom:3px;font-weight:700">Question</div>
-  <div id="questionBarText" style="font-size:.85rem;color:#ffffff;line-height:1.4;font-weight:600"></div>
-</div>
-
 <div id="bottomPanel">
   <!-- QUESTION BAR — fixed, shows current question -->
-  <div id="questionBar" style="pointer-events:all;padding:7px 14px 7px;background:rgba(8,14,36,0.92);backdrop-filter:blur(18px);border-top:1.5px solid rgba(38,232,176,0.18);display:none">
-    <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(38,232,176,.55);margin-bottom:2px">Question</div>
+  <div id="questionBar" style="pointer-events:all;padding:6px 14px 6px;background:rgba(8,14,36,0.94);border-top:1.5px solid rgba(38,232,176,0.2);display:none">
+    <div style="font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(38,232,176,.6);margin-bottom:2px;font-weight:700">Question</div>
     <div id="questionBarText" style="font-size:.84rem;color:#fff;line-height:1.4;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.5)"></div>
   </div>
   <!-- TICKER BAR — scrolling answer, tap to expand -->
@@ -1694,18 +1682,16 @@ function loop(ts){
   var dt=Math.min((ts-lastTs)*simSpeed,50);
   lastTs=ts;
   render(dt);
-  /* Backup phase advance — fires if phaseAutoTimer was never set (e.g. boot crash) */
+  /* Backup phase advance — safety net only, fires 800ms AFTER expected time */
   if(!compActive&&autoPlayOn){
     _phaseMs+=dt;
-    var dur=(simDomain==='bigbang'?5200:6700);
-    if(_phaseMs>=dur){
+    var phaseDur=(simDomain==='bigbang'?5800:7300);
+    if(_phaseMs>=phaseDur&&!phaseAutoTimer){
       _phaseMs=0;
-      if(!phaseAutoTimer){
-        snapshot();
-        simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);
-        initPhase(simDomain,simPhase,false);
-        updateNarr(simDomain,simPhase);
-      }
+      snapshot();
+      simPhase=(simPhase+1)%(NARR[simDomain]?NARR[simDomain].length:1);
+      initPhase(simDomain,simPhase,false);
+      updateNarr(simDomain,simPhase);
     }
   }
 }
@@ -2047,8 +2033,8 @@ var DOMAIN_QUESTIONS={
 };
 
 function switchDomain(key,pill){
-  simDomain=key;simPhase=0;
-  if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
+  simDomain=key;simPhase=0;_phaseMs=0;
+  if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
   stopVoice();stopSound();
   document.querySelectorAll('.dpill').forEach(function(p){p.classList.remove('active');p.style.background='';p.style.color='';});
   if(pill){pill.classList.add('active');pill.style.background=DC[key]||'#26e8b0';pill.style.color='#02040e';}
@@ -2421,7 +2407,7 @@ function startCompete(){
   if(sA){sA.textContent='0';sA.style.color='';}if(sB){sB.textContent='0';sB.style.color='';}
   if(ti){ti.textContent='3:00';ti.style.color='#fff';ti.style.fontWeight='800';}
   var vt=document.getElementById('compVT'),vb=document.getElementById('compVB');
-  if(vt)vt.textContent='Like & Vote';if(vb)vb.textContent='Like & Vote';
+  if(vt)vt.textContent='VOTE';if(vb)vb.textContent='VOTE';
   var bA=document.getElementById('compBarA'),bB=document.getElementById('compBarB');
   if(bA)bA.style.flex='1';if(bB)bB.style.flex='1';
   var wo=document.getElementById('compWinner');if(wo)wo.style.display='none';
@@ -2999,17 +2985,6 @@ function showQuestionBar(q){
   if(!bar||!txt)return;
   txt.textContent=q.trim();
   bar.style.display='block';
-  /* Push bottomPanel up by question bar height */
-  setTimeout(function(){
-    var bp=document.getElementById('bottomPanel');
-    if(bp)bp.style.paddingBottom='0';
-    /* Position question bar just above ticker */
-    var ticker=document.getElementById('answerTicker');
-    if(ticker){
-      var rect=ticker.getBoundingClientRect();
-      bar.style.bottom=(window.innerHeight-rect.top)+'px';
-    }
-  },50);
 }
 
 /* ── SIM ACTIONS (save/post bar) ── */

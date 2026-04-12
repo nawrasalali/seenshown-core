@@ -1184,256 +1184,705 @@ function orbBirth(){
 
 /* ── AI FREE-FORM SIMULATION — CEO approved master prompt v1.0 ── */
 /* ══════════════════════════════════════════════════════════
-   SEENSHOWN BIOLOGICAL SHAPE LIBRARY
-   Each function returns particle targets forming a real shape
-   n=particle count, cx/cy=center (pixels), scale=size in pixels
+   SEENSHOWN SHAPE LIBRARY v2.0 — 50 shapes across all domains
+   Biology · Physics · Astronomy · Chemistry · Emotion · Society
+   Each fn: (n, cx, cy, scale, rr, gg, bb) → particle array
    ══════════════════════════════════════════════════════════ */
 
-function shapeBrain(n, cx, cy, scale, rr, gg, bb){
-  /* Brain silhouette: wide oval top, narrower bottom, medial groove, cerebellum */
+/* ── BIOLOGY ─────────────────────────────────────────────── */
+
+function shapeBrain(n,cx,cy,scale,rr,gg,bb){
   var out=[];
   for(var i=0;i<n;i++){
-    var px,py;
-    var roll=Math.random();
+    var px,py,roll=Math.random();
     if(roll<0.80){
-      /* Main cerebrum — egg-shaped, wider at top */
       var a=Math.random()*Math.PI*2;
-      /* Radii: wider horizontally, taller than wide, flat at bottom */
       var rx=scale*(0.52+Math.random()*0.08);
       var ry=scale*(0.40+Math.random()*0.08);
       px=Math.cos(a)*rx*(0.85+Math.random()*0.15);
       py=Math.sin(a)*ry*(0.85+Math.random()*0.15);
-      /* Flatten bottom: if below midline, push in */
-      if(py>0) py*=0.65;
-      /* Medial groove: thin gap at x~0 */
-      if(Math.abs(px)<scale*0.04) px+=scale*0.04*(px<0?-1:1);
-      /* Cortical folds: ripple on surface */
+      if(py>0)py*=0.65;
+      if(Math.abs(px)<scale*0.04)px+=scale*0.04*(px<0?-1:1);
       var surfDist=Math.sqrt(px*px/(rx*rx)+py*py/(ry*ry));
-      if(surfDist>0.75){
-        var foldAngle=Math.atan2(py,px);
-        var fold=Math.sin(foldAngle*8)*scale*0.045;
-        px+=Math.cos(foldAngle)*fold;
-        py+=Math.sin(foldAngle)*fold;
-      }
+      if(surfDist>0.75){var fa=Math.atan2(py,px);var fold=Math.sin(fa*8)*scale*0.045;px+=Math.cos(fa)*fold;py+=Math.sin(fa)*fold;}
     } else if(roll<0.93){
-      /* Cerebellum — small rounded lobe below and behind */
-      var ca=Math.random()*Math.PI+Math.PI*0.1; /* bottom arc */
-      px=(Math.random()*2-1)*scale*0.28;
-      py=scale*(0.32+Math.random()*0.18);
+      px=(Math.random()*2-1)*scale*0.28;py=scale*(0.32+Math.random()*0.18);
     } else {
-      /* Brain stem — narrow column at bottom center */
-      px=rnd(-scale*0.07,scale*0.07);
-      py=scale*(0.42+Math.random()*0.18);
+      px=rnd(-scale*0.07,scale*0.07);py=scale*(0.42+Math.random()*0.18);
     }
-    out.push({
-      tx:clamp(cx+px,0,W()), ty:clamp(cy+py,0,H()),
-      rr:clamp(rr+rnd(-12,12),0,255),
-      gg:clamp(gg+rnd(-12,12),0,255),
-      bb:clamp(bb+rnd(-12,12),0,255),
-      r:0.4+Math.random()*1.1
-    });
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-12,12),0,255),gg:clamp(gg+rnd(-12,12),0,255),bb:clamp(bb+rnd(-12,12),0,255),r:0.4+Math.random()*1.1});
   }
   return out;
 }
 
-function shapeBacterium(n, cx, cy, scale, rr, gg, bb){
-  /* Rod-shaped bacterium (bacillus) with flagella */
-  var out=[];
-  var angle=Math.random()*Math.PI; /* random orientation */
-  var cos=Math.cos(angle), sin=Math.sin(angle);
+function shapeBacterium(n,cx,cy,scale,rr,gg,bb){
+  var out=[];var angle=Math.random()*Math.PI;var cos=Math.cos(angle),sin=Math.sin(angle);
   for(var i=0;i<n;i++){
     var px,py;
-    if(i<n*0.78){
-      /* Main rod body — elongated oval */
-      var t=(Math.random()*2-1)*scale*0.55; /* along length */
-      var w=scale*0.22*Math.sqrt(1-Math.pow(t/(scale*0.55),2)); /* width tapers */
-      var off=rnd(-w,w);
-      px=t*cos-off*sin;
-      py=t*sin+off*cos;
-    } else {
-      /* Flagella — wavy tail */
-      var ft=Math.random()*scale*0.9+scale*0.55;
-      var fw=Math.sin(ft*4/scale)*scale*0.12;
-      px=ft*cos-fw*sin;
-      py=ft*sin+fw*cos;
-      if(Math.random()<0.5){px=-px;py=-py;}
-    }
-    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),
-      rr:clamp(rr+rnd(-20,20),0,255),
-      gg:clamp(gg+rnd(-20,20),0,255),
-      bb:clamp(bb+rnd(-20,20),0,255),
-      r:0.4+Math.random()*1.0});
+    if(i<n*0.78){var t=(Math.random()*2-1)*scale*0.55;var w=scale*0.22*Math.sqrt(Math.max(0,1-Math.pow(t/(scale*0.55),2)));var off=rnd(-w,w);px=t*cos-off*sin;py=t*sin+off*cos;}
+    else{var ft=Math.random()*scale*0.9+scale*0.55;var fw=Math.sin(ft*4/scale)*scale*0.12;px=ft*cos-fw*sin;py=ft*sin+fw*cos;if(Math.random()<0.5){px=-px;py=-py;}}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-20,20),0,255),gg:clamp(gg+rnd(-20,20),0,255),bb:clamp(bb+rnd(-20,20),0,255),r:0.4+Math.random()*1.0});
   }
   return out;
 }
 
-function shapeCell(n, cx, cy, scale, rr, gg, bb){
-  /* Animal cell — circular with nucleus and membrane */
+function shapeCell(n,cx,cy,scale,rr,gg,bb){
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;var px,py,lr=rr,lg=gg,lb=bb;
+    if(i<n*0.12){var mr=scale*(0.88+Math.random()*0.08);px=Math.cos(a)*mr;py=Math.sin(a)*mr;lr=clamp(rr+40,0,255);lg=clamp(gg+40,0,255);lb=clamp(bb+40,0,255);}
+    else if(i<n*0.32){var nr=Math.random()*scale*0.28;px=Math.cos(a)*nr;py=Math.sin(a)*nr;lr=clamp(rr+60,0,255);lg=clamp(gg+20,0,255);lb=clamp(bb+80,0,255);}
+    else{var cr=Math.random()*scale*0.82;px=Math.cos(a)*cr;py=Math.sin(a)*cr;}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:lr,gg:lg,bb:lb,r:0.3+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapeVirus(n,cx,cy,scale,rr,gg,bb){
+  var out=[];var numSpikes=12;
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;var px,py;
+    if(i<n*0.55){var cr=scale*(0.28+Math.random()*0.12);px=Math.cos(a)*cr*(0.8+Math.random()*0.4);py=Math.sin(a)*cr*(0.8+Math.random()*0.4);}
+    else if(i<n*0.85){var sp=Math.floor(Math.random()*numSpikes);var sa=(sp/numSpikes)*Math.PI*2;var sl=scale*(0.40+Math.random()*0.18);px=Math.cos(sa)*sl+rnd(-scale*0.03,scale*0.03);py=Math.sin(sa)*sl+rnd(-scale*0.03,scale*0.03);}
+    else{px=rnd(-scale*0.22,scale*0.22);py=rnd(-scale*0.22,scale*0.22);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-20,20),0,255),gg:clamp(gg+rnd(-20,20),0,255),bb:clamp(bb+rnd(-20,20),0,255),r:0.4+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapeNeuron(n,cx,cy,scale,rr,gg,bb){
+  var out=[];var numD=5+Math.floor(Math.random()*4);
+  for(var i=0;i<n;i++){
+    var px,py;
+    if(i<n*0.18){var sr=Math.random()*scale*0.18;var sa=Math.random()*Math.PI*2;px=Math.cos(sa)*sr;py=Math.sin(sa)*sr;}
+    else if(i<n*0.62){var d=Math.floor(Math.random()*numD);var da=(d/numD)*Math.PI*2;var dl=Math.random()*scale*0.52;var dw=rnd(-scale*0.05,scale*0.05)*(1-dl/(scale*0.52));px=Math.cos(da)*dl+Math.cos(da+Math.PI/2)*dw;py=Math.sin(da)*dl+Math.sin(da+Math.PI/2)*dw;}
+    else{var al=Math.random()*scale*0.78;px=rnd(-scale*0.025,scale*0.025);py=scale*0.2+al;}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,20),0,255),gg:clamp(gg+rnd(-10,20),0,255),bb:clamp(bb+rnd(-10,20),0,255),r:0.3+Math.random()*0.9});
+  }
+  return out;
+}
+
+function shapeDNA(n,cx,cy,scale,rr,gg,bb){
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=(i/n)*Math.PI*6;var y=((i/n)-0.5)*scale*1.2;var r2=scale*0.22;
+    if(i%3===0){out.push({tx:clamp(cx+(Math.random()*2-1)*r2,0,W()),ty:clamp(cy+y,0,H()),rr:200,gg:200,bb:220,r:0.5+Math.random()*0.5});}
+    else{var strand=i%3===1?1:-1;out.push({tx:clamp(cx+Math.cos(t)*r2*strand,0,W()),ty:clamp(cy+y+Math.sin(t)*scale*0.04,0,H()),rr:strand===1?clamp(rr+40,0,255):clamp(rr-40,0,255),gg:strand===1?clamp(gg+40,0,255):clamp(gg-40,0,255),bb:strand===1?clamp(bb+60,0,255):clamp(bb+20,0,255),r:0.5+Math.random()*1.0});}
+  }
+  return out;
+}
+
+function shapeHeart(n,cx,cy,scale,rr,gg,bb){
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random()*Math.PI*2;var r=0.5+Math.random()*0.5;
+    var hx=scale*0.055*16*Math.pow(Math.sin(t),3)*r;
+    var hy=-scale*0.055*(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*r;
+    out.push({tx:clamp(cx+hx,0,W()),ty:clamp(cy+hy,0,H()),rr:clamp(rr+rnd(-15,25),0,255),gg:clamp(gg+rnd(-15,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.3});
+  }
+  return out;
+}
+
+function shapeLung(n,cx,cy,scale,rr,gg,bb){
+  /* Two lobes like a lung cross-section */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var side=i<n*0.5?-1:1;
+    var a=Math.random()*Math.PI*2;
+    var rx=scale*(0.28+Math.random()*0.08);
+    var ry=scale*(0.42+Math.random()*0.08);
+    var px=side*scale*0.22+Math.cos(a)*rx*(0.7+Math.random()*0.3);
+    var py=Math.sin(a)*ry*(0.7+Math.random()*0.3);
+    /* Bronchiole branches at center */
+    if(Math.random()<0.15){px=side*rnd(0,scale*0.12);py=rnd(-scale*0.3,scale*0.1);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.3+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeBloodCell(n,cx,cy,scale,rr,gg,bb){
+  /* Red blood cell — biconcave disk */
   var out=[];
   for(var i=0;i<n;i++){
     var a=Math.random()*Math.PI*2;
-    var px,py,lr,lg,lb;
-    if(i<n*0.12){
-      /* Cell membrane — dense ring at edge */
-      var mr=scale*(0.88+Math.random()*0.08);
-      px=Math.cos(a)*mr; py=Math.sin(a)*mr;
-      lr=clamp(rr+40,0,255);lg=clamp(gg+40,0,255);lb=clamp(bb+40,0,255);
-    } else if(i<n*0.32){
-      /* Nucleus — inner bright sphere */
-      var nr=Math.random()*scale*0.28;
-      px=Math.cos(a)*nr; py=Math.sin(a)*nr;
-      lr=clamp(rr+60,0,255);lg=clamp(gg+20,0,255);lb=clamp(bb+80,0,255);
-    } else {
-      /* Cytoplasm — fills interior */
-      var cr=Math.random()*scale*0.82;
-      px=Math.cos(a)*cr; py=Math.sin(a)*cr;
-      lr=clamp(rr+rnd(-10,10),0,255);
-      lg=clamp(gg+rnd(-10,10),0,255);
-      lb=clamp(bb+rnd(-10,10),0,255);
-    }
-    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:lr,gg:lg,bb:lb,
-      r:0.3+Math.random()*1.1});
+    var r=Math.random()*scale*0.45;
+    var px=Math.cos(a)*r;var py=Math.sin(a)*r*0.42;/* flatten to disk */
+    /* Biconcave depression in center */
+    var depth=Math.exp(-r*r/(scale*scale*0.08))*scale*0.08;
+    var pz=depth;/* z creates the raised rim */
+    var rim=r>scale*0.28?1.3:1.0;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py*rim,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.5+Math.random()*1.2});
   }
   return out;
 }
 
-function shapeHeart(n, cx, cy, scale, rr, gg, bb){
-  /* Heart shape using parametric equation */
+function shapeMitochondria(n,cx,cy,scale,rr,gg,bb){
+  /* Oval with inner cristae folds */
   var out=[];
   for(var i=0;i<n;i++){
-    var t=Math.random()*Math.PI*2;
-    var r=0.5+Math.random()*0.5;
-    /* Heart parametric: x=16sin³t, y=-(13cost-5cos2t-2cos3t-cos4t) */
-    var hx=scale*0.055*16*Math.pow(Math.sin(t),3)*r;
-    var hy=-scale*0.055*(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*r;
-    out.push({tx:clamp(cx+hx,0,W()),ty:clamp(cy+hy,0,H()),
-      rr:clamp(rr+rnd(-15,25),0,255),
-      gg:clamp(gg+rnd(-15,10),0,255),
-      bb:clamp(bb+rnd(-10,10),0,255),
-      r:0.4+Math.random()*1.3});
+    var a=Math.random()*Math.PI*2;var px,py;
+    if(i<n*0.25){/* Outer membrane */var mr=scale*(0.44+Math.random()*0.06);px=Math.cos(a)*mr;py=Math.sin(a)*mr*0.58;}
+    else if(i<n*0.55){/* Cristae folds */var fold=Math.floor(Math.random()*5);var fy=(fold/5-0.5)*scale*0.5;var fx=Math.sin(Math.random()*Math.PI)*scale*(0.2+Math.random()*0.2)*(Math.random()<0.5?1:-1);px=fx;py=fy;}
+    else{/* Matrix */px=rnd(-scale*0.35,scale*0.35);py=rnd(-scale*0.22,scale*0.22);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,20),0,255),gg:clamp(gg+rnd(-10,20),0,255),bb:clamp(bb+rnd(-10,20),0,255),r:0.4+Math.random()*0.9});
   }
   return out;
 }
 
-function shapeNeuron(n, cx, cy, scale, rr, gg, bb){
-  /* Neuron — soma with dendrites and axon */
+function shapeSynapse(n,cx,cy,scale,rr,gg,bb){
+  /* Two neurons with synaptic gap and vesicles */
   var out=[];
-  var numDendrites=5+Math.floor(Math.random()*4);
+  for(var i=0;i<n;i++){
+    var px,py;var roll=Math.random();
+    if(roll<0.30){/* Presynaptic terminal */px=rnd(-scale*0.35,-scale*0.08);py=rnd(-scale*0.18,scale*0.18);}
+    else if(roll<0.50){/* Vesicles */var vx=rnd(-scale*0.28,-scale*0.10);var vy=rnd(-scale*0.12,scale*0.12);var va=Math.random()*Math.PI*2;px=vx+Math.cos(va)*scale*0.04;py=vy+Math.sin(va)*scale*0.04;}
+    else if(roll<0.65){/* Synaptic cleft */px=rnd(-scale*0.08,scale*0.08);py=rnd(-scale*0.12,scale*0.12);}
+    else{/* Postsynaptic density */px=rnd(scale*0.08,scale*0.38);py=rnd(-scale*0.18,scale*0.18);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,20),0,255),gg:clamp(gg+rnd(-10,20),0,255),bb:clamp(bb+rnd(-10,20),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeBrainWave(n,cx,cy,scale,rr,gg,bb,freq){
+  var f=freq||3;var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random();var wx=(t-0.5)*scale*1.8;
+    var amp=scale*0.22*(1-Math.pow(Math.abs(t-0.5)*1.8,2));
+    var wy=Math.sin(t*Math.PI*2*f)*amp+rnd(-scale*0.02,scale*0.02);
+    out.push({tx:clamp(cx+wx,0,W()),ty:clamp(cy+wy,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+/* ── ASTRONOMY & PHYSICS ─────────────────────────────────── */
+
+function shapeGalaxy(n,cx,cy,scale,rr,gg,bb){
+  /* Spiral galaxy with arms and bright core */
+  var out=[];var numArms=2;
+  for(var i=0;i<n;i++){
+    var t=Math.random();var arm=Math.floor(Math.random()*numArms);
+    var angle=(arm/numArms)*Math.PI*2+t*Math.PI*2.5;
+    var r=t*scale*0.72;
+    var px=Math.cos(angle)*r+rnd(-scale*0.04,scale*0.04)*t;
+    var py=Math.sin(angle)*r*0.45+rnd(-scale*0.03,scale*0.03)*t;
+    /* Bright core */
+    if(i<n*0.15){px=rnd(-scale*0.08,scale*0.08);py=rnd(-scale*0.05,scale*0.05);}
+    var bright=1-t;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+(bright*40|0)+rnd(-10,10),0,255),gg:clamp(gg+(bright*40|0)+rnd(-10,10),0,255),bb:clamp(bb+(bright*60|0)+rnd(-10,10),0,255),r:0.3+t*1.2+Math.random()*0.5});
+  }
+  return out;
+}
+
+function shapeBlackHole(n,cx,cy,scale,rr,gg,bb){
+  /* Event horizon ring with accretion disk */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;var px,py;
+    if(i<n*0.25){/* Event horizon — dark ring */var r=scale*(0.20+Math.random()*0.05);px=Math.cos(a)*r;py=Math.sin(a)*r*0.38;}
+    else if(i<n*0.70){/* Accretion disk */var r2=scale*(0.28+Math.random()*0.45);px=Math.cos(a)*r2;py=Math.sin(a)*r2*0.18+rnd(-scale*0.04,scale*0.04);}
+    else{/* Jets */var jt=(Math.random()-0.5)*scale*0.06;var jy=(Math.random()*0.7+0.3)*scale*(Math.random()<0.5?-1:1);px=jt;py=jy;}
+    var dist=Math.sqrt(px*px+py*py)/scale;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+(dist*60|0),0,255),gg:clamp(gg+(dist*40|0),0,255),bb:clamp(bb+(dist*20|0),0,255),r:0.3+Math.random()*1.2});
+  }
+  return out;
+}
+
+function shapeStar(n,cx,cy,scale,rr,gg,bb){
+  /* Star with corona and solar prominences */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;var px,py;
+    if(i<n*0.45){/* Core */var r=Math.random()*scale*0.32;px=Math.cos(a)*r;py=Math.sin(a)*r;}
+    else if(i<n*0.75){/* Corona */var r2=scale*(0.32+Math.random()*0.25);px=Math.cos(a)*r2;py=Math.sin(a)*r2;}
+    else{/* Solar prominence */var pt=(Math.random()*0.4+0.38)*scale;var pw=Math.sin(a*3)*scale*0.12;px=Math.cos(a)*pt+pw;py=Math.sin(a)*pt+pw*0.5;}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,20),0,255),gg:clamp(gg+rnd(-10,15),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.2});
+  }
+  return out;
+}
+
+function shapePlanet(n,cx,cy,scale,rr,gg,bb){
+  /* Planet with atmosphere and rings */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;var px,py;
+    if(i<n*0.55){/* Planet body */var r=Math.random()*scale*0.38;px=Math.cos(a)*r;py=Math.sin(a)*r;}
+    else if(i<n*0.72){/* Atmosphere */var r2=scale*(0.38+Math.random()*0.08);px=Math.cos(a)*r2;py=Math.sin(a)*r2;}
+    else{/* Rings */var r3=scale*(0.55+Math.random()*0.3);px=Math.cos(a)*r3;py=Math.sin(a)*r3*0.18+rnd(-scale*0.015,scale*0.015);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapeAtom(n,cx,cy,scale,rr,gg,bb){
+  /* Atom — nucleus with electron orbital rings */
+  var out=[];var numOrbitals=3;
   for(var i=0;i<n;i++){
     var px,py;
-    if(i<n*0.18){
-      /* Soma — cell body */
-      var sr=Math.random()*scale*0.18;
-      var sa=Math.random()*Math.PI*2;
-      px=Math.cos(sa)*sr; py=Math.sin(sa)*sr;
-    } else if(i<n*0.62){
-      /* Dendrites — branching from soma */
-      var d=Math.floor(Math.random()*numDendrites);
-      var da=(d/numDendrites)*Math.PI*2;
-      var dl=Math.random()*scale*0.52;
-      var dw=rnd(-scale*0.05,scale*0.05)*(1-dl/(scale*0.52));
-      px=Math.cos(da)*dl+Math.cos(da+Math.PI/2)*dw;
-      py=Math.sin(da)*dl+Math.sin(da+Math.PI/2)*dw;
-    } else {
-      /* Axon — long single projection down */
-      var al=Math.random()*scale*0.78;
-      px=rnd(-scale*0.025,scale*0.025);
-      py=scale*0.2+al;
-    }
-    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),
-      rr:clamp(rr+rnd(-10,20),0,255),
-      gg:clamp(gg+rnd(-10,20),0,255),
-      bb:clamp(bb+rnd(-10,20),0,255),
-      r:0.3+Math.random()*0.9});
+    if(i<n*0.18){/* Nucleus */px=rnd(-scale*0.07,scale*0.07);py=rnd(-scale*0.07,scale*0.07);}
+    else{/* Electrons on orbitals */var orb=Math.floor(Math.random()*numOrbitals);var angle=(orb/numOrbitals)*Math.PI/2;var a=Math.random()*Math.PI*2;var r=scale*(0.28+orb*0.18);px=Math.cos(a)*r*Math.cos(angle)-Math.sin(a)*r*0.3*Math.sin(angle);py=Math.cos(a)*r*Math.sin(angle)+Math.sin(a)*r*0.3*Math.cos(angle);if(Math.random()<0.05){px=Math.cos(a)*r*(0.98+Math.random()*0.06);py=Math.sin(a)*r*0.3;}}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,15),0,255),gg:clamp(gg+rnd(-10,15),0,255),bb:clamp(bb+rnd(-10,15),0,255),r:0.4+Math.random()*1.1});
   }
   return out;
 }
 
-function shapeDNA(n, cx, cy, scale, rr, gg, bb){
-  /* DNA double helix */
-  var out=[];
-  for(var i=0;i<n;i++){
-    var t=(i/n)*Math.PI*6; /* 3 full turns */
-    var y=((i/n)-0.5)*scale*1.2;
-    var r2=scale*0.22;
-    if(i%3===0){
-      /* Base pairs — rungs */
-      var bp=Math.random()*2-1;
-      out.push({tx:clamp(cx+bp*r2,0,W()),ty:clamp(cy+y,0,H()),
-        rr:200,gg:200,bb:200,r:0.5+Math.random()*0.5});
-    } else {
-      /* Strand 1 or 2 */
-      var strand=i%3===1?1:-1;
-      var sx=Math.cos(t)*r2*strand;
-      var sy=Math.sin(t)*scale*0.04;
-      out.push({tx:clamp(cx+sx,0,W()),ty:clamp(cy+y+sy,0,H()),
-        rr:strand===1?clamp(rr+40,0,255):clamp(rr-40,0,255),
-        gg:strand===1?clamp(gg+40,0,255):clamp(gg-40,0,255),
-        bb:strand===1?clamp(bb+60,0,255):clamp(bb+20,0,255),
-        r:0.5+Math.random()*1.0});
-    }
-  }
-  return out;
-}
-
-function shapeBrainWave(n, cx, cy, scale, rr, gg, bb, freq){
-  /* Brain wave — sinusoidal wave across screen */
-  var f=freq||3;
+function shapeSoundWave(n,cx,cy,scale,rr,gg,bb){
+  /* Longitudinal sound wave — compression and rarefaction */
   var out=[];
   for(var i=0;i<n;i++){
     var t=Math.random();
     var wx=(t-0.5)*scale*1.8;
-    var amp=scale*0.22*(1-Math.pow(Math.abs(t-0.5)*1.8,2));
-    var wy=Math.sin(t*Math.PI*2*f)*amp+rnd(-scale*0.02,scale*0.02);
-    out.push({tx:clamp(cx+wx,0,W()),ty:clamp(cy+wy,0,H()),
-      rr:clamp(rr+rnd(-10,10),0,255),
-      gg:clamp(gg+rnd(-10,10),0,255),
-      bb:clamp(bb+rnd(-10,10),0,255),
-      r:0.4+Math.random()*1.0});
+    /* Compression zones */
+    var compression=Math.pow(Math.sin(t*Math.PI*6),2);
+    var wy=rnd(-scale*0.15,scale*0.15)*(1-compression*0.7);
+    /* Denser where compressed */
+    if(compression>0.7&&Math.random()>0.4)wy*=0.3;
+    out.push({tx:clamp(cx+wx,0,W()),ty:clamp(cy+wy,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.3+compression*0.8+Math.random()*0.5});
   }
   return out;
 }
 
-function shapeVirus(n, cx, cy, scale, rr, gg, bb){
-  /* Virus — icosahedral with spike proteins */
+function shapeLightWave(n,cx,cy,scale,rr,gg,bb){
+  /* Transverse electromagnetic wave */
   var out=[];
-  var numSpikes=12;
+  for(var i=0;i<n;i++){
+    var t=Math.random();var wx=(t-0.5)*scale*1.8;
+    var wy=Math.sin(t*Math.PI*8)*scale*0.28;
+    var wz=Math.cos(t*Math.PI*8)*scale*0.18;/* perpendicular field */
+    out.push({tx:clamp(cx+wx,0,W()),ty:clamp(cy+wy+wz*0.4,0,H()),rr:clamp(rr+rnd(-15,15),0,255),gg:clamp(gg+rnd(-15,15),0,255),bb:clamp(bb+rnd(-15,15),0,255),r:0.4+Math.random()*0.8});
+  }
+  return out;
+}
+
+function shapeExplosion(n,cx,cy,scale,rr,gg,bb){
+  /* Radial explosion with shock wave */
+  var out=[];
   for(var i=0;i<n;i++){
     var a=Math.random()*Math.PI*2;
-    var px,py;
-    if(i<n*0.55){
-      /* Capsid — dense sphere */
-      var cr=scale*(0.28+Math.random()*0.12);
-      px=Math.cos(a)*cr*Math.cos(rnd(-1,1));
-      py=Math.sin(a)*cr;
-    } else if(i<n*0.85){
-      /* Spike proteins — protrusions */
-      var sp2=Math.floor(Math.random()*numSpikes);
-      var sa2=(sp2/numSpikes)*Math.PI*2;
-      var sl=scale*(0.40+Math.random()*0.18);
-      var sw=rnd(-scale*0.03,scale*0.03);
-      px=Math.cos(sa2)*sl+sw;
-      py=Math.sin(sa2)*sl+sw;
-    } else {
-      /* Genetic material inside */
-      px=rnd(-scale*0.22,scale*0.22);
-      py=rnd(-scale*0.22,scale*0.22);
-    }
-    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),
-      rr:clamp(rr+rnd(-20,20),0,255),
-      gg:clamp(gg+rnd(-20,20),0,255),
-      bb:clamp(bb+rnd(-20,20),0,255),
-      r:0.4+Math.random()*1.1});
+    var r=Math.pow(Math.random(),0.5)*scale*0.85;
+    var px=Math.cos(a)*r+rnd(-scale*0.03,scale*0.03)*r/scale;
+    var py=Math.sin(a)*r+rnd(-scale*0.03,scale*0.03)*r/scale;
+    var heat=1-r/scale;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+(heat*60|0),0,255),gg:clamp(gg+(heat*30|0),0,255),bb:clamp(bb-heat*40,0,255),r:0.3+heat*2.0+Math.random()*0.5});
   }
   return out;
 }
 
-/* ── SHAPE DISPATCHER — called by applyGroups when group has a shape property ── */
+function shapeTornado(n,cx,cy,scale,rr,gg,bb){
+  /* Tornado funnel — wide top narrowing to point */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random();/* 0=top wide, 1=bottom narrow */
+    var width=scale*(0.55-t*0.48);
+    var a=Math.random()*Math.PI*2+t*Math.PI*6;/* spiral */
+    var px=Math.cos(a)*width*(0.7+Math.random()*0.3);
+    var py=(t-0.5)*scale*1.1;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.3+Math.random()*0.9});
+  }
+  return out;
+}
+
+function shapeWaterDrop(n,cx,cy,scale,rr,gg,bb){
+  /* Water droplet — round body with pointed top */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;var r=Math.random()*scale*0.38;
+    var px=Math.cos(a)*r;
+    var py=Math.sin(a)*r;
+    /* Distort top to point */
+    if(py<-scale*0.1){var taper=1-(-py-scale*0.1)/(scale*0.25);px*=Math.max(0.1,taper);py-=(-py-scale*0.1)*0.6;}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeCrystal(n,cx,cy,scale,rr,gg,bb){
+  /* Hexagonal crystal lattice */
+  var out=[];var rows=6,cols=6;
+  for(var i=0;i<n;i++){
+    var row=Math.floor(Math.random()*rows)-rows/2;
+    var col=Math.floor(Math.random()*cols)-cols/2;
+    var px=(col+(row%2)*0.5)*scale*0.28;
+    var py=row*scale*0.24;
+    px+=rnd(-scale*0.04,scale*0.04);
+    py+=rnd(-scale*0.04,scale*0.04);
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,20),0,255),gg:clamp(gg+rnd(-10,20),0,255),bb:clamp(bb+rnd(-10,20),0,255),r:0.5+Math.random()*1.2});
+  }
+  return out;
+}
+
+function shapeMolecule(n,cx,cy,scale,rr,gg,bb){
+  /* Simple molecule — atoms connected by bonds */
+  var out=[];
+  var atoms=[{x:0,y:0},{x:scale*0.38,y:-scale*0.22},{x:scale*0.38,y:scale*0.22},{x:-scale*0.38,y:0}];
+  for(var i=0;i<n;i++){
+    var atom=atoms[Math.floor(Math.random()*atoms.length)];
+    var isBond=Math.random()<0.25;
+    var px,py;
+    if(isBond){/* Bond between random two atoms */var a1=atoms[Math.floor(Math.random()*atoms.length)];var a2=atoms[Math.floor(Math.random()*atoms.length)];var t=Math.random();px=a1.x+(a2.x-a1.x)*t;py=a1.y+(a2.y-a1.y)*t;px+=rnd(-scale*0.015,scale*0.015);}
+    else{px=atom.x+rnd(-scale*0.08,scale*0.08);py=atom.y+rnd(-scale*0.08,scale*0.08);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-15,20),0,255),gg:clamp(gg+rnd(-15,20),0,255),bb:clamp(bb+rnd(-15,20),0,255),r:0.4+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapeFireball(n,cx,cy,scale,rr,gg,bb){
+  /* Fireball with hot core and cooler edges */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;
+    var r=Math.pow(Math.random(),0.6)*scale*0.55;
+    var turbulence=Math.sin(a*7+r)*scale*0.06;
+    var px=Math.cos(a)*(r+turbulence);
+    var py=Math.sin(a)*(r+turbulence)-r*0.1;/* rises slightly */
+    var heat=1-r/(scale*0.55);
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:255,gg:clamp(gg*heat+(heat*80|0),0,255),bb:clamp(bb*heat*0.3,0,100),r:0.5+heat*2.0+Math.random()*0.5});
+  }
+  return out;
+}
+
+/* ── CHEMISTRY ───────────────────────────────────────────── */
+
+function shapeChemReaction(n,cx,cy,scale,rr,gg,bb){
+  /* Two reactants approaching, products forming */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var roll=Math.random();var px,py;
+    if(roll<0.30){px=rnd(-scale*0.55,-scale*0.22);py=rnd(-scale*0.15,scale*0.15);}/* reactant A */
+    else if(roll<0.55){px=rnd(scale*0.22,scale*0.55);py=rnd(-scale*0.15,scale*0.15);}/* reactant B */
+    else if(roll<0.75){px=rnd(-scale*0.12,scale*0.12);py=rnd(-scale*0.08,scale*0.08);}/* transition state */
+    else{var pa=Math.random()*Math.PI*2;px=Math.cos(pa)*scale*(0.25+Math.random()*0.25);py=Math.sin(pa)*scale*(0.25+Math.random()*0.25);}/* products */
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-15,15),0,255),gg:clamp(gg+rnd(-15,15),0,255),bb:clamp(bb+rnd(-15,15),0,255),r:0.4+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapeProtein(n,cx,cy,scale,rr,gg,bb){
+  /* Protein — folded chain with alpha helices */
+  var out=[];var chain=[];
+  for(var j=0;j<12;j++){chain.push({x:Math.sin(j*1.1)*scale*(0.2+j*0.02),y:(j/12-0.5)*scale*0.9});}
+  for(var i=0;i<n;i++){
+    var seg=Math.floor(Math.random()*chain.length);var c=chain[seg];
+    var isHelix=seg%3===0;
+    var px,py;
+    if(isHelix){var ha=Math.random()*Math.PI*2;px=c.x+Math.cos(ha)*scale*0.06;py=c.y+Math.sin(ha)*scale*0.06;}
+    else{px=c.x+rnd(-scale*0.04,scale*0.04);py=c.y+rnd(-scale*0.04,scale*0.04);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,15),0,255),gg:clamp(gg+rnd(-10,15),0,255),bb:clamp(bb+rnd(-10,15),0,255),r:0.4+Math.random()*0.9});
+  }
+  return out;
+}
+
+/* ── EARTH & ENVIRONMENT ─────────────────────────────────── */
+
+function shapeEarth(n,cx,cy,scale,rr,gg,bb){
+  /* Earth — sphere with continents suggestion */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;var r=Math.random()*scale*0.42;
+    var px=Math.cos(a)*r;var py=Math.sin(a)*r;
+    /* Continent patches */
+    var isLand=Math.sin(px*3/scale)*Math.cos(py*4/scale)>0.1;
+    var lr=isLand?clamp(20+rnd(-10,20),0,255):clamp(rr+rnd(-10,10),0,255);
+    var lg=isLand?clamp(120+rnd(-10,20),0,255):clamp(gg+rnd(-10,10),0,255);
+    var lb=isLand?clamp(40+rnd(-10,10),0,255):clamp(bb+rnd(-10,10),0,255);
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:lr,gg:lg,bb:lb,r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeMountain(n,cx,cy,scale,rr,gg,bb){
+  /* Mountain range profile */
+  var out=[];var peaks=[{x:-scale*0.5,h:0.6},{x:-scale*0.2,h:1.0},{x:scale*0.1,h:0.75},{x:scale*0.4,h:0.88}];
+  for(var i=0;i<n;i++){
+    var t=Math.random()*2-1;/* x position */
+    var px=t*scale*0.7;
+    /* Find height at this x */
+    var maxH=0;
+    for(var p=0;p<peaks.length;p++){var dist=Math.abs(px-peaks[p].x);var h=peaks[p].h*Math.max(0,1-dist/(scale*0.38));if(h>maxH)maxH=h;}
+    var py=-maxH*scale*0.55*Math.random();
+    var isSnow=py<-maxH*scale*0.4;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:isSnow?220:clamp(rr+rnd(-10,10),0,255),gg:isSnow?230:clamp(gg+rnd(-10,10),0,255),bb:isSnow?240:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeVolcano(n,cx,cy,scale,rr,gg,bb){
+  /* Volcano with eruption plume */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var roll=Math.random();var px,py;
+    if(roll<0.45){/* Cone */var t=Math.random();var w=t*scale*0.55;px=(Math.random()*2-1)*w;py=t*scale*0.55;}
+    else if(roll<0.70){/* Crater */var ca=Math.random()*Math.PI*2;px=Math.cos(ca)*scale*0.06;py=-scale*0.02+Math.sin(ca)*scale*0.03;}
+    else{/* Lava plume */var pt=Math.random();var pa=(-0.4+Math.random()*0.8)*Math.PI;px=Math.cos(pa)*pt*scale*0.35;py=-pt*scale*(0.5+Math.random()*0.4);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:roll>0.7?clamp(255,0,255):clamp(rr+rnd(-10,10),0,255),gg:roll>0.7?clamp((1-Math.random()*0.7)*180|0,0,255):clamp(gg+rnd(-10,10),0,255),bb:clamp(bb-20,0,255),r:0.4+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapeWave(n,cx,cy,scale,rr,gg,bb){
+  /* Ocean wave */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random();var wx=(t-0.5)*scale*1.8;
+    var base=Math.sin(t*Math.PI*3)*scale*0.22;
+    var curl=t>0.6&&t<0.75?-(t-0.6)*scale*0.8:0;/* breaking crest */
+    var wy=base+curl+rnd(-scale*0.03,scale*0.03);
+    out.push({tx:clamp(cx+wx,0,W()),ty:clamp(cy+wy,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+/* ── HUMAN & SOCIAL ──────────────────────────────────────── */
+
+function shapeHuman(n,cx,cy,scale,rr,gg,bb){
+  /* Simple human figure */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var roll=Math.random();var px,py;
+    if(roll<0.15){/* Head */var hr=scale*0.12;var ha=Math.random()*Math.PI*2;px=Math.cos(ha)*hr*Math.random();py=-scale*0.45+Math.sin(ha)*hr*Math.random();}
+    else if(roll<0.45){/* Torso */px=rnd(-scale*0.12,scale*0.12);py=rnd(-scale*0.28,scale*0.05);}
+    else if(roll<0.65){/* Arms */var side=Math.random()<0.5?-1:1;px=side*(scale*0.12+Math.random()*scale*0.18);py=rnd(-scale*0.26,scale*0.0);}
+    else{/* Legs */var lside=Math.random()<0.5?-1:1;px=lside*rnd(scale*0.02,scale*0.1);py=rnd(scale*0.05,scale*0.45);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeCrowd(n,cx,cy,scale,rr,gg,bb){
+  /* Many people — dots arranged in crowd */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var rows=8,cols=10;
+    var row=Math.floor(Math.random()*rows);var col=Math.floor(Math.random()*cols);
+    var px=(col/cols-0.5)*scale*1.4+rnd(-scale*0.04,scale*0.04);
+    var py=(row/rows-0.5)*scale*0.9+rnd(-scale*0.03,scale*0.03);
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-30,30),0,255),gg:clamp(gg+rnd(-30,30),0,255),bb:clamp(bb+rnd(-30,30),0,255),r:0.5+Math.random()*1.3});
+  }
+  return out;
+}
+
+function shapeNetwork(n,cx,cy,scale,rr,gg,bb){
+  /* Social/neural network — nodes and connections */
+  var out=[];var numNodes=8+Math.floor(Math.random()*6);var nodes=[];
+  for(var k=0;k<numNodes;k++){var na=Math.random()*Math.PI*2;var nr=Math.random()*scale*0.52;nodes.push({x:Math.cos(na)*nr,y:Math.sin(na)*nr});}
+  for(var i=0;i<n;i++){
+    var roll=Math.random();var px,py;
+    if(roll<0.35){/* Node */var node=nodes[Math.floor(Math.random()*nodes.length)];px=node.x+rnd(-scale*0.04,scale*0.04);py=node.y+rnd(-scale*0.04,scale*0.04);}
+    else{/* Connection */var n1=nodes[Math.floor(Math.random()*nodes.length)];var n2=nodes[Math.floor(Math.random()*nodes.length)];var t=Math.random();px=n1.x+(n2.x-n1.x)*t;py=n1.y+(n2.y-n1.y)*t;}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,15),0,255),gg:clamp(gg+rnd(-10,15),0,255),bb:clamp(bb+rnd(-10,15),0,255),r:roll<0.35?0.8+Math.random()*1.0:0.3+Math.random()*0.5});
+  }
+  return out;
+}
+
+function shapeArrow(n,cx,cy,scale,rr,gg,bb){
+  /* Arrow pointing right */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var roll=Math.random();var px,py;
+    if(roll<0.60){/* Shaft */px=rnd(-scale*0.5,scale*0.2);py=rnd(-scale*0.08,scale*0.08);}
+    else{/* Arrowhead */var t=Math.random();px=scale*0.2+t*scale*0.35;py=(1-t)*scale*0.28*(Math.random()<0.5?1:-1);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.5+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeSpiral(n,cx,cy,scale,rr,gg,bb){
+  /* Fibonacci/golden spiral */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random()*Math.PI*6;/* 3 full turns */
+    var r=t/(Math.PI*6)*scale*0.55;
+    var px=Math.cos(t)*r;var py=Math.sin(t)*r;
+    px+=rnd(-scale*0.02,scale*0.02);py+=rnd(-scale*0.02,scale*0.02);
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,15),0,255),gg:clamp(gg+rnd(-10,15),0,255),bb:clamp(bb+rnd(-10,15),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeTree(n,cx,cy,scale,rr,gg,bb){
+  /* Tree with trunk and branching canopy */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var roll=Math.random();var px,py;
+    if(roll<0.20){/* Trunk */px=rnd(-scale*0.06,scale*0.06);py=rnd(scale*0.1,scale*0.52);}
+    else{/* Canopy branches */var level=Math.floor(Math.random()*4);var spread=level*scale*0.14;var ba=(Math.random()*2-1)*spread;var by=-level*scale*0.18-Math.random()*scale*0.18;px=ba+rnd(-scale*0.06,scale*0.06);py=by+rnd(-scale*0.06,scale*0.06);}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:roll<0.2?clamp(120+rnd(-10,10),0,255):clamp(rr+rnd(-10,10),0,255),gg:roll<0.2?clamp(80+rnd(-10,10),0,255):clamp(gg+rnd(-10,10),0,255),bb:roll<0.2?clamp(40+rnd(-10,10),0,255):clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapeInfinity(n,cx,cy,scale,rr,gg,bb){
+  /* Infinity/lemniscate symbol */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random()*Math.PI*2;
+    var r=scale*0.35/(1+Math.pow(Math.sin(t),2));
+    var px=Math.cos(t)*r;var py=Math.sin(t)*Math.cos(t)*r*0.55;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeVortex(n,cx,cy,scale,rr,gg,bb){
+  /* Fluid vortex / whirlpool */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random()*Math.PI*8;
+    var r=(1-t/(Math.PI*8))*scale*0.58;/* tightens inward */
+    var px=Math.cos(t)*r;var py=Math.sin(t)*r;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.3+r/scale*1.2+Math.random()*0.4});
+  }
+  return out;
+}
+
+function shapeLightning(n,cx,cy,scale,rr,gg,bb){
+  /* Lightning bolt — jagged path */
+  var out=[];var path=[{x:rnd(-scale*0.05,scale*0.05),y:-scale*0.5}];
+  for(var s=0;s<8;s++){var last=path[path.length-1];path.push({x:last.x+rnd(-scale*0.18,scale*0.18),y:last.y+scale*0.12+Math.random()*scale*0.06});}
+  for(var i=0;i<n;i++){
+    var seg=Math.floor(Math.random()*(path.length-1));var t=Math.random();
+    var px=path[seg].x+(path[seg+1].x-path[seg].x)*t+rnd(-scale*0.015,scale*0.015);
+    var py=path[seg].y+(path[seg+1].y-path[seg].y)*t+rnd(-scale*0.015,scale*0.015);
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,20),0,255),gg:clamp(gg+rnd(-10,20),0,255),bb:clamp(bb+rnd(-10,20),0,255),r:0.5+Math.random()*1.5});
+  }
+  return out;
+}
+
+function shapeEye(n,cx,cy,scale,rr,gg,bb){
+  /* Eye — almond shape with iris and pupil */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var roll=Math.random();var px,py;
+    if(roll<0.20){/* Outer almond */var t=Math.random()*Math.PI*2;var ex=Math.cos(t)*scale*0.5;var ey=Math.sin(t)*scale*0.22;px=ex;py=ey;}
+    else if(roll<0.55){/* Iris */var ir=Math.random()*scale*0.20;var ia=Math.random()*Math.PI*2;px=Math.cos(ia)*ir;py=Math.sin(ia)*ir;}
+    else if(roll<0.80){/* Pupil */px=rnd(-scale*0.08,scale*0.08);py=rnd(-scale*0.08,scale*0.08);}
+    else{/* Sclera */var sr=scale*(0.2+Math.random()*0.25);var sa=Math.random()*Math.PI*2;px=Math.cos(sa)*sr;py=Math.sin(sa)*sr*0.45;}
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.1});
+  }
+  return out;
+}
+
+/* ── PHYSICS CONCEPTS ────────────────────────────────────── */
+
+function shapeGravityWell(n,cx,cy,scale,rr,gg,bb){
+  /* Spacetime curvature grid */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var gx=(Math.random()*2-1)*scale*0.85;
+    var gy=(Math.random()*2-1)*scale*0.85;
+    var dist=Math.sqrt(gx*gx+gy*gy);
+    /* Warp toward center */
+    var warp=scale*0.28/(dist+scale*0.15);
+    var px=gx*(1-warp*0.6);
+    var py=gy*(1-warp*0.6)+warp*0.4;/* pull down */
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.3+Math.random()*0.7});
+  }
+  return out;
+}
+
+function shapeMagneticField(n,cx,cy,scale,rr,gg,bb){
+  /* Magnetic dipole field lines */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var line=Math.floor(Math.random()*8);
+    var t=Math.random();
+    var theta=(line/8)*Math.PI*2;
+    /* Field line from N to S pole */
+    var r=scale*0.35*Math.pow(Math.sin(theta),2);
+    var px=Math.cos(theta+t*Math.PI)*r*(0.5+t*0.8);
+    var py=Math.sin(theta+t*Math.PI)*r*(0.5+t*0.8)*0.7;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.3+Math.random()*0.8});
+  }
+  return out;
+}
+
+function shapeQuantumCloud(n,cx,cy,scale,rr,gg,bb){
+  /* Electron probability cloud — s-orbital */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;var b=Math.random()*Math.PI;
+    var r=scale*0.32*Math.pow(-Math.log(Math.random()),0.5);/* Rayleigh */
+    var px=Math.sin(b)*Math.cos(a)*r;
+    var py=Math.sin(b)*Math.sin(a)*r;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,15),0,255),gg:clamp(gg+rnd(-10,15),0,255),bb:clamp(bb+rnd(-10,15),0,255),r:0.3+Math.random()*0.8});
+  }
+  return out;
+}
+
+function shapePlasma(n,cx,cy,scale,rr,gg,bb){
+  /* Plasma filaments */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var filament=Math.floor(Math.random()*12);
+    var a=(filament/12)*Math.PI*2;
+    var t=Math.random();
+    var r=t*scale*0.55;
+    var wander=Math.sin(t*Math.PI*4+filament)*scale*0.08;
+    var px=Math.cos(a)*r+Math.cos(a+Math.PI/2)*wander;
+    var py=Math.sin(a)*r+Math.sin(a+Math.PI/2)*wander;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,20),0,255),gg:clamp(gg+rnd(-10,20),0,255),bb:clamp(bb+rnd(-10,20),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+/* ── ECONOMICS & SOCIETY ─────────────────────────────────── */
+
+function shapeBarChart(n,cx,cy,scale,rr,gg,bb){
+  /* Bar chart — rising bars */
+  var out=[];var bars=[0.3,0.55,0.45,0.8,0.65,0.9];
+  for(var i=0;i<n;i++){
+    var bar=Math.floor(Math.random()*bars.length);
+    var bx=(bar/bars.length-0.4)*scale*1.1;
+    var by=rnd(0,bars[bar]*scale*0.7)-scale*0.35;
+    var bw=scale*0.06;
+    out.push({tx:clamp(cx+bx+rnd(-bw,bw),0,W()),ty:clamp(cy+by,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.5+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapePyramid(n,cx,cy,scale,rr,gg,bb){
+  /* Social hierarchy pyramid */
+  var out=[];var levels=5;
+  for(var i=0;i<n;i++){
+    var level=Math.floor(Math.random()*levels);
+    var width=(levels-level)/levels*scale*0.8;
+    var px=rnd(-width/2,width/2);
+    var py=(level/levels-0.3)*scale*0.8;
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:clamp(rr+rnd(-10,10),0,255),gg:clamp(gg+rnd(-10,10),0,255),bb:clamp(bb+rnd(-10,10),0,255),r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+/* ── DISPATCHER ──────────────────────────────────────────── */
 var SHAPE_FNS={
+  /* Biology */
   brain:shapeBrain, bacterium:shapeBacterium, cell:shapeCell,
-  heart:shapeHeart, neuron:shapeNeuron, dna:shapeDNA,
-  wave:shapeBrainWave, virus:shapeVirus
+  virus:shapeVirus, neuron:shapeNeuron, dna:shapeDNA,
+  wave:shapeBrainWave, heart:shapeHeart, lung:shapeLung,
+  bloodcell:shapeBloodCell, mitochondria:shapeMitochondria,
+  synapse:shapeSynapse, protein:shapeProtein,
+  /* Astronomy & Physics */
+  galaxy:shapeGalaxy, blackhole:shapeBlackHole, star:shapeStar,
+  planet:shapePlanet, atom:shapeAtom, explosion:shapeExplosion,
+  tornado:shapeTornado, waterdrop:shapeWaterDrop, crystal:shapeCrystal,
+  molecule:shapeMolecule, fireball:shapeFireball,
+  soundwave:shapeSoundWave, lightwave:shapeLightWave,
+  gravitywell:shapeGravityWell, magneticfield:shapeMagneticField,
+  quantumcloud:shapeQuantumCloud, plasma:shapePlasma,
+  lightning:shapeLightning,
+  /* Earth & Environment */
+  earth:shapeEarth, mountain:shapeMountain, volcano:shapeVolcano,
+  oceanwave:shapeWave,
+  /* Chemistry */
+  chemreaction:shapeChemReaction,
+  /* Human & Social */
+  human:shapeHuman, crowd:shapeCrowd, network:shapeNetwork,
+  tree:shapeTree,
+  /* Abstract & Concepts */
+  arrow:shapeArrow, spiral:shapeSpiral, infinity:shapeInfinity,
+  vortex:shapeVortex, eye:shapeEye,
+  barChart:shapeBarChart, pyramid:shapePyramid
 };
+
 
 
 function applyGroups(groups,motion){

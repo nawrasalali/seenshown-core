@@ -16,8 +16,15 @@ module.exports = async function handler(req, res) {
 
 Design a 5-step particle simulation using REAL BIOLOGICAL AND PHYSICAL SHAPES — not abstract blobs. The simulation must show the actual entities involved in this process in recognisable forms.
 
-AVAILABLE SHAPES (use the exact shape name in the "shape" field):
-For questions OUTSIDE biology/anatomy, omit the shape field entirely and rely on positioning and colour to tell the story. The circular spread fallback still creates meaningful visuals when groups are positioned correctly.
+AVAILABLE SHAPES (use exact name in "shape" field):
+BIOLOGY: brain, cell, bacterium, virus, neuron, dna, wave, heart, lung, bloodcell, mitochondria, synapse, protein
+ASTRONOMY/PHYSICS: galaxy, blackhole, star, planet, atom, explosion, tornado, waterdrop, crystal, molecule, fireball, soundwave, lightwave, gravitywell, magneticfield, quantumcloud, plasma, lightning
+EARTH: earth, mountain, volcano, oceanwave
+CHEMISTRY: chemreaction
+HUMAN/SOCIAL: human, crowd, network, tree
+ABSTRACT: arrow, spiral, infinity, vortex, eye, barChart, pyramid
+
+Pick the shapes that BEST REPRESENT the actual entities in your answer. If nothing fits, omit shape field.
 - "brain" — human brain with two hemispheres and folds
 - "cell" — animal cell with membrane, cytoplasm, and nucleus
 - "bacterium" — rod-shaped bacterium with flagella

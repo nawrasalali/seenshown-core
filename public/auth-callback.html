@@ -7,62 +7,61 @@
 body{background:#02040e;color:#26e8b0;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px}
 .ring{width:40px;height:40px;border:3px solid rgba(38,232,176,.2);border-top-color:#26e8b0;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-p{font-size:.9rem;opacity:.7}
+p{font-size:.9rem;opacity:.7;text-align:center;padding:0 20px}
 </style>
 </head>
 <body>
 <div class="ring"></div>
 <p>Signing you in…</p>
 <script>
-/* Handle Supabase OAuth callback — extracts tokens from URL hash or search params */
 (function(){
   var SB='https://vfcbdeawypooqcevuzac.supabase.co';
   var SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmY2JkZWF3eXBvb3FjZXZ1emFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M';
 
-  /* Extract tokens from URL fragment (#access_token=...&refresh_token=...) */
+  /* Supabase sends tokens in the URL hash fragment:
+     #access_token=...&refresh_token=...&type=magiclink  (magic link)
+     #access_token=...&refresh_token=...&type=recovery   (password reset)
+     Google OAuth also lands here with same format */
   var hash = window.location.hash.substring(1);
-  var params = new URLSearchParams(hash||window.location.search);
+  var search = window.location.search.substring(1);
+  var params = new URLSearchParams(hash || search);
 
   var access_token = params.get('access_token');
   var refresh_token = params.get('refresh_token');
-  var error = params.get('error_description')||params.get('error');
+  var type = params.get('type');
+  var error = params.get('error_description') || params.get('error');
 
   if(error){
-    document.querySelector('p').textContent = 'Error: '+error;
-    setTimeout(function(){window.location.href='/';},3000);
+    document.querySelector('p').textContent = 'Sign in error: ' + error;
+    setTimeout(function(){window.location.href='/';}, 3000);
     return;
   }
 
   if(access_token){
-    /* Get user info */
-    fetch(SB+'/auth/v1/user',{
+    /* Fetch user details with the token */
+    fetch(SB+'/auth/v1/user', {
       headers:{'apikey':SBK,'Authorization':'Bearer '+access_token}
-    }).then(function(r){return r.json();}).then(function(user){
-      var session={
-        access_token:access_token,
-        refresh_token:refresh_token||'',
-        user:user,
-        expires_at:Date.now()/1000+3600
+    })
+    .then(function(r){return r.json();})
+    .then(function(user){
+      var session = {
+        access_token: access_token,
+        refresh_token: refresh_token || '',
+        user: user,
+        expires_at: Date.now()/1000 + 3600
       };
-      localStorage.setItem('ss_session',JSON.stringify(session));
-      /* Redirect back to app */
-      window.location.href='/';
-    }).catch(function(){
-      window.location.href='/';
+      localStorage.setItem('ss_session', JSON.stringify(session));
+      document.querySelector('p').textContent = 'Signed in! Redirecting…';
+      window.location.href = '/';
+    })
+    .catch(function(e){
+      document.querySelector('p').textContent = 'Error getting user. Redirecting…';
+      window.location.href = '/';
     });
   } else {
-    /* No token — might be magic link email confirmation */
-    /* Try to get session from Supabase */
-    fetch(SB+'/auth/v1/session',{
-      headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}
-    }).then(function(r){return r.json();}).then(function(s){
-      if(s&&s.access_token){
-        localStorage.setItem('ss_session',JSON.stringify(s));
-      }
-      window.location.href='/';
-    }).catch(function(){
-      window.location.href='/';
-    });
+    /* No token in URL — redirect home, initAuth will handle session */
+    document.querySelector('p').textContent = 'No token found. Redirecting…';
+    setTimeout(function(){window.location.href='/';}, 1500);
   }
 })();
 </script>

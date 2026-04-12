@@ -29,7 +29,7 @@ Canvas coordinates:
 - x: 0.0 = left edge, 1.0 = right edge, 0.5 = center
 - y: 0.0 = top edge, 1.0 = bottom edge, 0.5 = center
 
-IMPORTANT: Use the FULL canvas. Groups should span from near 0.05 to near 0.95 on both axes. Do not cluster everything in the center. The simulation must fill the entire screen with meaning.
+CRITICAL: Use the ENTIRE canvas. Place groups across the FULL 0.0 to 1.0 range on both x and y. Groups at x:0.0 touch the left edge. Groups at x:1.0 touch the right edge. Groups at y:0.0 touch the top. Groups at y:1.0 touch the bottom. The simulation MUST fill every corner of the screen. Do NOT cluster in the center.
 
 For each group define:
 - label: what this group of particles REPRESENTS in the answer
@@ -37,12 +37,14 @@ For each group define:
 - r, g, b: color (0–255 each). Choose color with scientific and emotional intention — heat = orange/red, cold = blue/white, life = green/teal, energy = yellow/white, void = deep blue/black
 - size: particle size (0.3 = tiny/distant, 1.0 = normal, 3.0 = large/dominant)
 - density: fraction of all particles in this group. All densities must sum to exactly 1.0
-- spread: how wide this group fans out (0.0 = single tight point, 1.0 = fills the screen edge to edge)
+- spread: how wide this group fans out (0.0 = single tight point, 0.5 = fills roughly half the screen, 1.0 = fills the entire screen). Use spread 0.6 or higher for background/field groups that should feel vast and immersive.
 
 Design rules:
 → Use 3 to 7 groups
 → SPREAD ACROSS THE FULL SCREEN — place groups at varied x,y positions across the entire canvas. Use corners, edges, and center deliberately.
-→ Use high spread values (0.4–0.9) for background or field effects that should feel vast
+→ Use spread 0.6–1.0 for background or atmosphere groups
+→ Place groups at the extremes: corners (x:0.1,y:0.1), edges (x:0.5,y:0.0), and across the full diagonal
+→ At least one group should have spread > 0.7 to create depth and fill
 → The SHAPE created by all groups together must mirror the actual structure of the answer
 → If the answer is about expansion — groups spread from center to all edges
 → If about two forces — two opposing clusters at opposite sides of screen

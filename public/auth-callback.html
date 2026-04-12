@@ -52,11 +52,11 @@ p{font-size:.9rem;opacity:.7;text-align:center;padding:0 20px}
       };
       localStorage.setItem('ss_session', JSON.stringify(session));
       document.querySelector('p').textContent = 'Signed in! Redirecting…';
-      window.location.href = '/';
+      window.location.href = 'https://www.seenshown.com/';
     })
     .catch(function(e){
       document.querySelector('p').textContent = 'Error getting user. Redirecting…';
-      window.location.href = '/';
+      window.location.href = 'https://www.seenshown.com/';
     });
   } else {
     /* No token in URL — redirect home, initAuth will handle session */

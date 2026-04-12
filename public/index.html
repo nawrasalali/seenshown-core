@@ -142,9 +142,9 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 <canvas id="simCanvas"></canvas>
 
 <!-- PWA INSTALL BUTTON — appears when browser fires beforeinstallprompt -->
-<div id="installBtn" onclick="installPWA()">
-  <div style="width:52px;height:52px;border-radius:50%;background:rgba(38,232,176,0.2);border:2px solid rgba(38,232,176,0.7);display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 16px rgba(38,232,176,0.3)">📲</div>
-  <div style="font-size:.5rem;color:rgba(38,232,176,.9);font-weight:700;letter-spacing:.05em">INSTALL</div>
+<div id="railToggleBtn" onclick="toggleRail()">
+  <div id="railToggleIcon" style="width:52px;height:52px;border-radius:50%;background:rgba(38,232,176,0.15);border:2px solid rgba(38,232,176,0.5);display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 12px rgba(38,232,176,0.2)">🔒</div>
+  <div style="font-size:.5rem;color:rgba(38,232,176,.7);font-weight:700;letter-spacing:.05em">HIDE</div>
 </div>
 
 <nav id="nav">
@@ -174,7 +174,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div class="ss-modal-sub" style="text-align:center" id="authReason">Watch any question come alive</div>
 
     <!-- GOOGLE -->
-    <button onclick="window.location.href='https://jnvdpmmxlbkxwanqqhfw.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(window.location.origin+'/auth-callback.html')"
+    <button onclick="var origin=window.location.origin.replace('http://','https://');window.location.href='https://jnvdpmmxlbkxwanqqhfw.supabase.co/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent('https://www.seenshown.com/auth-callback.html')"
       style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:.6rem;transition:background .2s"
       onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
       <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -2187,8 +2187,7 @@ async function submitComment(){
   var userName=window.SS&&window.SS.user?window.SS.user.email.split('@')[0]:'Guest';
   var simId=currentSimId||'general';
   try{
-    var payload={text:text,user_name:userName,created_at:new Date().toISOString()};
-    if(currentSimId)payload.sim_id=currentSimId;
+    var payload={text:text,user_name:userName,created_at:new Date().toISOString(),sim_id:currentSimId||'general'};
     var r=await fetch(SB+'/rest/v1/simulation_comments',{
       method:'POST',
       headers:{'apikey':SBK,'Authorization':'Bearer '+SBK,'Content-Type':'application/json','Prefer':'return=minimal'},
@@ -2202,7 +2201,7 @@ async function submitComment(){
     showToast('💬 Comment posted!');
   }catch(e){
     console.error('Comment error:',e);
-    showToast('Could not post — check connection');
+    showToast('Comment error: '+e.message.slice(0,40));
   }
 }
 function updateCommentCount(n){
@@ -2932,6 +2931,30 @@ window.addEventListener('beforeinstallprompt',function(e){
     setTimeout(function(){if(btn.style.display!=='none')btn.style.display='none';},15000);
   }
 });
+var _railHidden=false;
+function toggleRail(){
+  _railHidden=!_railHidden;
+  var rail=document.getElementById('rightRail');
+  var icon=document.getElementById('railToggleIcon');
+  var label=document.querySelector('#railToggleBtn div:last-child');
+  if(_railHidden){
+    /* Hide all rail buttons except the toggle itself */
+    Array.from(rail.children).forEach(function(el){
+      if(el.id!=='railToggleBtn') el.style.opacity='0';
+    });
+    rail.style.width='52px';
+    if(icon)icon.textContent='🔓';
+    if(label)label.textContent='SHOW';
+  } else {
+    Array.from(rail.children).forEach(function(el){
+      el.style.opacity='1';
+    });
+    rail.style.width='72px';
+    if(icon)icon.textContent='🔒';
+    if(label)label.textContent='HIDE';
+  }
+}
+
 function installPWA(){
   var btn=document.getElementById('installBtn');
   if(_pwaPrompt){

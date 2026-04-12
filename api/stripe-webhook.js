@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
   const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY;
   const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
-  const SB_URL = 'https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+  const SB_URL = 'https://vfcbdeawypooqcevuzac.supabase.co';
   const SB_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
   const INTERNAL_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://seenshown.com';
 

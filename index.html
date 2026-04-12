@@ -268,7 +268,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-f
    - Tighter question→sim matching
 ═══════════════════════════════════════════════════════ */
 
-var API_SIM = 'https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+var API_SIM = 'https://vfcbdeawypooqcevuzac.supabase.co';
 var ELEVEN_API_KEY = 'sk_a0c7de82c7a1a0e85ca0e62d5f69e7c5fcf3d0e1ac84fba8'; // Replace with actual key if different
 var ELEVEN_VOICE_ID = 'JBFqnCBsd6RMkjVDRZzb'; /* "George" - deep, clear */
 
@@ -978,7 +978,7 @@ async function askQuestion(){
   switchDomain(key,pill);
   /* Try API for enriched narration */
   try{
-    var res=await fetch('https://jnvdpmmxlbkxwanqqhfw.supabase.co/functions/v1/simulate',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M'},body:JSON.stringify({question:q,domain:key})});
+    var res=await fetch('https://vfcbdeawypooqcevuzac.supabase.co/functions/v1/simulate',{method:'POST',headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmRwbW14bGJreHdhbnFxaGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Nzc2MzgsImV4cCI6MjA5MTA1MzYzOH0.QBD3_YiDvJXvO12gE6FR1GthUd1SvC0MmOmVoPaU71M'},body:JSON.stringify({question:q,domain:key})});
     var data=await res.json();
     var raw=data.content&&data.content[0]&&data.content[0].text;
     if(raw){var parsed=JSON.parse(raw.replace(/```json\n?|```\n?/g,'').trim());if(Array.isArray(parsed)&&parsed.length===3)NARR[key]=parsed;}

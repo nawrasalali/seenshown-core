@@ -132,7 +132,7 @@ export default async function handler(req, res) {
     }
 
     /* Update Supabase — mark as completed with ref */
-    const SB_URL = 'https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+    const SB_URL = 'https://vfcbdeawypooqcevuzac.supabase.co';
     const SB_KEY = process.env.SUPABASE_SERVICE_KEY;
     if (SB_KEY) {
       await fetch(`${SB_URL}/rest/v1/investor_registrations?email=eq.${encodeURIComponent(email)}&status=eq.pending`, {

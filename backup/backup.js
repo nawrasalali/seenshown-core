@@ -11,7 +11,7 @@ const https=require('https');
 const fs=require('fs');
 const path=require('path');
 
-const SB_URL='jnvdpmmxlbkxwanqqhfw.supabase.co';
+const SB_URL='vfcbdeawypooqcevuzac.supabase.co';
 const SB_SERVICE_KEY=process.env.SUPABASE_SERVICE_KEY||'';
 const GITHUB_TOKEN=process.env.BACKUP_GITHUB_TOKEN||process.env.GITHUB_TOKEN||'';
 const BACKUP_REPO='nawrasalali/seenshown-backup';

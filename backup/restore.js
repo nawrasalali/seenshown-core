@@ -10,7 +10,7 @@ const https=require('https');
 const fs=require('fs');
 const path=require('path');
 
-const SB_URL='jnvdpmmxlbkxwanqqhfw.supabase.co';
+const SB_URL='vfcbdeawypooqcevuzac.supabase.co';
 const SB_SERVICE_KEY=process.env.SUPABASE_SERVICE_KEY||'';
 
 async function restore(date){

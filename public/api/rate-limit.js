@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, apikey');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const SB_URL = 'https://jnvdpmmxlbkxwanqqhfw.supabase.co';
+  const SB_URL = 'https://vfcbdeawypooqcevuzac.supabase.co';
   const SB_SERVICE = process.env.SUPABASE_SERVICE_KEY;
   const SB_ANON = process.env.SUPABASE_ANON_KEY;
 

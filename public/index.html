@@ -476,7 +476,7 @@ function easeIn(t){return Math.pow(clamp(t,0,1),2);}
 
 /* ── STATE ── */
 var simDomain='_q';
-var _orbState='idle'; /* idle | thinking | birth | done */
+var _orbState=''; /* idle | thinking | birth | done */
 var _orbT=0;
 var _orbPhase=0; /* breathing phase */
 var NARR={'_q':[]};
@@ -1151,15 +1151,14 @@ function buildOrb(state){
 }
 
 function showOrb(state){
-  if(state===_orbState)return; /* already in this state */
+  var wasState=_orbState;
   _orbState=state;
   _orbT=0;
-  /* Only rebuild particles on initial idle load — not on thinking transition */
-  if(state==='idle'){
-    applyGroups(buildOrb('idle'),'drift');
+  /* Rebuild particles for idle (boot + return) and thinking (stronger sun) */
+  /* Never rebuild for 'done' — simulation takes over */
+  if(state==='idle'||state==='thinking'){
+    applyGroups(buildOrb(state), state==='thinking'?'pulse':'drift');
   }
-  /* thinking: just change _orbState — render loop increases breathAmp automatically */
-  /* done: particles replaced by simulation answer */
 }
 
 function orbBirth(){

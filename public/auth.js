@@ -79,7 +79,7 @@ async function submitAuth() {
     var r = await fetch(SB + '/auth/v1/otp', {
       method: 'POST',
       headers: { 'apikey': SBK, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, create_user: true })
+      body: JSON.stringify({ email: email, create_user: true, options: { emailRedirectTo: REDIRECT } })
     });
     if (!r.ok && r.status !== 200) {
       var errText = await r.text();

@@ -1,4 +1,4 @@
-/* /api/ask — SeenShown Master Prompt v2.0 — each step has its own simulation */
+/* /api/ask — SeenShown v3.0 — correlated step simulations */
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -12,57 +12,52 @@ module.exports = async function handler(req, res) {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return res.status(500).json({ error: 'No API key' });
 
-    const prompt = `You are the simulation intelligence behind SeenShown — a platform where every question becomes a living particle simulation that evolves as the answer unfolds.
+    const prompt = `You are the visual mind of SeenShown. A human asked: "${question}"
 
-THE QUESTION: "${question}"
+Your job: design 5 sequential particle simulations that make this answer VISIBLE and UNDERSTOOD. Each simulation must clearly show what is happening in that step — not abstract blobs, but meaningful particle arrangements that mirror the actual structure of the concept.
 
-YOUR MISSION
-Design 5 sequential simulation stages. Each stage directly answers one part of "${question}" AND has its OWN unique particle formation that visually shows what is happening in that stage. As the user reads each step, the simulation transforms to match — the answer literally unfolds before their eyes.
+CANVAS: x=0.0 (left) to 1.0 (right), y=0.0 (top) to 1.0 (bottom). Full screen.
 
-CANVAS: full screen, x/y from 0.0 to 1.0 (0.0=left/top edge, 1.0=right/bottom edge, 0.5=center)
+CRITICAL SIMULATION DESIGN RULES:
+1. Each group appears as a DISTINCT CLUSTER at its x,y position. Use spread 0.05-0.25 for tight focused groups. Use 0.4+ only for diffuse background fields.
+2. The ARRANGEMENT of groups must mirror the concept. Examples:
+   - Two things colliding → one group at x:0.1 moving toward another at x:0.9
+   - A cell being attacked → large group at center (cell), small groups scattered around edges (attackers)
+   - A network spreading → one bright group at center, many small dim groups spreading to all corners
+   - Something collapsing → groups arranged in a ring that will converge to center
+   - Two opposing forces → one group top-left, another bottom-right, field particles between
+3. Use colour with meaning: hot/dangerous=red-orange, cold/calm=blue-white, alive/growing=green-teal, energy=yellow-white, death/void=dark purple-black
+4. Dominant subject = high density (0.3-0.5) and large size (2-4). Supporting elements = lower density (0.1-0.2) and small size (0.5-1.5).
+5. EACH STEP must look DIFFERENT from the previous — the simulation transforms as the answer unfolds.
 
-FOR EACH STEP, design particle groups that VISUALLY SHOW what that step describes:
-- Step about separation → two groups drifting apart
-- Step about explosion → groups spread from center to edges  
-- Step about network → multiple small groups scattered across screen
-- Step about collapse → groups converging to center
-- Step about two competing forces → two opposing groups on opposite sides
-- Step about growth → groups expanding outward
-- ALWAYS fill the full screen — use the entire canvas, not just center
+NARRATION: Each step title is 3-5 words. Description tells what the user is WATCHING right now AND the science. Specific numbers and names. 2-3 sentences.
 
-Each group:
-- label: what it represents
-- x, y: position 0.0-1.0 (USE FULL RANGE — place groups at edges, corners, spread wide)
-- r, g, b: colour (0-255) — emotionally and scientifically chosen
-- size: 0.3 (tiny) to 3.0 (dominant)  
-- density: fraction of particles (all steps must sum to 1.0)
-- spread: 0.0 (tight point) to 1.0 (fills screen) — use 0.5+ for background fields
+Design 5 steps for: "${question}"
 
-NARRATION: Each step title is SHORT (3-5 words). Each description tells the user what they are WATCHING in the simulation right now AND the science. Specific numbers, real names, vivid language.
-
-Step 5 delivers the most profound insight about "${question}" that reframes everything.
-
-Return ONLY this JSON (no markdown):
+Return ONLY this JSON:
 {
   "steps": [
     {
-      "title": "Short Step Title",
-      "description": "What the user watches happening right now AND the science. Real numbers. 2-3 sentences.",
+      "title": "Step Title",
+      "description": "What user sees happening AND the science behind it. Real numbers and names.",
       "groups": [
-        {"label": "what this is", "x": 0.5, "y": 0.5, "r": 255, "g": 200, "b": 80, "size": 2.0, "density": 0.4, "spread": 0.2},
-        {"label": "what this is", "x": 0.2, "y": 0.8, "r": 80, "g": 160, "b": 255, "size": 1.0, "density": 0.6, "spread": 0.5}
+        {"label": "what this represents", "x": 0.5, "y": 0.5, "r": 255, "g": 200, "b": 80, "size": 2.5, "density": 0.4, "spread": 0.12},
+        {"label": "what this represents", "x": 0.15, "y": 0.3, "r": 255, "g": 60, "b": 20, "size": 1.0, "density": 0.3, "spread": 0.08},
+        {"label": "background field", "x": 0.5, "y": 0.5, "r": 20, "g": 20, "b": 40, "size": 0.3, "density": 0.3, "spread": 0.8}
       ],
-      "motion": "one word: pulse/drift/explode/collapse/branch/weave/orbit/scatter/flow/converge/surge/ripple"
+      "motion": "drift"
     }
   ]
-}`;
+}
+
+motion options: pulse / drift / explode / collapse / branch / weave / orbit / scatter / flow / converge / surge / ripple`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': key },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 3000,
+        max_tokens: 3500,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -83,17 +78,20 @@ Return ONLY this JSON (no markdown):
       else return res.status(500).json({ error: 'no JSON', raw: clean.slice(0,400) });
     }
 
-    const steps = (parsed.steps || []).filter(s => s.title && s.description && Array.isArray(s.groups) && s.groups.length > 0).slice(0, 5);
+    const steps = (parsed.steps || []).filter(s =>
+      s.title && s.description && Array.isArray(s.groups) && s.groups.length > 0
+    ).slice(0, 5);
+
     if (steps.length < 3) return res.status(500).json({ error: 'too few steps', got: steps.length });
 
-    // Normalise densities per step
     steps.forEach(step => {
       const total = step.groups.reduce((s, g) => s + (g.density || 0), 0) || 1;
       step.groups.forEach(g => g.density = (g.density || 0) / total);
-      step.groups = step.groups.filter(g => typeof g.x === 'number' && typeof g.y === 'number').slice(0, 7);
+      step.groups = step.groups.filter(g =>
+        typeof g.x === 'number' && typeof g.y === 'number'
+      ).slice(0, 7);
     });
 
-    // Convert to narration format + keep groups per step
     const narration = steps.map(s => [s.title, s.description]);
     const simSteps = steps.map(s => ({ groups: s.groups, motion: s.motion || 'drift' }));
 

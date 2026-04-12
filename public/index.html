@@ -1151,9 +1151,15 @@ function buildOrb(state){
 }
 
 function showOrb(state){
+  if(state===_orbState)return; /* already in this state */
   _orbState=state;
   _orbT=0;
-  applyGroups(buildOrb(state), state==='thinking'?'pulse':'drift');
+  /* Only rebuild particles on initial idle load — not on thinking transition */
+  if(state==='idle'){
+    applyGroups(buildOrb('idle'),'drift');
+  }
+  /* thinking: just change _orbState — render loop increases breathAmp automatically */
+  /* done: particles replaced by simulation answer */
 }
 
 function orbBirth(){
@@ -2192,7 +2198,7 @@ setTimeout(function(){
   var mq=document.getElementById('mainQ');
   if(mq){
     mq.addEventListener('focus',function(){if(_orbState==='idle')showOrb('thinking');});
-    mq.addEventListener('blur',function(){if(_orbState==='thinking')showOrb('idle');});
+    mq.addEventListener('blur',function(){if(_orbState==='thinking'){_orbState='idle';_orbT=0;}});
     mq.addEventListener('input',function(){if(_orbState==='idle')showOrb('thinking');});
   }
 },500);

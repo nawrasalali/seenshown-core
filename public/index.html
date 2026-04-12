@@ -1128,7 +1128,22 @@ function switchDomain(key,pill){
   /* No-op — domain switching removed. Questions drive everything. */
 }
 
-function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTimeout(function(){reinitScheduled=false;initPhase(simDomain,simPhase,false);},100);}
+function scheduleReinit(){
+  if(reinitScheduled)return;
+  reinitScheduled=true;
+  setTimeout(function(){
+    reinitScheduled=false;
+    if(_orbState==='idle'||_orbState==='thinking'){
+      /* Restore orb after resize — don't use initPhase */
+      applyGroups(buildOrb(_orbState),_orbState==='thinking'?'pulse':'drift');
+    } else if(_orbState==='done'&&SIM_STEPS.length>0){
+      /* Restore current simulation step */
+      applyGroups(SIM_STEPS[simPhase]?SIM_STEPS[simPhase].groups:SIM_STEPS[0].groups,'drift');
+    } else {
+      initPhase(simDomain,simPhase,false);
+    }
+  },300);
+}
 
 /* ── ASK QUESTION ── */
 /* ── SEENSHOWN ORB — brand identity, idle + thinking states ── */

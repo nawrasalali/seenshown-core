@@ -304,15 +304,15 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div class="rail-icon">⚔️</div>
     <div class="rail-label">Compete</div>
   </div>
-  <div class="rail-btn" onclick="doEarn()">
-    <div class="rail-icon">💰</div>
-    <div class="rail-label green" id="pointsCount">0 pts</div>
+  <div class="rail-btn" onclick="openLibrary()">
+    <div class="rail-icon">📚</div>
+    <div class="rail-label">Library</div>
   </div>
-  <div class="rail-btn" id="railSave" onclick="doSaveOnly()" style="opacity:.5">
+  <div class="rail-btn" id="railSave" onclick="doSaveOnly()" style="opacity:.5;pointer-events:all">
     <div class="rail-icon">💾</div>
     <div class="rail-label">Save</div>
   </div>
-  <div class="rail-btn" id="railPost" onclick="doSaveAndPost()" style="opacity:.5">
+  <div class="rail-btn" id="railPost" onclick="doSaveAndPost()" style="opacity:.5;pointer-events:all">
     <div class="rail-icon">🌍</div>
     <div class="rail-label green">Post</div>
   </div>
@@ -1997,6 +1997,160 @@ function streamWords(text){
 }
 
 
+/* ── COMMUNITY FEED — swipe loads posted simulations ── */
+var _communityFeed=[];
+var _communityIdx=-1;
+var _communityLoaded=false;
+
+async function loadCommunityFeed(){
+  try{
+    var r=await fetch(SB+'/rest/v1/simulations?is_public=eq.true&order=created_at.desc&limit=50',{
+      headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}
+    });
+    var data=await r.json();
+    if(Array.isArray(data)&&data.length>0){
+      _communityFeed=data.filter(function(s){return s.narration&&s.sim_steps;});
+      _communityLoaded=true;
+    }
+  }catch(e){console.warn('loadCommunityFeed:',e);}
+}
+
+function loadCommunitySimulation(dir){
+  if(!_communityLoaded){
+    loadCommunityFeed().then(function(){
+      if(_communityFeed.length>0) showCommunitySimulation(0);
+    });
+    showToast('Loading community simulations…');
+    return;
+  }
+  if(_communityFeed.length===0){showToast('No community simulations yet. Be the first!');return;}
+  _communityIdx=(_communityIdx+(_communityFeed.length+(dir||1)))%_communityFeed.length;
+  showCommunitySimulation(_communityIdx);
+}
+
+function showCommunitySimulation(idx){
+  var sim=_communityFeed[idx];
+  if(!sim)return;
+  try{
+    var narration=JSON.parse(sim.narration||'[]');
+    var simSteps=JSON.parse(sim.sim_steps||'[]');
+    if(!narration.length)return;
+
+    /* Stop current */
+    if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
+
+    NARR['_q']=narration;
+    SIM_STEPS=simSteps;
+    simDomain='_q';simPhase=0;
+    currentSimId=sim.id;
+    currentLikes=sim.likes||0;
+    var lc=document.getElementById('likeCount');
+    if(lc)lc.textContent=currentLikes;
+
+    /* Show question */
+    showQuestionBar(sim.title);
+
+    /* Show who posted */
+    showToast('👤 '+(sim.user_name||'Guest')+' · '+sim.title.slice(0,30));
+
+    /* Run simulation step 0 */
+    _orbState='done';
+    if(simSteps.length>0){
+      applyGroups(simSteps[0].groups,simSteps[0].motion||'drift');
+    }
+    updateNarr('_q',0);
+    buildTicker(NARR['_q']);
+
+    /* Enable save/post */
+    var rs=document.getElementById('railSave');
+    var rp=document.getElementById('railPost');
+    if(rs)rs.style.opacity='1';
+    if(rp)rp.style.opacity='1';
+
+  }catch(e){console.warn('showCommunitySimulation:',e);}
+}
+
+/* Load feed on boot */
+setTimeout(loadCommunityFeed, 2000);
+
+/* ── USER LIBRARY ── */
+var ADMIN_EMAIL='nawraselali@gmail.com';
+
+async function openLibrary(){
+  var user=window.SS&&window.SS.user;
+  var url=user?
+    SB+'/rest/v1/simulations?user_id=eq.'+user.id+'&order=created_at.desc&limit=20':
+    SB+'/rest/v1/simulations?is_public=eq.true&order=created_at.desc&limit=20';
+  try{
+    var r=await fetch(url,{headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}});
+    var data=await r.json();
+    showLibraryModal(data,user);
+  }catch(e){showToast('Could not load library');}
+}
+
+function showLibraryModal(sims,user){
+  var existing=document.getElementById('libraryModal');
+  if(existing)existing.remove();
+  var isAdmin=user&&user.email===ADMIN_EMAIL;
+  var el=document.createElement('div');
+  el.id='libraryModal';
+  el.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(2,4,14,0.95);overflow-y:auto;padding:16px;box-sizing:border-box';
+  el.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
+      '<div style="color:#26e8b0;font-size:.9rem;font-weight:700;letter-spacing:.1em">'+(user?'MY LIBRARY':'COMMUNITY')+(isAdmin?' · ADMIN':'')+'</div>'+
+      '<div onclick="document.getElementById('libraryModal').remove()" style="color:rgba(255,255,255,0.5);font-size:1.4rem;cursor:pointer">✕</div>'+
+    '</div>'+
+    (sims.length===0?'<div style="color:rgba(255,255,255,0.4);text-align:center;padding:40px 0">No simulations yet</div>':
+    sims.map(function(s){
+      return '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:10px">'+
+        '<div style="font-size:.82rem;color:#fff;margin-bottom:6px">'+s.title+'</div>'+
+        '<div style="font-size:.65rem;color:rgba(38,232,176,0.6);margin-bottom:8px">👤 '+(s.user_name||'Guest')+'</div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+          '<button onclick="loadLibrarySim(''+s.id+'')" style="'+btnStyle('26e8b0')+'">▶ Play</button>'+
+          '<button onclick="shareLibrarySim(''+s.id+'',''+encodeURIComponent(s.title)+'')" style="'+btnStyle('60c0f0')+'">↗ Share</button>'+
+          (user&&(s.user_id===user.id||isAdmin)?
+            '<button onclick="deleteLibrarySim(''+s.id+'')" style="'+btnStyle('ff4444')+'">🗑 Delete</button>'+
+            '<button onclick="competeSim(''+s.id+'')" style="'+btnStyle('ff9900')+'">⚔ Compete</button>':'')+
+        '</div>'+
+      '</div>';
+    }).join(''))+
+    (!user?'<div style="color:rgba(255,255,255,0.3);text-align:center;padding:16px;font-size:.75rem">Sign in to save your own simulations</div>':'');
+  document.body.appendChild(el);
+}
+
+function btnStyle(col){
+  return 'background:rgba('+parseInt(col.slice(0,2),16)+','+parseInt(col.slice(2,4),16)+','+parseInt(col.slice(4,6),16)+',0.15);border:1px solid rgba('+parseInt(col.slice(0,2),16)+','+parseInt(col.slice(2,4),16)+','+parseInt(col.slice(4,6),16)+',0.4);color:#fff;padding:5px 12px;border-radius:20px;font-size:.7rem;cursor:pointer;font-weight:600';
+}
+
+async function loadLibrarySim(id){
+  document.getElementById('libraryModal').remove();
+  var r=await fetch(SB+'/rest/v1/simulations?id=eq.'+id,{headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}});
+  var data=await r.json();
+  if(data&&data[0])showCommunitySimulation(data[0]);
+}
+
+function shareLibrarySim(id,title){
+  var url='https://www.seenshown.com/?sim='+id;
+  if(navigator.share)navigator.share({title:'SeenShown: '+decodeURIComponent(title),url:url});
+  else{navigator.clipboard&&navigator.clipboard.writeText(url);showToast('🔗 Link copied!');}
+}
+
+async function deleteLibrarySim(id){
+  if(!confirm('Delete this simulation?'))return;
+  await fetch(SB+'/rest/v1/simulations?id=eq.'+id,{
+    method:'DELETE',headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}
+  });
+  showToast('Deleted');
+  document.getElementById('libraryModal').remove();
+  openLibrary();
+}
+
+function competeSim(id){
+  document.getElementById('libraryModal').remove();
+  showToast('⚔ Loading compete mode…');
+  startCompete();
+}
+
 async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();
   if(!q)return;
@@ -2080,14 +2234,25 @@ async function askQuestion(){
 
 async function saveSimulation(q,domain){
   try{
+    var user=window.SS&&window.SS.user;
+    var payload={
+      title:q,
+      domain:domain,
+      is_public:true,
+      likes:0,
+      user_name:user?user.email.split('@')[0]:'Guest',
+      user_id:user?user.id:null,
+      narration:JSON.stringify(NARR['_q']||[]),
+      sim_steps:JSON.stringify(SIM_STEPS||[])
+    };
     var r=await fetch(SB+'/rest/v1/simulations',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SBK,'Authorization':'Bearer '+SBK,'Prefer':'return=representation'},
-      body:JSON.stringify({title:q,domain:domain,is_public:true,likes:0})
+      body:JSON.stringify(payload)
     });
     var d=await r.json();if(d&&d[0])currentSimId=d[0].id;
-    loadCommentCount(); /* update comment count for this sim */
-  }catch(e){}
+    loadCommentCount();
+  }catch(e){console.warn('saveSimulation:',e);}
 }
 
 /* ── TIKTOK HEARTS ── */
@@ -2439,9 +2604,8 @@ document.addEventListener('touchend',function(e){
   /* SWIPE UP/DOWN — change domain (threshold 40px) */
   if(ady>40&&ady>adx*1.1){
     var dir=dy<0?1:-1;
-    domIdx=(domIdx+dir+DOMAIN_ORDER.length)%DOMAIN_ORDER.length;
-    switchDomain(DOMAIN_ORDER[domIdx],null);
-    return; /* don't also fire tap */
+    loadCommunitySimulation(dir);
+    return;
   }
   /* TAP — heart burst */
   if(dur<280&&adx<25&&ady<25){
@@ -2789,30 +2953,25 @@ function offerSaveModal(q,domain){
 function closeSaveModal(){document.getElementById('saveModal').style.display='none';}
 
 async function doSaveOnly(){
-  closeSaveModal();
-  incrementAnonSimCount();
-  if(window.SS_AUTH)await window.SS_AUTH.recordCreated();
-  showToast('💾 Saved to your library');
-  checkSimLimit();
+  showToast('💾 Saved');
+  var rs=document.getElementById('railSave');
+  if(rs){rs.style.opacity='0.35';}
 }
 async function doSaveAndPost(){
-  closeSaveModal();
-  incrementAnonSimCount();
-  if(window.SS_AUTH)await window.SS_AUTH.recordCreated();
-  /* Mark as public — already done by saveSimulation() */
-  showToast('🌍 Posted to the community feed!');
-  earnPoint('🌍 +2 pts for posting!',2);
-  checkSimLimit();
-}
-function doSaveAndRegenerate(){
-  closeSaveModal();
-  /* Re-run the same question to get a fresh AI narration */
-  if(pendingSaveQ){
-    document.getElementById('mainQ').value=pendingSaveQ;
-    askQuestion();
-    showToast('🔄 Regenerating simulation…');
+  /* Post is free — simulation already saved as public */
+  showToast('🌍 Posted!');
+  var rp=document.getElementById('railPost');
+  if(rp){rp.style.opacity='0.35';}
+  /* Ensure saved as public */
+  if(currentSimId){
+    fetch(SB+'/rest/v1/simulations?id=eq.'+currentSimId,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':SBK,'Authorization':'Bearer '+SBK},
+      body:JSON.stringify({is_public:true})
+    }).catch(function(){});
   }
 }
+
 async function doCompeteNow(){
   closeSaveModal();
   incrementAnonSimCount();
@@ -3018,6 +3177,11 @@ updateNarr(simDomain,0);
 /* Also show after 1s in case bar wasn't ready */
 setTimeout(function(){},1000);
 if(urlQ){setTimeout(function(){var el=document.getElementById('mainQ');if(el){el.value=decodeURIComponent(urlQ);autoResizeMQ(el);askQuestion();}},500);}
+var urlSim=urlP.get('sim');
+if(urlSim){setTimeout(async function(){
+  try{var r=await fetch(SB+'/rest/v1/simulations?id=eq.'+urlSim,{headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}});
+  var d=await r.json();if(d&&d[0])showCommunitySimulation(d[0]);}catch(e){}
+},1000);}
 </script>
 <!-- External scripts load after main so DOMAIN_LABELS etc are available -->
 <script src="/auth.js"></script>

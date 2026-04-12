@@ -2022,7 +2022,7 @@ async function askQuestion(){
   
   
 
-  showToast('Thinking...');
+  
 
   try{
     var res=await fetch(window.location.origin+'/api/ask',{
@@ -2498,7 +2498,7 @@ function buildTicker(narrs,loading){
   var track=document.getElementById('tickerTrack');
   if(!track)return;
   if(loading){
-    track.innerHTML='<span style="display:inline-flex;align-items:center;padding:0 20px;font-size:.76rem;color:var(--dim);gap:6px"><span style="width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(38,232,176,.3);border-top-color:var(--g);animation:spin .7s linear infinite;display:inline-block"></span>Thinking…</span>';
+    track.innerHTML='<span style="display:inline-flex;align-items:center;padding:0 20px;font-size:.76rem;color:var(--dim);gap:6px"><span style="width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(38,232,176,.3);border-top-color:var(--g);animation:spin .7s linear infinite;display:inline-block"></span>Simulating…</span>';
     track.style.animation='none';
     tickerIsPaused=false;
     return;

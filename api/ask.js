@@ -1,4 +1,4 @@
-/* /api/ask — SeenShown v5.0 — Sonnet for quality simulation */
+/* /api/ask — SeenShown v6.0 — Real biological shapes */
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -14,60 +14,68 @@ module.exports = async function handler(req, res) {
 
     const prompt = `You are the simulation director for SeenShown. A human asked: "${question}"
 
-Design a 5-step particle simulation that shows the REAL PROCESS visually. Each step is a scene where particles show actual biological/physical/chemical actors doing real things to each other.
+Design a 5-step particle simulation using REAL BIOLOGICAL AND PHYSICAL SHAPES — not abstract blobs. The simulation must show the actual entities involved in this process in recognisable forms.
 
-THE ACTORS: First identify the 2-4 main physical entities in this process. Give each a consistent position, colour, and role across all 5 steps. Show them INTERACTING — moving toward each other, merging, separating, changing.
+AVAILABLE SHAPES (use the exact shape name in the "shape" field):
+- "brain" — human brain with two hemispheres and folds
+- "cell" — animal cell with membrane, cytoplasm, and nucleus
+- "bacterium" — rod-shaped bacterium with flagella
+- "virus" — icosahedral virus with spike proteins
+- "neuron" — neuron with soma, dendrites, and axon
+- "heart" — human heart shape
+- "dna" — DNA double helix
+- "wave" — sinusoidal brain wave across screen
 
-CANVAS: x=0.0(left) to 1.0(right), y=0.0(top) to 1.0(bottom)
+If no shape fits, omit the shape field (uses circular spread as fallback).
 
-STORYTELLING RULES:
-- The same actor keeps its colour across all steps but changes position/size as it acts
-- Show MOVEMENT by changing an actor's x,y between steps (bacteria start at edges, move to center by step 3)
-- Show TRANSFORMATION by changing colour (healthy cell green → infected red-green → dead dark)
-- Show SCALE by changing density and size (growing = larger size and density, dying = smaller and dimmer)
-- Background field = one large spread group (spread 0.7-0.9) showing the environment (extracellular fluid, bloodstream, space, etc.)
+CANVAS: x=0.0(left) to 1.0(right), y=0.0(top) to 1.0(bottom), center=(0.5,0.5)
 
-COLOUR MEANINGS (be consistent):
-- Healthy cell/tissue: r:50, g:200, b:100 (green)
-- Pathogen/threat: r:220, g:30, b:30 (red)  
-- Neuron/electrical: r:60, g:160, b:255 (blue)
-- Dream/memory: r:160, g:60, b:255 (purple)
-- Energy/signal: r:255, g:180, b:30 (gold)
-- Immune cell: r:255, g:255, b:200 (white-gold)
-- Dead/damaged: r:80, g:20, b:20 (dark red)
-- Sleep state: r:20, g:20, b:80 (deep blue)
-- Environment/fluid: r:10, g:15, b:30 (near black)
+For "spread" when using a shape:
+- The spread value controls the SIZE of the shape on screen
+- 0.15 = small shape, 0.30 = medium, 0.50 = large fills screen, 0.70 = very large
+- For background fields without a shape: spread 0.8-1.0
 
-SPREAD:
-- Distinct object (cell, bacterium, nucleus): 0.05-0.12
-- Loose cloud (group of cells, wave): 0.15-0.25  
-- Field/environment/fluid: 0.6-0.9
+STORYTELLING — show the real process:
+- Each step the actors MOVE (change x,y) to show them interacting
+- Each step actors TRANSFORM (change colour/size) to show their state
+- Bacteria: start at screen edges, move toward the cell each step
+- Brain: show it changing state (bright=active, dim=sleeping, orange burst=REM)
+- Cell: show it being invaded (green→mixed→dark red as bacteria enter)
 
-EXAMPLE — "How do bacteria attack cells":
-Step 1 (Before Attack): Cell at center (0.5,0.45) green spread:0.13. 4 bacteria at corners spread:0.05. Dark fluid background spread:0.85.
-Step 2 (Bacteria Approach): Same cell. Bacteria now at (0.25,0.3),(0.75,0.3),(0.25,0.7),(0.75,0.7) — closer to cell.
-Step 3 (Membrane Contact): Bacteria at (0.38,0.38),(0.62,0.38),(0.38,0.62),(0.62,0.62) — touching cell edge. Cell slightly darker.
-Step 4 (Invasion): Bacteria now INSIDE cell position (0.5,0.45). Cell colour shifts to dark red-green. Cell spread increases (fragmenting).
-Step 5 (Immune Response): White immune cells arrive from top (0.2,0.1),(0.5,0.05),(0.8,0.1). Bacteria shrinking. Cell still damaged.
+COLOUR MEANINGS:
+- Healthy: r:50,g:200,b:100 (green)
+- Infected/diseased: r:200,g:40,b:40 (red)  
+- Neural active: r:60,g:160,b:255 (blue)
+- Neural sleeping: r:20,g:20,b:100 (deep blue)
+- Memory/dream: r:160,g:60,b:255 (purple)
+- Immune: r:255,g:240,b:180 (white-gold)
+- Energy: r:255,g:180,b:30 (gold)
+- Environment: r:8,g:12,b:25 (near black)
 
-NARRATION — each step description must say: "Watch [specific visual thing happening]. This is [scientific name] — [real number or mechanism]."
+EXAMPLE for "how do bacteria attack cells":
+Step 1: Large "cell" shape at center (0.5,0.5) green, spread:0.35. Four "bacterium" shapes at corners (0.08,0.08),(0.92,0.08),(0.08,0.92),(0.92,0.92) red, spread:0.08. Dark background no-shape spread:0.9.
+Step 2: Same cell. Bacteria moved closer: (0.22,0.22),(0.78,0.22),(0.22,0.78),(0.78,0.78).
+Step 3: Bacteria at cell edge: (0.35,0.35),(0.65,0.35),(0.35,0.65),(0.65,0.65). Cell starting to darken slightly.
+Step 4: Bacteria INSIDE cell position (0.5,0.5). Cell colour now r:120,g:100,b:40 (compromised). Bacteria smaller.
+Step 5: "cell" still damaged at center. Immune cells (no shape, white-gold) arriving from top edges.
 
 Return ONLY this JSON:
 {
   "steps": [
     {
       "title": "3-5 word action title",
-      "description": "Watch [what is literally visible on screen right now]. This is [scientific term] — [real mechanism with numbers].",
+      "description": "Watch [specific visible thing on screen]. This is [scientific name] — [real mechanism with numbers].",
       "groups": [
-        {"label": "actor name", "x": 0.5, "y": 0.5, "r": 50, "g": 200, "b": 100, "size": 3.0, "density": 0.4, "spread": 0.12},
-        {"label": "environment", "x": 0.5, "y": 0.5, "r": 10, "g": 15, "b": 30, "size": 0.3, "density": 0.2, "spread": 0.85}
+        {"label": "actor name", "shape": "cell", "x": 0.5, "y": 0.5, "r": 50, "g": 200, "b": 100, "size": 2.0, "density": 0.45, "spread": 0.35},
+        {"label": "bacterium 1", "shape": "bacterium", "x": 0.08, "y": 0.08, "r": 220, "g": 30, "b": 30, "size": 1.2, "density": 0.12, "spread": 0.08},
+        {"label": "environment", "x": 0.5, "y": 0.5, "r": 8, "g": 12, "b": 25, "size": 0.3, "density": 0.19, "spread": 0.9}
       ],
       "motion": "drift"
     }
   ]
 }
 
-motion: pulse/drift/explode/collapse/converge/scatter/flow/surge`;
+motion options: pulse/drift/explode/collapse/converge/scatter/flow/surge`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

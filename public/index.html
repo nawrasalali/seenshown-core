@@ -324,13 +324,13 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="bottomPanel">
   <!-- QUESTION BAR — fixed, shows current question -->
-  <div id="questionBar" style="pointer-events:all;padding:8px 14px 8px;background:rgba(8,14,36,0.28);backdrop-filter:blur(6px);border-top:1px solid rgba(38,232,176,0.2);border-bottom:1px solid rgba(38,232,176,0.15);display:none">
+  <div id="questionBar" style="pointer-events:all;padding:8px 14px 8px;background:rgba(8,14,36,0.18);backdrop-filter:blur(4px);border-top:1px solid rgba(38,232,176,0.15);border-bottom:1px solid rgba(38,232,176,0.15);display:none">
     <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(38,232,176,.55);margin-bottom:2px">Question</div>
     <div id="questionBarText" style="font-size:.88rem;color:#fff;line-height:1.4;font-weight:600;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.5)"></div>
   </div>
   <!-- TICKER BAR — scrolling answer, tap to expand -->
   <div id="answerTicker"
-    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.22);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
+    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.15);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
     ontouchstart="tickerTouchStart(event)"
     ontouchmove="tickerTouchMove(event)"
     ontouchend="tickerTouchEnd(event)"
@@ -342,7 +342,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
   <!-- EXPANDED PHASES PANEL -->
   <div id="phasesPanel"
-    style="display:none;background:rgba(2,4,14,0.28);backdrop-filter:blur(8px);border-top:1px solid rgba(38,232,176,0.2);max-height:20vh;overflow-y:scroll;overflow-x:hidden;pointer-events:all;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain">
+    style="display:none;background:rgba(2,4,14,0.18);backdrop-filter:blur(6px);border-top:1px solid rgba(38,232,176,0.15);max-height:20vh;overflow-y:scroll;overflow-x:hidden;pointer-events:all;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px 4px;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:rgba(2,4,14,0.96);z-index:10">
       <div style="font-size:.6rem;letter-spacing:.15em;color:rgba(38,232,176,.7);text-transform:uppercase;font-weight:700">All Steps</div>
       <div onclick="closePhasesPanel()" style="color:rgba(255,255,255,.5);font-size:1.1rem;cursor:pointer;padding:4px 8px;line-height:1">✕</div>
@@ -360,7 +360,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
   <!-- INPUT — bigger, ⚡ inside -->
   <div id="qRow"
-    style="pointer-events:all;display:flex;align-items:flex-end;padding:6px 12px 12px;background:rgba(2,4,14,0.35);border-top:1px solid rgba(255,255,255,0.06);position:relative">
+    style="pointer-events:all;display:flex;align-items:flex-end;padding:6px 12px 12px;background:rgba(2,4,14,0.22);border-top:1px solid rgba(255,255,255,0.05);position:relative">
     <textarea id="mainQ" placeholder="Ask anything…" maxlength="300" rows="2"
       style="flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:14px;padding:11px 46px 11px 14px;color:var(--w);font-size:.94rem;outline:none;caret-color:var(--g);resize:none;min-height:54px;max-height:100px;font-family:inherit;line-height:1.45;transition:border-color .2s;width:100%"
       oninput="autoResizeMQ(this)"
@@ -2628,18 +2628,25 @@ function openPhasesPanel(){
       +'</div>';
   }).join('');
   panel.style.display='block';
+  /* Hide question bar and ticker when answer panel opens */
+  var qb=document.getElementById('questionBar');
+  var at=document.getElementById('answerTicker');
+  if(qb){qb.style.transition='opacity 0.3s';qb.style.opacity='0';qb.style.pointerEvents='none';}
+  if(at){at.style.transition='opacity 0.3s';at.style.opacity='0';}
   /* Stop touches on panel from closing it or affecting canvas */
   panel.ontouchstart=function(e){e.stopPropagation();};
   panel.ontouchmove=function(e){e.stopPropagation();};
   panel.ontouchend=function(e){e.stopPropagation();};
-  /* Pause ticker */
-  var track=document.getElementById('tickerTrack');
-  if(track)track.style.animationPlayState='paused';
 }
 
 function closePhasesPanel(){
   var panel=document.getElementById('phasesPanel');
   panel.style.display='none';
+  /* Restore question bar and ticker */
+  var qb=document.getElementById('questionBar');
+  var at=document.getElementById('answerTicker');
+  if(qb){qb.style.opacity='1';qb.style.pointerEvents='all';}
+  if(at){at.style.opacity='1';}
   var track=document.getElementById('tickerTrack');
   if(track)track.style.animationPlayState='running';
 }

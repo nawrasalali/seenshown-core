@@ -476,6 +476,9 @@ function easeIn(t){return Math.pow(clamp(t,0,1),2);}
 
 /* ── STATE ── */
 var simDomain='_q';
+var _orbState='idle'; /* idle | thinking | birth | done */
+var _orbT=0;
+var _orbPhase=0; /* breathing phase */
 var NARR={'_q':[]};
 var simPhase=0;
 var simSpeed=1.0;   /* 100% default */
@@ -901,7 +904,9 @@ function render(dt){
   var touchR=touchActive?Math.min(W(),H())*.3:0;
   var tx=touchX,ty=touchY,tf=touchForce;
   var dtSec=dt/1000;
-  var formed=formT>FORM_DUR;var breathAmp=formed?4.5:1.5;
+  var formed=formT>FORM_DUR;
+  var isOrb=_orbState==='idle'||_orbState==='thinking';
+  var breathAmp=isOrb?(formed?6.0:2.0):(formed?4.5:1.5);
   var gT=globalT*.0007;
 
   /* Physics pass — update positions (no draw) */
@@ -1125,6 +1130,47 @@ function switchDomain(key,pill){
 function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTimeout(function(){reinitScheduled=false;initPhase(simDomain,simPhase,false);},100);}
 
 /* ── ASK QUESTION ── */
+/* ── SEENSHOWN ORB — brand identity, idle + thinking states ── */
+function buildOrb(state){
+  var cx=0.5,cy=0.46; /* slightly above center */
+  var pulse=state==='thinking'?1.0:0.0; /* extra glow when thinking */
+
+  /* Core — bright white/teal center */
+  var core={x:cx,y:cy,r:200,g:255,b:245,size:3.5+pulse*1.5,density:0.08,spread:0.04};
+
+  /* Inner glow — warm white */
+  var inner={x:cx,y:cy,r:180,g:230,b:255,size:2.2+pulse,density:0.14,spread:0.10};
+
+  /* Mid shell — teal */
+  var mid={x:cx,y:cy,r:38,g:232,b:176,size:1.4,density:0.22,spread:0.17};
+
+  /* Outer halo — deep teal fading */
+  var outer={x:cx,y:cy,r:20,g:140,b:160,size:0.8,density:0.28,spread:0.26};
+
+  /* Deep space — barely visible particles orbiting far */
+  var space={x:cx,y:cy,r:10,g:40,b:80,size:0.4,density:0.28,spread:0.42};
+
+  if(state==='thinking'){
+    /* Thinking: brighter core, faster orbit feel, add extra glow ring */
+    core.r=230;core.g=255;core.b=255;core.size=4.5;
+    mid.r=80;mid.g=255;mid.b=200;
+    return [core,inner,mid,outer,space,
+      {x:cx,y:cy,r:38,g:200,b:255,size:1.0,density:0.08,spread:0.32}];
+  }
+  return [core,inner,mid,outer,space];
+}
+
+function showOrb(state){
+  _orbState=state;
+  _orbT=0;
+  applyGroups(buildOrb(state), state==='thinking'?'pulse':'drift');
+}
+
+function orbBirth(){
+  /* Orb explodes outward becoming the simulation */
+  _orbState='birth';
+}
+
 /* ── AI FREE-FORM SIMULATION — CEO approved master prompt v1.0 ── */
 function applyGroups(groups,motion){
   if(!groups||!groups.length)return;
@@ -1229,6 +1275,8 @@ async function askQuestion(){
   if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='...';}
   var mainQEl=document.getElementById('mainQ');
   if(mainQEl){mainQEl.value='';autoResizeMQ(mainQEl);}
+  /* Orb enters thinking state */
+  showOrb('thinking');
 
   /* Pause BigBang so it doesn't fight */
   
@@ -1260,9 +1308,13 @@ async function askQuestion(){
 
     /* Clear domain pills */
 
-    /* Apply AI-designed particle groups */
+    /* Orb birth — dissolve into answer simulation */
+    _orbState='done';
     if(data.groups&&data.groups.length>0){
-      applyGroups(data.groups, data.motion||'drift');
+      /* Brief flash before morphing — feels like explosion */
+      setTimeout(function(){
+        applyGroups(data.groups, data.motion||'drift');
+      }, 120);
     }
 
     /* Show narration in ticker */
@@ -2146,8 +2198,8 @@ if('serviceWorker' in navigator){
 (function detectSpeed(){var t=performance.now(),n=0;while(performance.now()-t<6)n++;/* Cap at 25K for 60fps on mobile — quality over quantity */N=n>20000?25000:n>10000?18000:12000;})();
 allocBuffers(N);
 allocVelocity(N);
-/* Boot: start with subtle scatter — questions drive the simulation */
-applyGroups([{x:0.5,y:0.5,r:15,g:15,b:25,size:0.4,density:1.0,spread:1.0}],'drift');
+/* Boot: show SeenShown orb */
+showOrb('idle');
 lastTs=performance.now();
 requestAnimationFrame(loop);
 document.getElementById('lodOv').style.transition='opacity .5s';

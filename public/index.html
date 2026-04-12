@@ -1067,7 +1067,7 @@ function qcos(x){return NOISE_TBL[(Math.abs(Math.round(x*651.9))+1024)%4096];}
 
 function render(dt){
   /* Dim trail */
-  var clearAlpha=(simDomain==='bigbang'&&(_bbState===0||_bbState===6))?0.6:0.15;
+  var clearAlpha=0.15;
   ctx.fillStyle='rgba(0,0,0,'+clearAlpha+')';
   ctx.fillRect(0,0,W(),H());
 
@@ -1135,15 +1135,7 @@ function render(dt){
     var fx=pX[i],fy=pY[i];
     var sz=Math.max(0.4,pSz[i]*(0.35+easeOut(t)*.8));
     /* Edge vignette — fade particles near all 4 boundaries */
-    var _aw=W()-72,_ah=H()-46-185;
-    var _fade=0.25; /* 18% fade zone each edge */
-    var _ex=fx/(_aw*_fade);
-    var _ey=(fy-78)/(_ah*_fade);
-    var _er=(_aw-fx)/(_aw*_fade);
-    var _eb=(H()-185-fy)/(_ah*_fade);
-    var edgeFade=clamp(_ex,0,1)*clamp(_ey,0,1)*clamp(_er,0,1)*clamp(_eb,0,1);
-    edgeFade=edgeFade*edgeFade*edgeFade;
-    alpha*=edgeFade;
+    /* No vignette — simulation fills full screen edge to edge */
 
     var cr=(pR[i]>>3)<<3,cg=(pG[i]>>3)<<3,cb=(pB[i]>>3)<<3;
     var col='rgba('+cr+','+cg+','+cb+','+alpha.toFixed(2)+')';
@@ -1962,13 +1954,6 @@ function jumpToPhaseAndClose(ph){
 
 
 
-var QS=['How does the Big Bang start?','How big is the universe?','How does heartbreak feel?','What is love?','How does grief work?','How does anger form?','What is joy?','How does a neuron fire?','How do T-cells kill cancer?','How does antibiotic resistance happen?','How does a black hole form?','How do rumours spread?','How does gridlock happen?','What is a chemical reaction?'];
-function buildChips(){
-  var c=document.getElementById('qchips');
-  if(!c)return; /* qchips element optional */
-  QS.forEach(function(q){var ch=document.createElement('span');ch.className='qchip';ch.textContent=q;ch.onclick=function(){document.getElementById('mainQ').value=q;autoResizeMQ(document.getElementById('mainQ'));askQuestion();};c.appendChild(ch);});
-}
-
 /* ── CONTEXTUAL GUIDE — tooltips pointing to actual UI ── */
 var HINTS=[
   /* Tap hint — points down to canvas centre */
@@ -2280,7 +2265,6 @@ if('serviceWorker' in navigator){
 (function detectSpeed(){var t=performance.now(),n=0;while(performance.now()-t<6)n++;/* Cap at 25K for 60fps on mobile — quality over quantity */N=n>20000?25000:n>10000?18000:12000;})();
 allocBuffers(N);
 allocVelocity(N);
-buildChips();
 /* Boot: start with subtle scatter — questions drive the simulation */
 applyGroups([{x:0.5,y:0.5,r:15,g:15,b:25,size:0.4,density:1.0,spread:1.0}],'drift');
 lastTs=performance.now();

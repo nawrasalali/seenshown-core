@@ -159,10 +159,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
   </div>
 </nav>
-  <div class="rail-btn" id="railToggleBtn" onclick="toggleRail()" style="margin-top:4px">
-    <div id="railToggleIcon" class="rail-icon">🔒</div>
-    <div class="rail-label" id="railToggleLabel">HIDE</div>
-  </div>
 </div>
 
 <!-- AUTH MODAL -->
@@ -319,6 +315,10 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   <div class="rail-btn" id="railPost" onclick="doSaveAndPost()" style="opacity:.5">
     <div class="rail-icon">🌍</div>
     <div class="rail-label green">Post</div>
+  </div>
+  <div class="rail-btn" id="railToggleBtn" onclick="toggleRail()">
+    <div id="railToggleIcon" class="rail-icon">🔒</div>
+    <div class="rail-label" id="railToggleLabel">HIDE</div>
   </div>
 </div>
 

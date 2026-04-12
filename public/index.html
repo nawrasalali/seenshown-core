@@ -1890,8 +1890,8 @@ function applyGroups(groups,motion){
   if(!groups||!groups.length)return;
   var FW=W();
   var FH=H();
-  var topY=46;
-  var FH2=FH-topY;
+  var topY=52; /* just below nav */
+  var FH2=(FH-topY)*0.62; /* use top 62% — simulation stays above panels */
   /* Use square base for spread so circles look round */
   var base=Math.min(FW,FH2);
   var total=groups.reduce(function(s,g){return s+(g.density||0);},0)||1;
@@ -1923,7 +1923,7 @@ function applyGroups(groups,motion){
         var angle=Math.random()*Math.PI*2;
         var radius=Math.sqrt(Math.random())*sp;
         pTX[idx]=clamp(gx+Math.cos(angle)*radius,0,FW);
-        pTY[idx]=clamp(gy+Math.sin(angle)*radius,topY,FH);
+        pTY[idx]=clamp(gy+Math.sin(angle)*radius,topY,topY+FH2*1.1);
         pR[idx]=clamp(Math.round(grp.r)||180,0,255);
         pG[idx]=clamp(Math.round(grp.g)||180,0,255);
         pB[idx]=clamp(Math.round(grp.b)||180,0,255);
@@ -1936,7 +1936,7 @@ function applyGroups(groups,motion){
     }
   }
   for(;idx<N;idx++){
-    pTX[idx]=FW*0.5;pTY[idx]=topY+FH2*0.5;
+    pTX[idx]=FW*0.5;pTY[idx]=topY+FH2*0.3;
     pR[idx]=5;pG[idx]=5;pB[idx]=10;pSz[idx]=0.1;
     pDelay[idx]=0;pBX[idx]=pTX[idx];pBY[idx]=pTY[idx];pLife[idx]=1;
   }

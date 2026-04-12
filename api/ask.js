@@ -50,6 +50,21 @@ STORYTELLING — show the real process:
 - Brain: show it changing state (bright=active, dim=sleeping, orange burst=REM)
 - Cell: show it being invaded (green→mixed→dark red as bacteria enter)
 
+SHAPE SELECTION GUIDANCE — match shape to concept:
+- Love, romance, attraction → heart, human
+- Dreams, sleep, memory → brain, wave
+- Disease, infection → bacterium, virus, cell
+- Universe, cosmos, space → galaxy, blackhole, star, planet
+- Evolution, growth, life → dna, tree, cell
+- Emotion, feeling, mood → heart, human, spiral
+- Physics, energy, force → atom, explosion, plasma, lightwave
+- Climate, environment → earth, mountain, volcano, oceanwave, tornado
+- Society, culture, people → crowd, human, network, pyramid
+- Chemistry, reactions → molecule, chemreaction, crystal
+- Brain, mind, thought → brain, neuron, synapse, wave
+- Heart, circulation, blood → heart, bloodcell, lung
+- Time, cycles, infinity → spiral, infinity, vortex
+
 COLOUR MEANINGS:
 - Healthy: r:50,g:200,b:100 (green)
 - Infected/diseased: r:200,g:40,b:40 (red)  

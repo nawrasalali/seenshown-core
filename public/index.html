@@ -1288,23 +1288,21 @@ async function askQuestion(){
 
     /* Store narration under special key */
     NARR['_q']=clean;
+    SIM_STEPS=data.simSteps||[];
     simDomain='_q';
     simPhase=0;
     if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
     _phaseMs=0;
-    
-    
-
-    /* Clear domain pills */
-
-    /* Orb birth — dissolve into answer simulation */
     _orbState='done';
-    if(data.groups&&data.groups.length>0){
-      /* Brief flash before morphing — feels like explosion */
-      setTimeout(function(){
+
+    /* Launch step 0 simulation */
+    setTimeout(function(){
+      if(SIM_STEPS.length>0){
+        applyGroups(SIM_STEPS[0].groups, SIM_STEPS[0].motion||'drift');
+      } else if(data.groups){
         applyGroups(data.groups, data.motion||'drift');
-      }, 120);
-    }
+      }
+    }, 120);
 
     /* Show narration in ticker */
     updateNarr('_q',0);

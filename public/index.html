@@ -1522,36 +1522,38 @@ function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTime
 /* ── AI FREE-FORM SIMULATION — CEO approved master prompt v1.0 ── */
 function applyGroups(groups,motion){
   if(!groups||!groups.length)return;
-  var W2=W()-72;
-  var topY=46;
-  var H2=H()-topY;
+  /* TRUE EDGE TO EDGE — full canvas, rail overlays via CSS z-index */
+  var FW=W();   /* full canvas width — 100vw */
+  var FH=H();   /* full canvas height — 100vh */
   var total=groups.reduce(function(s,g){return s+(g.density||0);},0)||1;
   var idx=0;
   for(var g=0;g<groups.length;g++){
     var grp=groups[g];
     var count=g===groups.length-1?(N-idx):Math.min(N-idx,Math.round(N*(grp.density||0)/total));
-    var gx=clamp((grp.x||0.5),0,1)*W2;
-    var gy=topY+clamp((grp.y||0.5),0,1)*H2;
-    var spX=clamp(grp.spread||0.3,0.01,1)*W2*0.6;
-    var spY=clamp(grp.spread||0.3,0.01,1)*H2*0.6;
+    /* x,y 0..1 = full screen width and height */
+    var gx=clamp((grp.x||0.5),0,1)*FW;
+    var gy=clamp((grp.y||0.5),0,1)*FH;
+    /* spread 1.0 = covers full screen */
+    var spX=clamp(grp.spread||0.3,0.01,1)*FW*0.55;
+    var spY=clamp(grp.spread||0.3,0.01,1)*FH*0.55;
     var sz=Math.max(0.2,grp.size||1);
     for(var i=0;i<count&&idx<N;i++,idx++){
       var dx=(Math.random()+Math.random()+Math.random()-1.5)/1.5*spX;
       var dy=(Math.random()+Math.random()+Math.random()-1.5)/1.5*spY;
-      pTX[idx]=clamp(gx+dx,0,W2-1);
-      pTY[idx]=clamp(gy+dy,topY,H()-1);
+      pTX[idx]=clamp(gx+dx,0,FW);
+      pTY[idx]=clamp(gy+dy,0,FH);
       pR[idx]=clamp(Math.round(grp.r)||180,0,255);
       pG[idx]=clamp(Math.round(grp.g)||180,0,255);
       pB[idx]=clamp(Math.round(grp.b)||180,0,255);
       pSz[idx]=sz*(0.5+Math.random()*0.8);
       pDelay[idx]=Math.random()*500;
-      pBX[idx]=(pX[idx]>0||pY[idx]>0)?pX[idx]:W2*0.5;
-      pBY[idx]=(pX[idx]>0||pY[idx]>0)?pY[idx]:topY+H2*0.5;
+      pBX[idx]=(pX[idx]>0||pY[idx]>0)?pX[idx]:FW*0.5;
+      pBY[idx]=(pX[idx]>0||pY[idx]>0)?pY[idx]:FH*0.5;
       pLife[idx]=1;
     }
   }
   for(;idx<N;idx++){
-    pTX[idx]=W2*0.5;pTY[idx]=topY+H2*0.5;
+    pTX[idx]=FW*0.5;pTY[idx]=FH*0.5;
     pR[idx]=5;pG[idx]=5;pB[idx]=10;pSz[idx]=0.1;
     pDelay[idx]=0;pBX[idx]=pTX[idx];pBY[idx]=pTY[idx];pLife[idx]=1;
   }

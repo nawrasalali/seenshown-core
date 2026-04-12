@@ -1183,6 +1183,240 @@ function orbBirth(){
 }
 
 /* ── AI FREE-FORM SIMULATION — CEO approved master prompt v1.0 ── */
+/* ══════════════════════════════════════════════════════════
+   SEENSHOWN BIOLOGICAL SHAPE LIBRARY
+   Each function returns particle targets forming a real shape
+   n=particle count, cx/cy=center (pixels), scale=size in pixels
+   ══════════════════════════════════════════════════════════ */
+
+function shapeBrain(n, cx, cy, scale, rr, gg, bb){
+  /* Human brain — two hemispheres with folds */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var side=i<n*0.5?-1:1; /* left/right hemisphere */
+    var t=Math.random()*Math.PI; /* angle 0-180 top arc */
+    var r=scale*(0.55+Math.random()*0.45);
+    /* Hemisphere base shape — rounded top, flat bottom */
+    var hx=side*(scale*0.28+Math.cos(t)*r*0.55);
+    var hy=-Math.abs(Math.sin(t))*r*0.72+scale*0.1;
+    /* Add folds — wrinkle effect with sine waves */
+    var fold=Math.sin(t*6+side*2)*scale*0.06;
+    hx+=fold*Math.cos(t);
+    hy+=fold*Math.sin(t);
+    /* Cerebellum — small bump at bottom center */
+    if(Math.random()<0.12){
+      hx=rnd(-scale*0.18,scale*0.18);
+      hy=scale*(0.28+Math.random()*0.18);
+    }
+    out.push({tx:clamp(cx+hx,0,W()),ty:clamp(cy+hy,0,H()),
+      rr:clamp(rr+rnd(-15,15),0,255),
+      gg:clamp(gg+rnd(-15,15),0,255),
+      bb:clamp(bb+rnd(-15,15),0,255),
+      r:0.4+Math.random()*1.2});
+  }
+  return out;
+}
+
+function shapeBacterium(n, cx, cy, scale, rr, gg, bb){
+  /* Rod-shaped bacterium (bacillus) with flagella */
+  var out=[];
+  var angle=Math.random()*Math.PI; /* random orientation */
+  var cos=Math.cos(angle), sin=Math.sin(angle);
+  for(var i=0;i<n;i++){
+    var px,py;
+    if(i<n*0.78){
+      /* Main rod body — elongated oval */
+      var t=(Math.random()*2-1)*scale*0.55; /* along length */
+      var w=scale*0.22*Math.sqrt(1-Math.pow(t/(scale*0.55),2)); /* width tapers */
+      var off=rnd(-w,w);
+      px=t*cos-off*sin;
+      py=t*sin+off*cos;
+    } else {
+      /* Flagella — wavy tail */
+      var ft=Math.random()*scale*0.9+scale*0.55;
+      var fw=Math.sin(ft*4/scale)*scale*0.12;
+      px=ft*cos-fw*sin;
+      py=ft*sin+fw*cos;
+      if(Math.random()<0.5){px=-px;py=-py;}
+    }
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),
+      rr:clamp(rr+rnd(-20,20),0,255),
+      gg:clamp(gg+rnd(-20,20),0,255),
+      bb:clamp(bb+rnd(-20,20),0,255),
+      r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeCell(n, cx, cy, scale, rr, gg, bb){
+  /* Animal cell — circular with nucleus and membrane */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;
+    var px,py,lr,lg,lb;
+    if(i<n*0.12){
+      /* Cell membrane — dense ring at edge */
+      var mr=scale*(0.88+Math.random()*0.08);
+      px=Math.cos(a)*mr; py=Math.sin(a)*mr;
+      lr=clamp(rr+40,0,255);lg=clamp(gg+40,0,255);lb=clamp(bb+40,0,255);
+    } else if(i<n*0.32){
+      /* Nucleus — inner bright sphere */
+      var nr=Math.random()*scale*0.28;
+      px=Math.cos(a)*nr; py=Math.sin(a)*nr;
+      lr=clamp(rr+60,0,255);lg=clamp(gg+20,0,255);lb=clamp(bb+80,0,255);
+    } else {
+      /* Cytoplasm — fills interior */
+      var cr=Math.random()*scale*0.82;
+      px=Math.cos(a)*cr; py=Math.sin(a)*cr;
+      lr=clamp(rr+rnd(-10,10),0,255);
+      lg=clamp(gg+rnd(-10,10),0,255);
+      lb=clamp(bb+rnd(-10,10),0,255);
+    }
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),rr:lr,gg:lg,bb:lb,
+      r:0.3+Math.random()*1.1});
+  }
+  return out;
+}
+
+function shapeHeart(n, cx, cy, scale, rr, gg, bb){
+  /* Heart shape using parametric equation */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random()*Math.PI*2;
+    var r=0.5+Math.random()*0.5;
+    /* Heart parametric: x=16sin³t, y=-(13cost-5cos2t-2cos3t-cos4t) */
+    var hx=scale*0.055*16*Math.pow(Math.sin(t),3)*r;
+    var hy=-scale*0.055*(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*r;
+    out.push({tx:clamp(cx+hx,0,W()),ty:clamp(cy+hy,0,H()),
+      rr:clamp(rr+rnd(-15,25),0,255),
+      gg:clamp(gg+rnd(-15,10),0,255),
+      bb:clamp(bb+rnd(-10,10),0,255),
+      r:0.4+Math.random()*1.3});
+  }
+  return out;
+}
+
+function shapeNeuron(n, cx, cy, scale, rr, gg, bb){
+  /* Neuron — soma with dendrites and axon */
+  var out=[];
+  var numDendrites=5+Math.floor(Math.random()*4);
+  for(var i=0;i<n;i++){
+    var px,py;
+    if(i<n*0.18){
+      /* Soma — cell body */
+      var sr=Math.random()*scale*0.18;
+      var sa=Math.random()*Math.PI*2;
+      px=Math.cos(sa)*sr; py=Math.sin(sa)*sr;
+    } else if(i<n*0.62){
+      /* Dendrites — branching from soma */
+      var d=Math.floor(Math.random()*numDendrites);
+      var da=(d/numDendrites)*Math.PI*2;
+      var dl=Math.random()*scale*0.52;
+      var dw=rnd(-scale*0.05,scale*0.05)*(1-dl/(scale*0.52));
+      px=Math.cos(da)*dl+Math.cos(da+Math.PI/2)*dw;
+      py=Math.sin(da)*dl+Math.sin(da+Math.PI/2)*dw;
+    } else {
+      /* Axon — long single projection down */
+      var al=Math.random()*scale*0.78;
+      px=rnd(-scale*0.025,scale*0.025);
+      py=scale*0.2+al;
+    }
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),
+      rr:clamp(rr+rnd(-10,20),0,255),
+      gg:clamp(gg+rnd(-10,20),0,255),
+      bb:clamp(bb+rnd(-10,20),0,255),
+      r:0.3+Math.random()*0.9});
+  }
+  return out;
+}
+
+function shapeDNA(n, cx, cy, scale, rr, gg, bb){
+  /* DNA double helix */
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=(i/n)*Math.PI*6; /* 3 full turns */
+    var y=((i/n)-0.5)*scale*1.2;
+    var r2=scale*0.22;
+    if(i%3===0){
+      /* Base pairs — rungs */
+      var bp=Math.random()*2-1;
+      out.push({tx:clamp(cx+bp*r2,0,W()),ty:clamp(cy+y,0,H()),
+        rr:200,gg:200,bb:200,r:0.5+Math.random()*0.5});
+    } else {
+      /* Strand 1 or 2 */
+      var strand=i%3===1?1:-1;
+      var sx=Math.cos(t)*r2*strand;
+      var sy=Math.sin(t)*scale*0.04;
+      out.push({tx:clamp(cx+sx,0,W()),ty:clamp(cy+y+sy,0,H()),
+        rr:strand===1?clamp(rr+40,0,255):clamp(rr-40,0,255),
+        gg:strand===1?clamp(gg+40,0,255):clamp(gg-40,0,255),
+        bb:strand===1?clamp(bb+60,0,255):clamp(bb+20,0,255),
+        r:0.5+Math.random()*1.0});
+    }
+  }
+  return out;
+}
+
+function shapeBrainWave(n, cx, cy, scale, rr, gg, bb, freq){
+  /* Brain wave — sinusoidal wave across screen */
+  var f=freq||3;
+  var out=[];
+  for(var i=0;i<n;i++){
+    var t=Math.random();
+    var wx=(t-0.5)*scale*1.8;
+    var amp=scale*0.22*(1-Math.pow(Math.abs(t-0.5)*1.8,2));
+    var wy=Math.sin(t*Math.PI*2*f)*amp+rnd(-scale*0.02,scale*0.02);
+    out.push({tx:clamp(cx+wx,0,W()),ty:clamp(cy+wy,0,H()),
+      rr:clamp(rr+rnd(-10,10),0,255),
+      gg:clamp(gg+rnd(-10,10),0,255),
+      bb:clamp(bb+rnd(-10,10),0,255),
+      r:0.4+Math.random()*1.0});
+  }
+  return out;
+}
+
+function shapeVirus(n, cx, cy, scale, rr, gg, bb){
+  /* Virus — icosahedral with spike proteins */
+  var out=[];
+  var numSpikes=12;
+  for(var i=0;i<n;i++){
+    var a=Math.random()*Math.PI*2;
+    var px,py;
+    if(i<n*0.55){
+      /* Capsid — dense sphere */
+      var cr=scale*(0.28+Math.random()*0.12);
+      px=Math.cos(a)*cr*Math.cos(rnd(-1,1));
+      py=Math.sin(a)*cr;
+    } else if(i<n*0.85){
+      /* Spike proteins — protrusions */
+      var sp2=Math.floor(Math.random()*numSpikes);
+      var sa2=(sp2/numSpikes)*Math.PI*2;
+      var sl=scale*(0.40+Math.random()*0.18);
+      var sw=rnd(-scale*0.03,scale*0.03);
+      px=Math.cos(sa2)*sl+sw;
+      py=Math.sin(sa2)*sl+sw;
+    } else {
+      /* Genetic material inside */
+      px=rnd(-scale*0.22,scale*0.22);
+      py=rnd(-scale*0.22,scale*0.22);
+    }
+    out.push({tx:clamp(cx+px,0,W()),ty:clamp(cy+py,0,H()),
+      rr:clamp(rr+rnd(-20,20),0,255),
+      gg:clamp(gg+rnd(-20,20),0,255),
+      bb:clamp(bb+rnd(-20,20),0,255),
+      r:0.4+Math.random()*1.1});
+  }
+  return out;
+}
+
+/* ── SHAPE DISPATCHER — called by applyGroups when group has a shape property ── */
+var SHAPE_FNS={
+  brain:shapeBrain, bacterium:shapeBacterium, cell:shapeCell,
+  heart:shapeHeart, neuron:shapeNeuron, dna:shapeDNA,
+  wave:shapeBrainWave, virus:shapeVirus
+};
+
+
 function applyGroups(groups,motion){
   if(!groups||!groups.length)return;
   var FW=W();
@@ -1201,18 +1435,31 @@ function applyGroups(groups,motion){
     /* Use square base so spread is equal in all directions → round */
     var sp=clamp(grp.spread||0.3,0.01,1)*base*0.55;
     var sz=Math.max(0.2,grp.size||1);
+    /* Generate shape particles */
+    var shapePts=null;
+    if(grp.shape&&SHAPE_FNS[grp.shape]){
+      shapePts=SHAPE_FNS[grp.shape](count,gx,gy,sp*1.8,
+        clamp(Math.round(grp.r)||180,0,255),
+        clamp(Math.round(grp.g)||180,0,255),
+        clamp(Math.round(grp.b)||180,0,255));
+    }
     for(var i=0;i<count&&idx<N;i++,idx++){
-      /* Circular spread using angle+radius for true round shape */
-      var angle=Math.random()*Math.PI*2;
-      var radius=Math.sqrt(Math.random())*sp; /* sqrt for uniform disk */
-      var dx=Math.cos(angle)*radius;
-      var dy=Math.sin(angle)*radius;
-      pTX[idx]=clamp(gx+dx,0,FW);
-      pTY[idx]=clamp(gy+dy,topY,FH);
-      pR[idx]=clamp(Math.round(grp.r)||180,0,255);
-      pG[idx]=clamp(Math.round(grp.g)||180,0,255);
-      pB[idx]=clamp(Math.round(grp.b)||180,0,255);
-      pSz[idx]=sz*(0.5+Math.random()*0.8);
+      var pt=shapePts?shapePts[i%shapePts.length]:null;
+      if(pt){
+        pTX[idx]=pt.tx; pTY[idx]=pt.ty;
+        pR[idx]=pt.rr; pG[idx]=pt.gg; pB[idx]=pt.bb;
+        pSz[idx]=(pt.r||1)*(0.7+Math.random()*0.6);
+      } else {
+        /* Circular spread fallback */
+        var angle=Math.random()*Math.PI*2;
+        var radius=Math.sqrt(Math.random())*sp;
+        pTX[idx]=clamp(gx+Math.cos(angle)*radius,0,FW);
+        pTY[idx]=clamp(gy+Math.sin(angle)*radius,topY,FH);
+        pR[idx]=clamp(Math.round(grp.r)||180,0,255);
+        pG[idx]=clamp(Math.round(grp.g)||180,0,255);
+        pB[idx]=clamp(Math.round(grp.b)||180,0,255);
+        pSz[idx]=sz*(0.5+Math.random()*0.8);
+      }
       pDelay[idx]=_stepFormDur===5000?Math.random()*200:Math.random()*500;
       pBX[idx]=(pX[idx]>0||pY[idx]>0)?pX[idx]:gx;
       pBY[idx]=(pX[idx]>0||pY[idx]>0)?pY[idx]:gy;

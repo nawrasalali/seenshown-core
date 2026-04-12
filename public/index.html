@@ -480,6 +480,7 @@ var _orbState='idle'; /* idle | thinking | birth | done */
 var _orbT=0;
 var _orbPhase=0; /* breathing phase */
 var NARR={'_q':[]};
+var SIM_STEPS=[]; /* per-step simulation groups from AI */
 var simPhase=0;
 var simSpeed=1.0;   /* 100% default */
 var paused=false;
@@ -1132,18 +1133,18 @@ function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTime
 /* ── ASK QUESTION ── */
 /* ── SEENSHOWN ORB — brand identity, idle + thinking states ── */
 function buildOrb(state){
-  var cx=0.5,cy=0.36;
+  var cx=0.5,cy=0.38;
   var thinking=state==='thinking';
   /* SUN COLOURS: blazing white-gold core, orange corona, warm yellow outer */
   var core={x:cx,y:cy,r:255,g:255,b:200,size:thinking?5.5:3.8,density:0.10,spread:0.03};
   var inner={x:cx,y:cy,r:255,g:220,b:80,size:thinking?3.5:2.2,density:0.16,spread:0.08};
   var mid={x:cx,y:cy,r:255,g:160,b:30,size:thinking?2.2:1.4,density:0.22,spread:0.15};
   var outer={x:cx,y:cy,r:200,g:80,b:10,size:0.9,density:0.26,spread:thinking?0.26:0.20};
-  var corona={x:cx,y:cy,r:100,g:40,b:5,size:0.4,density:0.26,spread:thinking?0.46:0.30};
+  var corona={x:cx,y:cy,r:100,g:40,b:5,size:0.4,density:0.26,spread:thinking?0.70:0.55};
   if(thinking){
     return [core,inner,mid,outer,corona,
       {x:cx,y:cy,r:255,g:200,b:60,size:1.8,density:0.08,spread:0.22},
-      {x:cx,y:cy,r:255,g:120,b:20,size:0.7,density:0.06,spread:0.55}
+      {x:cx,y:cy,r:255,g:120,b:20,size:0.7,density:0.06,spread:0.85}
     ];
   }
   return [core,inner,mid,outer,corona];
@@ -1212,6 +1213,8 @@ function updateNarr(domain, phase){
   if(!narrs||!narrs.length)return;
   var ph=narrs[phase]||narrs[0];
   if(!ph)return;
+
+  /* Update phase label and flash */
   var el=document.getElementById('narrPhaseLabel');
   if(el)el.textContent=ph[0]||'';
   var flash=document.getElementById('phaseFlash');
@@ -1221,13 +1224,27 @@ function updateNarr(domain, phase){
     clearTimeout(flash._ft);
     flash._ft=setTimeout(function(){flash.style.opacity='0';},2800);
   }
+
+  /* Update dots */
   var dots=document.getElementById('narrDots');
   if(dots){dots.innerHTML='';for(var i=0;i<narrs.length;i++){var d=document.createElement('div');d.className='ndot'+(i===phase?' on':'');(function(x){d.onclick=function(){jumpToPhase(x);};})(i);dots.appendChild(d);}}
+
+  /* Stream text */
   if(typeof streamWords==='function')streamWords(ph[1]||'');
+
+  /* ★ TRIGGER STEP SIMULATION — each step gets its own visual ★ */
+  if(SIM_STEPS&&SIM_STEPS[phase]){
+    var step=SIM_STEPS[phase];
+    applyGroups(step.groups, step.motion||'drift');
+  }
+
+  /* Auto-advance to next step */
   if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
   phaseAutoTimer=setTimeout(function(){
     var next=(phase+1)%(narrs.length||1);
-    simPhase=next;updateNarr('_q',next);buildTicker(NARR['_q']);
+    simPhase=next;
+    updateNarr('_q',next);
+    buildTicker(NARR['_q']);
   },12000);
 }
 
@@ -2172,6 +2189,15 @@ allocBuffers(N);
 allocVelocity(N);
 /* Boot: show SeenShown orb */
 showOrb('idle');
+/* Orb shines when user starts typing */
+setTimeout(function(){
+  var mq=document.getElementById('mainQ');
+  if(mq){
+    mq.addEventListener('focus',function(){if(_orbState==='idle')showOrb('thinking');});
+    mq.addEventListener('blur',function(){if(_orbState==='thinking')showOrb('idle');});
+    mq.addEventListener('input',function(){if(_orbState==='idle')showOrb('thinking');});
+  }
+},500);
 lastTs=performance.now();
 requestAnimationFrame(loop);
 document.getElementById('lodOv').style.transition='opacity .5s';

@@ -1,4 +1,4 @@
-/* /api/ask — SeenShown v3.0 — correlated step simulations */
+/* /api/ask — SeenShown v4.0 — Cinematic simulation storytelling */
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -12,52 +12,87 @@ module.exports = async function handler(req, res) {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return res.status(500).json({ error: 'No API key' });
 
-    const prompt = `You are the visual mind of SeenShown. A human asked: "${question}"
+    const prompt = `You are the simulation director for SeenShown — a platform that makes complex answers VISIBLE through particle animation. You are a scientist, a filmmaker, and a visual storyteller in one.
 
-Your job: design 5 sequential particle simulations that make this answer VISIBLE and UNDERSTOOD. Each simulation must clearly show what is happening in that step — not abstract blobs, but meaningful particle arrangements that mirror the actual structure of the concept.
+THE QUESTION: "${question}"
 
-CANVAS: x=0.0 (left) to 1.0 (right), y=0.0 (top) to 1.0 (bottom). Full screen.
+YOUR MISSION: Design a 5-step cinematic particle simulation where each step shows a specific moment in the real physical/biological/chemical process. The simulation must be scientifically accurate and visually tell the story so clearly that someone with no knowledge of the subject understands what is happening just by watching.
 
-CRITICAL SIMULATION DESIGN RULES:
-1. Each group appears as a DISTINCT CLUSTER at its x,y position. Use spread 0.05-0.25 for tight focused groups. Use 0.4+ only for diffuse background fields.
-2. The ARRANGEMENT of groups must mirror the concept. Examples:
-   - Two things colliding → one group at x:0.1 moving toward another at x:0.9
-   - A cell being attacked → large group at center (cell), small groups scattered around edges (attackers)
-   - A network spreading → one bright group at center, many small dim groups spreading to all corners
-   - Something collapsing → groups arranged in a ring that will converge to center
-   - Two opposing forces → one group top-left, another bottom-right, field particles between
-3. Use colour with meaning: hot/dangerous=red-orange, cold/calm=blue-white, alive/growing=green-teal, energy=yellow-white, death/void=dark purple-black
-4. Dominant subject = high density (0.3-0.5) and large size (2-4). Supporting elements = lower density (0.1-0.2) and small size (0.5-1.5).
-5. EACH STEP must look DIFFERENT from the previous — the simulation transforms as the answer unfolds.
+═══ THINK LIKE THIS ═══
 
-NARRATION: Each step title is 3-5 words. Description tells what the user is WATCHING right now AND the science. Specific numbers and names. 2-3 sentences.
+First, identify the KEY ACTORS in this process (e.g., for "how do bacteria attack cells": the actors are the healthy cell, bacteria, cell membrane, immune cells).
 
-Design 5 steps for: "${question}"
+Then design each step as a SCENE showing those actors in action:
+- Where are the actors on screen?
+- What are they doing to each other?
+- How do their positions, colours, and sizes change from the previous step?
 
-Return ONLY this JSON:
+SCREEN GEOGRAPHY:
+- Use screen position to show anatomy/structure (bacteria come from edges, cell is at center, brain cortex is at top, heart is at center, etc.)
+- Left → Right can show time progression
+- Center = main subject, Edges = attacking/arriving elements
+- Top = brain/mind, Bottom = body/base processes
+
+PARTICLE GROUPS represent real physical entities:
+- A cell = one large tight cluster (spread 0.08-0.15) with biological colour
+- Bacteria = multiple small tight clusters (spread 0.04-0.08) at edge positions, red/dark
+- A membrane = a ring of particles (place groups in a circle around center)
+- A neural network = many small dim clusters scattered across full screen
+- A wave = particles arranged in a band across the screen
+- Energy/signal = small bright tight cluster
+
+COLOUR RULES (follow these):
+- Healthy/alive = green (r:40,g:200,b:100) or teal (r:38,g:232,b:176)
+- Diseased/attacking = red (r:220,g:40,b:40) or dark red (r:180,g:20,b:20)  
+- Neural/electrical = electric blue (r:40,g:160,b:255) or cyan (r:100,g:230,b:255)
+- Energy/heat = orange-yellow (r:255,g:180,b:40)
+- Sleep/calm = deep blue (r:20,g:40,b:120)
+- Memory/dream = warm purple (r:180,g:80,b:255)
+- Dead/void = very dark (r:15,g:15,b:30)
+- Immune/defensive = bright white (r:255,g:255,b:220)
+
+SPREAD VALUES:
+- A specific object (cell, nucleus, bacteria) = 0.05-0.12 (tight, distinct)
+- A field or fluid = 0.3-0.6 (diffuse)
+- An atmosphere or background = 0.6-0.9 (very spread)
+
+DENSITY: The most important actor in this scene gets the highest density (0.3-0.5). Background context = 0.1-0.2.
+
+═══ NARRATION ═══
+Each step title = 3-5 words describing the action happening RIGHT NOW.
+Description = 2-3 sentences: "Watch as [actor] does [action]. This is [scientific name] — [real mechanism with numbers]."
+
+═══ EXAMPLE (for "how do bacteria attack cells") ═══
+Step 1 — "Healthy Cell at Rest": Large green cluster at center (0.5,0.5) spread 0.12. Tiny red clusters at corners (0.05,0.05), (0.95,0.05), (0.05,0.95), (0.95,0.95) spread 0.04. Background dark field spread 0.8.
+Step 2 — "Bacteria Approach": Red clusters move closer to center (0.2,0.2), (0.8,0.2), (0.2,0.8), (0.8,0.8). Cell remains at center, slightly contracted (smaller spread).
+Step 3 — "Membrane Breach": Red particles now overlap cell position. Cell turns darker green. Add red particles mixed INTO center position.
+Step 4 — "Cell Compromised": Cell fragments — multiple smaller green clusters scattered. Red dominates center.
+Step 5 — "Immune Response": Bright white clusters surge from all corners toward center, overwhelming the red.
+
+═══ OUTPUT FORMAT ═══
+Return ONLY valid JSON:
 {
   "steps": [
     {
-      "title": "Step Title",
-      "description": "What user sees happening AND the science behind it. Real numbers and names.",
+      "title": "Action Happening Now",
+      "description": "Watch as [what is visible]. This is [scientific name] — [real numbers/mechanism].",
       "groups": [
-        {"label": "what this represents", "x": 0.5, "y": 0.5, "r": 255, "g": 200, "b": 80, "size": 2.5, "density": 0.4, "spread": 0.12},
-        {"label": "what this represents", "x": 0.15, "y": 0.3, "r": 255, "g": 60, "b": 20, "size": 1.0, "density": 0.3, "spread": 0.08},
-        {"label": "background field", "x": 0.5, "y": 0.5, "r": 20, "g": 20, "b": 40, "size": 0.3, "density": 0.3, "spread": 0.8}
+        {"label": "healthy cell", "x": 0.5, "y": 0.5, "r": 40, "g": 200, "b": 100, "size": 3.0, "density": 0.45, "spread": 0.12},
+        {"label": "bacteria", "x": 0.1, "y": 0.1, "r": 220, "g": 40, "b": 40, "size": 1.2, "density": 0.15, "spread": 0.05},
+        {"label": "bacteria", "x": 0.9, "y": 0.9, "r": 220, "g": 40, "b": 40, "size": 1.2, "density": 0.15, "spread": 0.05},
+        {"label": "extracellular fluid", "x": 0.5, "y": 0.5, "r": 15, "g": 25, "b": 50, "size": 0.3, "density": 0.25, "spread": 0.85}
       ],
       "motion": "drift"
     }
   ]
-}
-
-motion options: pulse / drift / explode / collapse / branch / weave / orbit / scatter / flow / converge / surge / ripple`;
+}`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': key },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 3500,
+        max_tokens: 4000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -89,7 +124,7 @@ motion options: pulse / drift / explode / collapse / branch / weave / orbit / sc
       step.groups.forEach(g => g.density = (g.density || 0) / total);
       step.groups = step.groups.filter(g =>
         typeof g.x === 'number' && typeof g.y === 'number'
-      ).slice(0, 7);
+      ).slice(0, 8);
     });
 
     const narration = steps.map(s => [s.title, s.description]);

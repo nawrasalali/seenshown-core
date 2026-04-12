@@ -1571,11 +1571,13 @@ function switchDomain(key,pill){
 function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTimeout(function(){reinitScheduled=false;initPhase(simDomain,simPhase,false);},100);}
 
 /* ── ASK QUESTION ── */
-/* ── AI FREE-FORM SIMULATION — particle groups designed by Claude ── */
+/* ── AI FREE-FORM SIMULATION — CEO approved master prompt v1.0 ── */
 function applyGroups(groups, motion){
   if(!groups||!groups.length)return;
-  var availW=W()-72;
-  var availH=H()-78-185;
+  /* Full screen: use entire canvas edge to edge */
+  var scrW=W()-72;   /* full width minus rail */
+  var scrH=H()-46;   /* full height minus nav only — use all the way to bottom */
+  var topY=46;       /* just below nav */
   var idx=0;
   /* Normalise densities */
   var total=groups.reduce(function(s,g){return s+(g.density||0);},0)||1;
@@ -1583,29 +1585,32 @@ function applyGroups(groups, motion){
     var grp=groups[g];
     var frac=(grp.density||0)/total;
     var count=g===groups.length-1?(N-idx):Math.min(N-idx,Math.round(N*frac));
-    var gx=clamp(grp.x||0.5,0.05,0.95)*availW;
-    var gy=78+clamp(grp.y||0.5,0.05,0.95)*availH;
-    var spread=clamp(grp.spread||0.3,0.01,1.0)*Math.min(availW,availH)*0.44;
+    /* Map x,y (0–1) to FULL screen coordinates */
+    var gx=clamp(grp.x||0.5,0,1)*scrW;
+    var gy=topY+clamp(grp.y||0.5,0,1)*scrH;
+    /* Spread: 1.0 = fills the entire screen dimension */
+    var spreadX=clamp(grp.spread||0.3,0.01,1.0)*scrW*0.5;
+    var spreadY=clamp(grp.spread||0.3,0.01,1.0)*scrH*0.5;
     var sz=Math.max(0.2,grp.size||1);
     for(var i=0;i<count&&idx<N;i++,idx++){
-      var dx=(Math.random()+Math.random()+Math.random()-1.5)/1.5*spread;
-      var dy=(Math.random()+Math.random()+Math.random()-1.5)/1.5*spread*0.85;
-      pTX[idx]=clamp(gx+dx,2,W()-74);
-      pTY[idx]=clamp(gy+dy,48,H()-187);
+      /* Gaussian-like spread using sum of randoms */
+      var dx=(Math.random()+Math.random()+Math.random()-1.5)/1.5*spreadX;
+      var dy=(Math.random()+Math.random()+Math.random()-1.5)/1.5*spreadY;
+      pTX[idx]=clamp(gx+dx,0,W()-73);
+      pTY[idx]=clamp(gy+dy,topY,H()-1);
       pR[idx]=clamp(Math.round(grp.r)||180,0,255);
       pG[idx]=clamp(Math.round(grp.g)||180,0,255);
       pB[idx]=clamp(Math.round(grp.b)||180,0,255);
       pSz[idx]=sz*(0.5+Math.random()*0.8);
-      pDelay[idx]=Math.random()*500;
-      pBX[idx]=(pX[idx]>0||pY[idx]>0)?pX[idx]:gx;
-      pBY[idx]=(pX[idx]>0||pY[idx]>0)?pY[idx]:gy;
+      pDelay[idx]=Math.random()*600;
+      pBX[idx]=(pX[idx]>0||pY[idx]>0)?pX[idx]:scrW*0.5;
+      pBY[idx]=(pX[idx]>0||pY[idx]>0)?pY[idx]:topY+scrH*0.5;
       pLife[idx]=1;
     }
   }
-  /* Park unused particles off screen */
   for(;idx<N;idx++){
-    pTX[idx]=(W()-72)/2;pTY[idx]=78+availH/2;
-    pR[idx]=10;pG[idx]=10;pB[idx]=15;pSz[idx]=0.1;
+    pTX[idx]=scrW*0.5;pTY[idx]=topY+scrH*0.5;
+    pR[idx]=5;pG[idx]=5;pB[idx]=10;pSz[idx]=0.1;
     pDelay[idx]=0;pBX[idx]=pTX[idx];pBY[idx]=pTY[idx];pLife[idx]=1;
   }
   formT=0;

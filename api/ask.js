@@ -1,4 +1,4 @@
-/* /api/ask — SeenShown: question → AI designs the simulation freely */
+/* /api/ask — SeenShown Master Prompt v1.0 — CEO Approved */
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -12,54 +12,93 @@ module.exports = async function handler(req, res) {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return res.status(500).json({ error: 'No API key' });
 
-    const prompt = `You are the visual intelligence behind SeenShown — a platform that turns any human question into a living particle simulation. Your job is to design a simulation that makes the answer VISIBLE, FELT, and UNDERSTOOD through motion and light.
+    const prompt = `You are the simulation intelligence behind SeenShown — a platform where every human question is answered through living particle simulation. Your output will be rendered as thousands of glowing particles on a dark screen, moving in real time to make the answer visible, feelable, and understood.
 
-The user asked: "${question}"
+THE QUESTION: "${question}"
 
-You have complete freedom to design the simulation. Thousands of particles will move from the center of a dark screen to wherever you place them. Think of yourself as a choreographer of light.
+YOUR MISSION
+Design a simulation that makes this answer UNDERSTOOD — not just illustrated. A person who knows nothing about this topic should watch your simulation and grasp the core truth of the answer through what they see moving on screen.
 
-PART 1 — DESIGN THE SIMULATION
-Describe the simulation as a set of particle groups. Each group has:
-- A position on screen (x, y as fractions 0.0 to 1.0, where 0.5,0.5 is center)
-- A color (r, g, b values 0-255)
-- A size (0.5 = tiny, 3.0 = large)
-- A density (0.0 to 1.0 — fraction of total particles in this group)
-- A spread (0.0 = tight cluster, 1.0 = spread across the screen)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART 1 — SIMULATION DESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Design between 2 and 8 groups. Total density must equal 1.0.
-Think visually: what SHAPE does this answer take? What STRUCTURE? What MOVEMENT would help someone understand?
+Design the particle formation as a set of groups. Each group is a cluster of particles positioned on a dark canvas that fills the ENTIRE screen edge to edge.
 
-Examples of thinking:
-- Heartbreak: a dense bright cluster that splits into two drifting apart groups
-- Black hole: rings of particles collapsing to a single point, bright at edge dark at center
-- Evolution: a tree-like branching from one point into many spread groups
-- Sound wave: parallel bands of particles undulating across the screen
-- DNA: two intertwining helical streams
-- Consciousness: a dense network with bright hub nodes and dim connections spreading out
+Canvas coordinates:
+- x: 0.0 = left edge, 1.0 = right edge, 0.5 = center
+- y: 0.0 = top edge, 1.0 = bottom edge, 0.5 = center
 
-PART 2 — NARRATION
-Write 5 steps answering "${question}" directly. Documentary style — specific, true, surprising. Each has a short title and 2 vivid sentences.
+IMPORTANT: Use the FULL canvas. Groups should span from near 0.05 to near 0.95 on both axes. Do not cluster everything in the center. The simulation must fill the entire screen with meaning.
 
-Return ONLY this JSON (no markdown):
+For each group define:
+- label: what this group of particles REPRESENTS in the answer
+- x, y: position on canvas (0.0 to 1.0)
+- r, g, b: color (0–255 each). Choose color with scientific and emotional intention — heat = orange/red, cold = blue/white, life = green/teal, energy = yellow/white, void = deep blue/black
+- size: particle size (0.3 = tiny/distant, 1.0 = normal, 3.0 = large/dominant)
+- density: fraction of all particles in this group. All densities must sum to exactly 1.0
+- spread: how wide this group fans out (0.0 = single tight point, 1.0 = fills the screen edge to edge)
+
+Design rules:
+→ Use 3 to 7 groups
+→ SPREAD ACROSS THE FULL SCREEN — place groups at varied x,y positions across the entire canvas. Use corners, edges, and center deliberately.
+→ Use high spread values (0.4–0.9) for background or field effects that should feel vast
+→ The SHAPE created by all groups together must mirror the actual structure of the answer
+→ If the answer is about expansion — groups spread from center to all edges
+→ If about two forces — two opposing clusters at opposite sides of screen
+→ If about a network — nodes scattered across the full canvas
+→ Dominant elements get higher density and larger size
+→ Color must be intentional — someone should feel the answer before they read it
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART 2 — MOTION CHARACTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Choose ONE word that describes the dominant motion feel:
+pulse / drift / explode / collapse / branch / weave / orbit / scatter / flow / converge / expand / contract / surge / ripple / spiral
+
+Choose the word truest to the answer — not most dramatic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART 3 — NARRATION (5 STEPS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Write 5 narration steps. Each step must:
+1. Have a short punchy title (3–5 words max)
+2. Describe what the user is WATCHING in the simulation right now AND explain the science — unified, not separate
+3. Use specific numbers, real names, real mechanisms
+4. Build on the previous step — the answer unfolds progressively
+5. Be written like a great documentary narrator: precise, surprising, human
+
+Step 5 must deliver the insight that reframes everything — the fact or truth that makes the person see the question differently forever.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Return ONLY valid JSON. No markdown. No explanation outside JSON.
+
 {
   "groups": [
     {
-      "label": "what this group represents",
+      "label": "what this represents",
       "x": 0.5,
       "y": 0.5,
-      "r": 255, "g": 255, "b": 255,
+      "r": 255,
+      "g": 200,
+      "b": 80,
       "size": 1.5,
-      "density": 0.3,
-      "spread": 0.2
+      "density": 0.4,
+      "spread": 0.15
     }
   ],
-  "motion": "one word describing overall feel: pulse / drift / explode / collapse / branch / weave / orbit / scatter / flow / converge",
+  "motion": "one word from the list above",
   "narration": [
-    ["Title 1", "Sentence directly answering ${question}. Sentence 2 specific detail."],
-    ["Title 2", "Sentence 1. Sentence 2."],
-    ["Title 3", "Sentence 1. Sentence 2."],
-    ["Title 4", "Sentence 1. Sentence 2."],
-    ["Title 5", "The most surprising or profound insight about ${question}."]
+    ["Title", "What the user sees happening right now AND the science behind it. Specific detail."],
+    ["Title", "Next layer of understanding. Builds on step 1."],
+    ["Title", "Deeper mechanism revealed."],
+    ["Title", "Scale or significance of what we just saw."],
+    ["Title", "The insight that changes how you see this question forever."]
   ]
 }`;
 
@@ -89,27 +128,20 @@ Return ONLY this JSON (no markdown):
       else return res.status(500).json({ error: 'no JSON', raw: clean.slice(0,400) });
     }
 
-    // Validate and normalise groups
     const groups = (parsed.groups || []).filter(g =>
-      typeof g.x === 'number' && typeof g.y === 'number' &&
-      typeof g.r === 'number' && typeof g.density === 'number'
-    ).slice(0, 8);
+      typeof g.x === 'number' && typeof g.y === 'number' && typeof g.density === 'number'
+    ).slice(0, 7);
 
-    if (!groups.length) return res.status(500).json({ error: 'no valid groups', raw: clean.slice(0,400) });
+    if (!groups.length) return res.status(500).json({ error: 'no groups', raw: clean.slice(0,400) });
 
-    // Normalise densities to sum to 1
-    const totalDensity = groups.reduce((s, g) => s + (g.density || 0), 0);
-    groups.forEach(g => g.density = (g.density || 0) / (totalDensity || 1));
+    // Normalise densities
+    const total = groups.reduce((s, g) => s + (g.density || 0), 0) || 1;
+    groups.forEach(g => g.density = (g.density || 0) / total);
 
     const narration = (parsed.narration || []).filter(x => Array.isArray(x) && x[0] && x[1]);
-    if (narration.length < 3) return res.status(500).json({ error: 'too few narration steps' });
+    if (narration.length < 3) return res.status(500).json({ error: 'too few steps' });
 
-    return res.status(200).json({
-      groups,
-      motion: parsed.motion || 'drift',
-      narration,
-      question
-    });
+    return res.status(200).json({ groups, motion: parsed.motion || 'drift', narration, question });
 
   } catch(e) {
     return res.status(500).json({ error: e.message });

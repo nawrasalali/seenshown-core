@@ -63,7 +63,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 
 /* PHASE FLASH */
-#phaseFlash{position:fixed;top:140px;left:14px;font-size:clamp(.7rem,2.2vw,1rem);font-weight:800;color:rgba(38,232,176,.95);text-align:left;pointer-events:none;opacity:0;transition:opacity .3s;z-index:90;text-shadow:0 1px 8px rgba(38,232,176,0.5);letter-spacing:.03em;max-width:55vw;line-height:1.2}
+#phaseFlash{position:absolute;top:8px;left:14px;font-size:.62rem;font-weight:800;letter-spacing:.16em;color:var(--g);opacity:0;transition:opacity .4s;text-transform:uppercase;pointer-events:none;text-shadow:0 0 12px rgba(38,232,176,0.5)}
 #phaseFlash.show{opacity:1}
 
 /* TOAST */
@@ -135,6 +135,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 
 
+@keyframes simDot{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1.1);opacity:1}}
 </style>
 </head>
 <body>
@@ -323,13 +324,13 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="bottomPanel">
   <!-- QUESTION BAR — fixed, shows current question -->
-  <div id="questionBar" style="pointer-events:all;padding:8px 14px 8px;background:rgba(8,14,36,0.96);backdrop-filter:blur(18px);border-top:2px solid rgba(38,232,176,0.5);border-bottom:1px solid rgba(38,232,176,0.15);display:none">
+  <div id="questionBar" style="pointer-events:all;padding:8px 14px 8px;background:rgba(8,14,36,0.42);backdrop-filter:blur(8px);border-top:2px solid rgba(38,232,176,0.35);border-bottom:1px solid rgba(38,232,176,0.15);display:none">
     <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(38,232,176,.55);margin-bottom:2px">Question</div>
     <div id="questionBarText" style="font-size:.88rem;color:#fff;line-height:1.4;font-weight:600;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.5)"></div>
   </div>
   <!-- TICKER BAR — scrolling answer, tap to expand -->
   <div id="answerTicker"
-    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.52);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
+    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.38);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
     ontouchstart="tickerTouchStart(event)"
     ontouchmove="tickerTouchMove(event)"
     ontouchend="tickerTouchEnd(event)"
@@ -341,7 +342,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
   <!-- EXPANDED PHASES PANEL -->
   <div id="phasesPanel"
-    style="display:none;background:rgba(2,4,14,0.97);backdrop-filter:blur(20px);border-top:2px solid rgba(38,232,176,0.3);max-height:35vh;overflow-y:scroll;overflow-x:hidden;pointer-events:all;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain">
+    style="display:none;background:rgba(2,4,14,0.55);backdrop-filter:blur(12px);border-top:2px solid rgba(38,232,176,0.3);max-height:35vh;overflow-y:scroll;overflow-x:hidden;pointer-events:all;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px 4px;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:rgba(2,4,14,0.96);z-index:10">
       <div style="font-size:.6rem;letter-spacing:.15em;color:rgba(38,232,176,.7);text-transform:uppercase;font-weight:700">All Steps</div>
       <div onclick="closePhasesPanel()" style="color:rgba(255,255,255,.5);font-size:1.1rem;cursor:pointer;padding:4px 8px;line-height:1">✕</div>
@@ -359,7 +360,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
   <!-- INPUT — bigger, ⚡ inside -->
   <div id="qRow"
-    style="pointer-events:all;display:flex;align-items:flex-end;padding:6px 12px 12px;background:rgba(2,4,14,0.96);border-top:1px solid rgba(255,255,255,0.06);position:relative">
+    style="pointer-events:all;display:flex;align-items:flex-end;padding:6px 12px 12px;background:rgba(2,4,14,0.45);border-top:1px solid rgba(255,255,255,0.08);position:relative">
     <textarea id="mainQ" placeholder="Ask anything…" maxlength="300" rows="2"
       style="flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:14px;padding:11px 46px 11px 14px;color:var(--w);font-size:.94rem;outline:none;caret-color:var(--g);resize:none;min-height:54px;max-height:100px;font-family:inherit;line-height:1.45;transition:border-color .2s;width:100%"
       oninput="autoResizeMQ(this)"
@@ -2000,13 +2001,22 @@ async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();
   if(!q)return;
 
+  /* Stop previous simulation and narration immediately */
+  if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
+  NARR['_q']=[];SIM_STEPS=[];simPhase=0;
+  buildTicker([]);/* clear ticker */
+
   showQuestionBar(q);
   var icon=document.getElementById('submitIcon');
   if(icon){icon.style.background='var(--dim)';icon.style.pointerEvents='none';icon.textContent='...';}
   var mainQEl=document.getElementById('mainQ');
   if(mainQEl){mainQEl.value='';autoResizeMQ(mainQEl);}
-  /* Orb enters thinking state */
+
+  /* Show orb in thinking state */
   showOrb('thinking');
+
+  /* Show "Simulating Now" overlay */
+  showSimulatingOverlay();
 
   /* Pause BigBang so it doesn't fight */
   
@@ -2050,6 +2060,7 @@ async function askQuestion(){
     buildTicker(NARR['_q']);
 
     if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
+    hideSimulatingOverlay();
     showToast('✨ Answer ready');
     saveSimulation(q,'_q');
 
@@ -2061,6 +2072,7 @@ async function askQuestion(){
   }catch(e){
     
     console.error('Question failed:',e);
+    hideSimulatingOverlay();
     showToast('Error: '+e.message.slice(0,60));
     if(icon){icon.style.background='var(--g)';icon.style.pointerEvents='';icon.textContent='⚡';}
   }
@@ -2206,6 +2218,30 @@ function loadCommentCount(){
   }).catch(function(){});
 }
 function earnPoint(msg,pts){userPoints+=(pts||1);document.getElementById('pointsCount').textContent=userPoints+' pts';showToast(msg);}
+var _simOverlay=null;
+function showSimulatingOverlay(){
+  hideSimulatingOverlay();
+  var el=document.createElement('div');
+  el.id='simOverlay';
+  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:500;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.5s ease;';
+  el.innerHTML=
+    '<div style="color:rgba(38,232,176,0.9);font-size:1.1rem;font-weight:200;letter-spacing:.35em;text-transform:uppercase;font-style:italic;text-shadow:0 0 30px rgba(38,232,176,0.6)">Simulating Now</div>'+
+    '<div style="margin-top:10px;display:flex;justify-content:center;gap:6px">'+
+      '<div style="width:5px;height:5px;border-radius:50%;background:rgba(38,232,176,0.7);animation:simDot 1.2s ease-in-out infinite"></div>'+
+      '<div style="width:5px;height:5px;border-radius:50%;background:rgba(38,232,176,0.7);animation:simDot 1.2s ease-in-out 0.4s infinite"></div>'+
+      '<div style="width:5px;height:5px;border-radius:50%;background:rgba(38,232,176,0.7);animation:simDot 1.2s ease-in-out 0.8s infinite"></div>'+
+    '</div>';
+  document.body.appendChild(el);
+  _simOverlay=el;
+  setTimeout(function(){el.style.opacity='1';},30);
+}
+function hideSimulatingOverlay(){
+  var el=document.getElementById('simOverlay');
+  if(el){el.style.opacity='0';setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},600);}
+  _simOverlay=null;
+}
+
+
 function showToast(msg){var t=document.getElementById('ptToast');t.textContent=msg;t.style.opacity='1';setTimeout(function(){t.style.opacity='0';},2400);}
 
 /* ── PAUSE ── */

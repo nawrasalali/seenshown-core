@@ -341,7 +341,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
   <!-- EXPANDED PHASES PANEL -->
   <div id="phasesPanel"
-    style="display:none;background:rgba(2,4,14,0.97);backdrop-filter:blur(20px);border-top:2px solid rgba(38,232,176,0.3);max-height:45vh;overflow-y:scroll;overflow-x:hidden;pointer-events:all;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain">
+    style="display:none;background:rgba(2,4,14,0.97);backdrop-filter:blur(20px);border-top:2px solid rgba(38,232,176,0.3);max-height:35vh;overflow-y:scroll;overflow-x:hidden;pointer-events:all;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px 4px;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:rgba(2,4,14,0.96);z-index:10">
       <div style="font-size:.6rem;letter-spacing:.15em;color:rgba(38,232,176,.7);text-transform:uppercase;font-weight:700">All Steps</div>
       <div onclick="closePhasesPanel()" style="color:rgba(255,255,255,.5);font-size:1.1rem;cursor:pointer;padding:4px 8px;line-height:1">✕</div>
@@ -1134,34 +1134,20 @@ function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTime
 function buildOrb(state){
   var cx=0.5,cy=0.46;
   var thinking=state==='thinking';
-
-  /* Sun core — blazing white center */
-  var core={x:cx,y:cy,r:255,g:255,b:220,size:thinking?5.0:3.5,density:0.10,spread:0.03};
-
-  /* Inner corona — warm golden white */
-  var inner={x:cx,y:cy,r:255,g:230,b:160,size:thinking?3.0:2.0,density:0.15,spread:0.08};
-
-  /* Mid shell — teal-white glow */
-  var mid={x:cx,y:cy,r:80,g:232,b:200,size:thinking?2.0:1.3,density:0.20,spread:0.15};
-
-  /* Outer glow ring — teal */
-  var outer={x:cx,y:cy,r:38,g:180,b:160,size:0.8,density:0.25,spread:thinking?0.28:0.22};
-
-  /* Deep corona — barely visible far particles */
-  var deep={x:cx,y:cy,r:15,g:60,b:100,size:0.4,density:0.30,spread:thinking?0.50:0.35};
-
+  /* SUN COLOURS: blazing white-gold core, orange corona, warm yellow outer */
+  var core={x:cx,y:cy,r:255,g:255,b:200,size:thinking?5.5:3.8,density:0.10,spread:0.03};
+  var inner={x:cx,y:cy,r:255,g:220,b:80,size:thinking?3.5:2.2,density:0.16,spread:0.08};
+  var mid={x:cx,y:cy,r:255,g:160,b:30,size:thinking?2.2:1.4,density:0.22,spread:0.15};
+  var outer={x:cx,y:cy,r:200,g:80,b:10,size:0.9,density:0.26,spread:thinking?0.26:0.20};
+  var corona={x:cx,y:cy,r:100,g:40,b:5,size:0.4,density:0.26,spread:thinking?0.46:0.30};
   if(thinking){
-    /* Sun shining — extra bright outer ring + solar flares feel */
-    return [core,inner,mid,outer,deep,
-      /* Flare ring */
-      {x:cx,y:cy,r:255,g:200,b:80,size:1.5,density:0.08,spread:0.20},
-      /* Far solar wind */
-      {x:cx,y:cy,r:38,g:232,b:176,size:0.6,density:0.07,spread:0.60}
+    return [core,inner,mid,outer,corona,
+      {x:cx,y:cy,r:255,g:200,b:60,size:1.8,density:0.08,spread:0.22},
+      {x:cx,y:cy,r:255,g:120,b:20,size:0.7,density:0.06,spread:0.55}
     ];
   }
-  return [core,inner,mid,outer,deep];
+  return [core,inner,mid,outer,corona];
 }
-
 
 function showOrb(state){
   _orbState=state;
@@ -1217,6 +1203,38 @@ function applyGroups(groups,motion){
     pDelay[idx]=0;pBX[idx]=pTX[idx];pBY[idx]=pTY[idx];pLife[idx]=1;
   }
   formT=0;
+}
+
+
+function updateNarr(domain, phase){
+  _phaseMs=0;
+  var narrs=NARR['_q'];
+  if(!narrs||!narrs.length)return;
+  var ph=narrs[phase]||narrs[0];
+  if(!ph)return;
+  var el=document.getElementById('narrPhaseLabel');
+  if(el)el.textContent=ph[0]||'';
+  var flash=document.getElementById('phaseFlash');
+  if(flash){
+    flash.textContent=(ph[0]||'').split('·').pop().trim().toUpperCase();
+    flash.style.opacity='1';
+    clearTimeout(flash._ft);
+    flash._ft=setTimeout(function(){flash.style.opacity='0';},2800);
+  }
+  var dots=document.getElementById('narrDots');
+  if(dots){dots.innerHTML='';for(var i=0;i<narrs.length;i++){var d=document.createElement('div');d.className='ndot'+(i===phase?' on':'');(function(x){d.onclick=function(){jumpToPhase(x);};})(i);dots.appendChild(d);}}
+  if(typeof streamWords==='function')streamWords(ph[1]||'');
+  if(phaseAutoTimer)clearTimeout(phaseAutoTimer);
+  phaseAutoTimer=setTimeout(function(){
+    var next=(phase+1)%(narrs.length||1);
+    simPhase=next;updateNarr('_q',next);buildTicker(NARR['_q']);
+  },12000);
+}
+
+function streamWords(text){
+  var el=document.getElementById('wordStream');
+  if(!el)return;
+  el.textContent=text||'';
 }
 
 

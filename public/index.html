@@ -2205,8 +2205,12 @@ if('serviceWorker' in navigator){
 (function detectSpeed(){var t=performance.now(),n=0;while(performance.now()-t<6)n++;/* Cap at 25K for 60fps on mobile — quality over quantity */N=n>20000?25000:n>10000?18000:12000;})();
 allocBuffers(N);
 allocVelocity(N);
-/* Boot: show SeenShown orb */
-showOrb('idle');
+/* Boot: show SeenShown orb — delay one frame so canvas is ready */
+requestAnimationFrame(function(){
+  requestAnimationFrame(function(){
+    showOrb('idle');
+  });
+});
 /* Orb shines when user starts typing */
 setTimeout(function(){
   var mq=document.getElementById('mainQ');

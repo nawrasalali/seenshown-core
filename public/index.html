@@ -2088,39 +2088,59 @@ async function openLibrary(){
   }catch(e){showToast('Could not load library');}
 }
 
-function closeLibrary(){var m=document.getElementById("libraryModal");if(m)m.remove();}
+function closeLibrary(){var m=document.getElementById('libraryModal');if(m)m.remove();}
 function showLibraryModal(sims,user){
-  var existing=document.getElementById('libraryModal');
-  if(existing)existing.remove();
-  var isAdmin=user&&user.email===ADMIN_EMAIL;
+  closeLibrary();
+  var isAdmin=user&&user.email==='nawraselali@gmail.com';
   var el=document.createElement('div');
   el.id='libraryModal';
-  el.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(2,4,14,0.95);overflow-y:auto;padding:16px;box-sizing:border-box';
-  el.innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
-      '<div style="color:#26e8b0;font-size:.9rem;font-weight:700;letter-spacing:.1em">'+(user?'MY LIBRARY':'COMMUNITY')+(isAdmin?' · ADMIN':'')+'</div>'+
-      '<div onclick="document.getElementById('libraryModal').remove()" style="color:rgba(255,255,255,0.5);font-size:1.4rem;cursor:pointer">✕</div>'+
-    '</div>'+
-    (sims.length===0?'<div style="color:rgba(255,255,255,0.4);text-align:center;padding:40px 0">No simulations yet</div>':
-    sims.map(function(s){
-      return '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:10px">'+
-        '<div style="font-size:.82rem;color:#fff;margin-bottom:6px">'+s.title+'</div>'+
-        '<div style="font-size:.65rem;color:rgba(38,232,176,0.6);margin-bottom:8px">👤 '+(s.user_name||'Guest')+'</div>'+
-        '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-          '<button onclick="loadLibrarySim(''+s.id+'')" style="'+btnStyle('26e8b0')+'">▶ Play</button>'+
-          '<button onclick="shareLibrarySim(''+s.id+'',''+encodeURIComponent(s.title)+'')" style="'+btnStyle('60c0f0')+'">↗ Share</button>'+
-          (user&&(s.user_id===user.id||isAdmin)?
-            '<button onclick="deleteLibrarySim(''+s.id+'')" style="'+btnStyle('ff4444')+'">🗑 Delete</button>'+
-            '<button onclick="competeSim(''+s.id+'')" style="'+btnStyle('ff9900')+'">⚔ Compete</button>':'')+
-        '</div>'+
-      '</div>';
-    }).join(''))+
-    (!user?'<div style="color:rgba(255,255,255,0.3);text-align:center;padding:16px;font-size:.75rem">Sign in to save your own simulations</div>':'');
+  el.setAttribute('style','position:fixed;inset:0;z-index:600;background:rgba(2,4,14,0.95);overflow-y:auto;padding:16px;box-sizing:border-box');
+  var header=document.createElement('div');
+  header.setAttribute('style','display:flex;justify-content:space-between;align-items:center;margin-bottom:16px');
+  var title=document.createElement('div');
+  title.setAttribute('style','color:#26e8b0;font-size:.9rem;font-weight:700;letter-spacing:.1em');
+  title.textContent=(user?'MY LIBRARY':'COMMUNITY')+(isAdmin?' · ADMIN':'');
+  var closeBtn=document.createElement('div');
+  closeBtn.setAttribute('style','color:rgba(255,255,255,0.5);font-size:1.4rem;cursor:pointer');
+  closeBtn.textContent='✕';
+  closeBtn.onclick=closeLibrary;
+  header.appendChild(title);header.appendChild(closeBtn);
+  el.appendChild(header);
+  if(!sims||!sims.length){
+    var empty=document.createElement('div');
+    empty.setAttribute('style','color:rgba(255,255,255,0.4);text-align:center;padding:40px 0');
+    empty.textContent='No simulations yet';
+    el.appendChild(empty);
+  } else {
+    sims.forEach(function(s){
+      var card=document.createElement('div');
+      card.setAttribute('style','background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:10px');
+      var qtitle=document.createElement('div');
+      qtitle.setAttribute('style','font-size:.82rem;color:#fff;margin-bottom:6px');
+      qtitle.textContent=s.title||'';
+      var uname=document.createElement('div');
+      uname.setAttribute('style','font-size:.65rem;color:rgba(38,232,176,0.6);margin-bottom:8px');
+      uname.textContent='👤 '+(s.user_name||'Guest');
+      var btns=document.createElement('div');
+      btns.setAttribute('style','display:flex;gap:8px;flex-wrap:wrap');
+      function mkBtn(label,col,fn){var b=document.createElement('button');b.textContent=label;b.setAttribute('style','background:rgba('+col+',0.15);border:1px solid rgba('+col+',0.4);color:#fff;padding:5px 12px;border-radius:20px;font-size:.7rem;cursor:pointer;font-weight:600');b.onclick=fn;return b;}
+      btns.appendChild(mkBtn('▶ Play','38,232,176',function(){closeLibrary();loadLibrarySim(s.id);}));
+      btns.appendChild(mkBtn('↗ Share','96,192,240',function(){shareLibrarySim(s.id,s.title);}));
+      if(user&&(s.user_id===user.id||isAdmin)){
+        btns.appendChild(mkBtn('🗑 Delete','255,68,68',function(){deleteLibrarySim(s.id);}));
+        btns.appendChild(mkBtn('⚔ Compete','255,153,0',function(){closeLibrary();startCompete();}));
+      }
+      card.appendChild(qtitle);card.appendChild(uname);card.appendChild(btns);
+      el.appendChild(card);
+    });
+  }
+  if(!user){
+    var hint=document.createElement('div');
+    hint.setAttribute('style','color:rgba(255,255,255,0.3);text-align:center;padding:16px;font-size:.75rem');
+    hint.textContent='Sign in to save your own simulations';
+    el.appendChild(hint);
+  }
   document.body.appendChild(el);
-}
-
-function btnStyle(col){
-  return 'background:rgba('+parseInt(col.slice(0,2),16)+','+parseInt(col.slice(2,4),16)+','+parseInt(col.slice(4,6),16)+',0.15);border:1px solid rgba('+parseInt(col.slice(0,2),16)+','+parseInt(col.slice(2,4),16)+','+parseInt(col.slice(4,6),16)+',0.4);color:#fff;padding:5px 12px;border-radius:20px;font-size:.7rem;cursor:pointer;font-weight:600';
 }
 
 async function loadLibrarySim(id){

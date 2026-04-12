@@ -501,7 +501,8 @@ var PHASE_DUR=5000;
 var globalT=0;
 var lastTs=0;
 var formT=0;
-var FORM_DUR=3000; /* 3s transition */
+var FORM_DUR=3000; /* 3s default */
+var _stepFormDur=3000; /* transition between sim steps */
 var N=0; /* set by detectSpeed() */
 var reinitScheduled=false;
 
@@ -1212,7 +1213,7 @@ function applyGroups(groups,motion){
       pG[idx]=clamp(Math.round(grp.g)||180,0,255);
       pB[idx]=clamp(Math.round(grp.b)||180,0,255);
       pSz[idx]=sz*(0.5+Math.random()*0.8);
-      pDelay[idx]=Math.random()*500;
+      pDelay[idx]=_stepFormDur===5000?Math.random()*200:Math.random()*500;
       pBX[idx]=(pX[idx]>0||pY[idx]>0)?pX[idx]:gx;
       pBY[idx]=(pX[idx]>0||pY[idx]>0)?pY[idx]:gy;
       pLife[idx]=1;
@@ -1252,10 +1253,15 @@ function updateNarr(domain, phase){
   /* Stream text */
   if(typeof streamWords==='function')streamWords(ph[1]||'');
 
-  /* ★ TRIGGER STEP SIMULATION — each step gets its own visual ★ */
+  /* ★ TRIGGER STEP SIMULATION — particles travel to new positions ★ */
   if(SIM_STEPS&&SIM_STEPS[phase]){
     var step=SIM_STEPS[phase];
+    /* Slower transition for step changes — see the movement */
+    _stepFormDur=phase===0?3000:5000;
+    FORM_DUR=_stepFormDur;
     applyGroups(step.groups, step.motion||'drift');
+    /* Reset after transition */
+    setTimeout(function(){FORM_DUR=3000;_stepFormDur=3000;},_stepFormDur+500);
   }
 
   /* Auto-advance to next step */

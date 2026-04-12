@@ -1,4 +1,4 @@
-/* /api/ask — SeenShown v4.0 — Cinematic simulation storytelling */
+/* /api/ask — SeenShown v5.0 — Sonnet for quality simulation */
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -12,86 +12,68 @@ module.exports = async function handler(req, res) {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return res.status(500).json({ error: 'No API key' });
 
-    const prompt = `You are the simulation director for SeenShown — a platform that makes complex answers VISIBLE through particle animation. You are a scientist, a filmmaker, and a visual storyteller in one.
+    const prompt = `You are the simulation director for SeenShown. A human asked: "${question}"
 
-THE QUESTION: "${question}"
+Design a 5-step particle simulation that shows the REAL PROCESS visually. Each step is a scene where particles show actual biological/physical/chemical actors doing real things to each other.
 
-YOUR MISSION: Design a 5-step cinematic particle simulation where each step shows a specific moment in the real physical/biological/chemical process. The simulation must be scientifically accurate and visually tell the story so clearly that someone with no knowledge of the subject understands what is happening just by watching.
+THE ACTORS: First identify the 2-4 main physical entities in this process. Give each a consistent position, colour, and role across all 5 steps. Show them INTERACTING — moving toward each other, merging, separating, changing.
 
-═══ THINK LIKE THIS ═══
+CANVAS: x=0.0(left) to 1.0(right), y=0.0(top) to 1.0(bottom)
 
-First, identify the KEY ACTORS in this process (e.g., for "how do bacteria attack cells": the actors are the healthy cell, bacteria, cell membrane, immune cells).
+STORYTELLING RULES:
+- The same actor keeps its colour across all steps but changes position/size as it acts
+- Show MOVEMENT by changing an actor's x,y between steps (bacteria start at edges, move to center by step 3)
+- Show TRANSFORMATION by changing colour (healthy cell green → infected red-green → dead dark)
+- Show SCALE by changing density and size (growing = larger size and density, dying = smaller and dimmer)
+- Background field = one large spread group (spread 0.7-0.9) showing the environment (extracellular fluid, bloodstream, space, etc.)
 
-Then design each step as a SCENE showing those actors in action:
-- Where are the actors on screen?
-- What are they doing to each other?
-- How do their positions, colours, and sizes change from the previous step?
+COLOUR MEANINGS (be consistent):
+- Healthy cell/tissue: r:50, g:200, b:100 (green)
+- Pathogen/threat: r:220, g:30, b:30 (red)  
+- Neuron/electrical: r:60, g:160, b:255 (blue)
+- Dream/memory: r:160, g:60, b:255 (purple)
+- Energy/signal: r:255, g:180, b:30 (gold)
+- Immune cell: r:255, g:255, b:200 (white-gold)
+- Dead/damaged: r:80, g:20, b:20 (dark red)
+- Sleep state: r:20, g:20, b:80 (deep blue)
+- Environment/fluid: r:10, g:15, b:30 (near black)
 
-SCREEN GEOGRAPHY:
-- Use screen position to show anatomy/structure (bacteria come from edges, cell is at center, brain cortex is at top, heart is at center, etc.)
-- Left → Right can show time progression
-- Center = main subject, Edges = attacking/arriving elements
-- Top = brain/mind, Bottom = body/base processes
+SPREAD:
+- Distinct object (cell, bacterium, nucleus): 0.05-0.12
+- Loose cloud (group of cells, wave): 0.15-0.25  
+- Field/environment/fluid: 0.6-0.9
 
-PARTICLE GROUPS represent real physical entities:
-- A cell = one large tight cluster (spread 0.08-0.15) with biological colour
-- Bacteria = multiple small tight clusters (spread 0.04-0.08) at edge positions, red/dark
-- A membrane = a ring of particles (place groups in a circle around center)
-- A neural network = many small dim clusters scattered across full screen
-- A wave = particles arranged in a band across the screen
-- Energy/signal = small bright tight cluster
+EXAMPLE — "How do bacteria attack cells":
+Step 1 (Before Attack): Cell at center (0.5,0.45) green spread:0.13. 4 bacteria at corners spread:0.05. Dark fluid background spread:0.85.
+Step 2 (Bacteria Approach): Same cell. Bacteria now at (0.25,0.3),(0.75,0.3),(0.25,0.7),(0.75,0.7) — closer to cell.
+Step 3 (Membrane Contact): Bacteria at (0.38,0.38),(0.62,0.38),(0.38,0.62),(0.62,0.62) — touching cell edge. Cell slightly darker.
+Step 4 (Invasion): Bacteria now INSIDE cell position (0.5,0.45). Cell colour shifts to dark red-green. Cell spread increases (fragmenting).
+Step 5 (Immune Response): White immune cells arrive from top (0.2,0.1),(0.5,0.05),(0.8,0.1). Bacteria shrinking. Cell still damaged.
 
-COLOUR RULES (follow these):
-- Healthy/alive = green (r:40,g:200,b:100) or teal (r:38,g:232,b:176)
-- Diseased/attacking = red (r:220,g:40,b:40) or dark red (r:180,g:20,b:20)  
-- Neural/electrical = electric blue (r:40,g:160,b:255) or cyan (r:100,g:230,b:255)
-- Energy/heat = orange-yellow (r:255,g:180,b:40)
-- Sleep/calm = deep blue (r:20,g:40,b:120)
-- Memory/dream = warm purple (r:180,g:80,b:255)
-- Dead/void = very dark (r:15,g:15,b:30)
-- Immune/defensive = bright white (r:255,g:255,b:220)
+NARRATION — each step description must say: "Watch [specific visual thing happening]. This is [scientific name] — [real number or mechanism]."
 
-SPREAD VALUES:
-- A specific object (cell, nucleus, bacteria) = 0.05-0.12 (tight, distinct)
-- A field or fluid = 0.3-0.6 (diffuse)
-- An atmosphere or background = 0.6-0.9 (very spread)
-
-DENSITY: The most important actor in this scene gets the highest density (0.3-0.5). Background context = 0.1-0.2.
-
-═══ NARRATION ═══
-Each step title = 3-5 words describing the action happening RIGHT NOW.
-Description = 2-3 sentences: "Watch as [actor] does [action]. This is [scientific name] — [real mechanism with numbers]."
-
-═══ EXAMPLE (for "how do bacteria attack cells") ═══
-Step 1 — "Healthy Cell at Rest": Large green cluster at center (0.5,0.5) spread 0.12. Tiny red clusters at corners (0.05,0.05), (0.95,0.05), (0.05,0.95), (0.95,0.95) spread 0.04. Background dark field spread 0.8.
-Step 2 — "Bacteria Approach": Red clusters move closer to center (0.2,0.2), (0.8,0.2), (0.2,0.8), (0.8,0.8). Cell remains at center, slightly contracted (smaller spread).
-Step 3 — "Membrane Breach": Red particles now overlap cell position. Cell turns darker green. Add red particles mixed INTO center position.
-Step 4 — "Cell Compromised": Cell fragments — multiple smaller green clusters scattered. Red dominates center.
-Step 5 — "Immune Response": Bright white clusters surge from all corners toward center, overwhelming the red.
-
-═══ OUTPUT FORMAT ═══
-Return ONLY valid JSON:
+Return ONLY this JSON:
 {
   "steps": [
     {
-      "title": "Action Happening Now",
-      "description": "Watch as [what is visible]. This is [scientific name] — [real numbers/mechanism].",
+      "title": "3-5 word action title",
+      "description": "Watch [what is literally visible on screen right now]. This is [scientific term] — [real mechanism with numbers].",
       "groups": [
-        {"label": "healthy cell", "x": 0.5, "y": 0.5, "r": 40, "g": 200, "b": 100, "size": 3.0, "density": 0.45, "spread": 0.12},
-        {"label": "bacteria", "x": 0.1, "y": 0.1, "r": 220, "g": 40, "b": 40, "size": 1.2, "density": 0.15, "spread": 0.05},
-        {"label": "bacteria", "x": 0.9, "y": 0.9, "r": 220, "g": 40, "b": 40, "size": 1.2, "density": 0.15, "spread": 0.05},
-        {"label": "extracellular fluid", "x": 0.5, "y": 0.5, "r": 15, "g": 25, "b": 50, "size": 0.3, "density": 0.25, "spread": 0.85}
+        {"label": "actor name", "x": 0.5, "y": 0.5, "r": 50, "g": 200, "b": 100, "size": 3.0, "density": 0.4, "spread": 0.12},
+        {"label": "environment", "x": 0.5, "y": 0.5, "r": 10, "g": 15, "b": 30, "size": 0.3, "density": 0.2, "spread": 0.85}
       ],
       "motion": "drift"
     }
   ]
-}`;
+}
+
+motion: pulse/drift/explode/collapse/converge/scatter/flow/surge`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': key },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-6',
         max_tokens: 4000,
         messages: [{ role: 'user', content: prompt }]
       })

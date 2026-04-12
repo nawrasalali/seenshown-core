@@ -324,13 +324,13 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
 
 <div id="bottomPanel">
   <!-- QUESTION BAR — fixed, shows current question -->
-  <div id="questionBar" style="pointer-events:all;padding:8px 14px 8px;background:rgba(8,14,36,0.42);backdrop-filter:blur(8px);border-top:2px solid rgba(38,232,176,0.35);border-bottom:1px solid rgba(38,232,176,0.15);display:none">
+  <div id="questionBar" style="pointer-events:all;padding:8px 14px 8px;background:rgba(8,14,36,0.28);backdrop-filter:blur(6px);border-top:1px solid rgba(38,232,176,0.2);border-bottom:1px solid rgba(38,232,176,0.15);display:none">
     <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(38,232,176,.55);margin-bottom:2px">Question</div>
     <div id="questionBarText" style="font-size:.88rem;color:#fff;line-height:1.4;font-weight:600;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.5)"></div>
   </div>
   <!-- TICKER BAR — scrolling answer, tap to expand -->
   <div id="answerTicker"
-    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.38);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
+    style="pointer-events:all;overflow:hidden;cursor:pointer;background:rgba(2,4,14,0.22);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);padding:8px 0;min-height:36px;position:relative;user-select:none"
     ontouchstart="tickerTouchStart(event)"
     ontouchmove="tickerTouchMove(event)"
     ontouchend="tickerTouchEnd(event)"
@@ -342,7 +342,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
   <!-- EXPANDED PHASES PANEL -->
   <div id="phasesPanel"
-    style="display:none;background:rgba(2,4,14,0.55);backdrop-filter:blur(12px);border-top:2px solid rgba(38,232,176,0.3);max-height:35vh;overflow-y:scroll;overflow-x:hidden;pointer-events:all;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain">
+    style="display:none;background:rgba(2,4,14,0.28);backdrop-filter:blur(8px);border-top:1px solid rgba(38,232,176,0.2);max-height:20vh;overflow-y:scroll;overflow-x:hidden;pointer-events:all;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px 4px;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;background:rgba(2,4,14,0.96);z-index:10">
       <div style="font-size:.6rem;letter-spacing:.15em;color:rgba(38,232,176,.7);text-transform:uppercase;font-weight:700">All Steps</div>
       <div onclick="closePhasesPanel()" style="color:rgba(255,255,255,.5);font-size:1.1rem;cursor:pointer;padding:4px 8px;line-height:1">✕</div>
@@ -360,7 +360,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
   </div>
   <!-- INPUT — bigger, ⚡ inside -->
   <div id="qRow"
-    style="pointer-events:all;display:flex;align-items:flex-end;padding:6px 12px 12px;background:rgba(2,4,14,0.45);border-top:1px solid rgba(255,255,255,0.08);position:relative">
+    style="pointer-events:all;display:flex;align-items:flex-end;padding:6px 12px 12px;background:rgba(2,4,14,0.35);border-top:1px solid rgba(255,255,255,0.06);position:relative">
     <textarea id="mainQ" placeholder="Ask anything…" maxlength="300" rows="2"
       style="flex:1;background:rgba(255,255,255,0.07);border:1.5px solid var(--border);border-radius:14px;padding:11px 46px 11px 14px;color:var(--w);font-size:.94rem;outline:none;caret-color:var(--g);resize:none;min-height:54px;max-height:100px;font-family:inherit;line-height:1.45;transition:border-color .2s;width:100%"
       oninput="autoResizeMQ(this)"
@@ -2223,7 +2223,7 @@ function showSimulatingOverlay(){
   hideSimulatingOverlay();
   var el=document.createElement('div');
   el.id='simOverlay';
-  el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:500;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.5s ease;';
+  el.style.cssText='position:fixed;top:52px;left:0;right:72px;z-index:500;text-align:center;padding:8px 0;pointer-events:none;opacity:0;transition:opacity 0.5s ease;';
   el.innerHTML=
     '<div style="color:rgba(38,232,176,0.9);font-size:1.1rem;font-weight:200;letter-spacing:.35em;text-transform:uppercase;font-style:italic;text-shadow:0 0 30px rgba(38,232,176,0.6)">Simulating Now</div>'+
     '<div style="margin-top:10px;display:flex;justify-content:center;gap:6px">'+

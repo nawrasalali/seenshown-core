@@ -162,7 +162,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
   </div>
 </nav>
-    <div class="dpill" data-key="heartbreak" onclick="switchDomain('heartbreak',this)">💔 Heartbreak</div>
   <div class="dpill" data-key="love" onclick="switchDomain('love',this)">❤️ Love</div>
   <div class="dpill" data-key="grief" onclick="switchDomain('grief',this)">🌧 Grief</div>
   <div class="dpill" data-key="anger" onclick="switchDomain('anger',this)">🔥 Anger</div>
@@ -996,7 +995,7 @@ function allocBuffers(n){
 function initPhase(domain,phase,fromScratch){
   var n=N;
   var spec=getSpec(domain,phase,n);
-  var dir=DOMAIN_ENERGY[domain]&&DOMAIN_ENERGY[domain].dir||'zero_to_full';
+  var dir='form';
   /* Phase 0 from scratch gets staggered birth, all other phases = CONTINUOUS
      — particles leave from exactly where they are now, no restart */
   var maxDelay=(fromScratch&&phase===0)?(domain==='bigbang'?0:1800):(domain==='bigbang'&&phase===4?0:400);

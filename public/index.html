@@ -487,7 +487,7 @@ var wordStreamTimer=null;
 var phaseAutoTimer=null;
 var compActive=false;
 var compTimerInterval=null;
-var compScoreA=0,compScoreB=0,compDomain1='fireworks',compDomain2='bigbang';
+var compScoreA=0,compScoreB=0,compDomain1='_q',compDomain2='_q';
 var PHASE_DUR=5000;
 var globalT=0;
 var lastTs=0;
@@ -1386,7 +1386,7 @@ var compCtx1,compCtx2,compTimeLeft=180,compDomain1='_q',compDomain2='_q';
 var COMP_DURATION=180;
 var cP1={N:0,X:null,Y:null,TX:null,TY:null,BX:null,BY:null,R:null,G:null,B:null,Sz:null,D:null,T:0};
 var cP2={N:0,X:null,Y:null,TX:null,TY:null,BX:null,BY:null,R:null,G:null,B:null,Sz:null,D:null,T:0};
-var DOMAIN_PAIRS={bigbang:['heartbreak','grief','anger','urban'],heartbreak:['bigbang','joy','neuron'],love:['anger','bh','amr'],grief:['joy','fireworks','bigbang'],anger:['joy','love','grief'],joy:['grief','bh','amr'],neuron:['heartbreak','grief','amr'],immune:['rumour','anger','bigbang'],amr:['love','joy','bigbang'],bh:['joy','love','fireworks'],rumour:['bh','grief','chem'],urban:['joy','bigbang','fireworks'],chem:['grief','bh','bigbang'],fireworks:['grief','bh','amr']};
+var DOMAIN_PAIRS={};
 function pickOpponentDomain(d){var p=DOMAIN_PAIRS[d]||DOMAIN_ORDER.filter(function(x){return x!==d;});return p[Math.floor(Math.random()*p.length)];}
 function initCompeteParticles(cp,domain,canvas){
   var n=Math.min(N,16000);cp.N=n;cp.X=new Float32Array(n);cp.Y=new Float32Array(n);cp.TX=new Float32Array(n);cp.TY=new Float32Array(n);cp.BX=new Float32Array(n);cp.BY=new Float32Array(n);cp.R=new Uint8Array(n);cp.G=new Uint8Array(n);cp.B=new Uint8Array(n);cp.Sz=new Float32Array(n);cp.D=new Float32Array(n);cp.T=0;

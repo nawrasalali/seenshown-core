@@ -2343,8 +2343,9 @@ function loadComments(){
   if(!list)return;
   if(!currentSimId){list.innerHTML='<div style="color:var(--dim);font-size:.78rem;padding:.5rem;text-align:center">Ask a question to start commenting</div>';return;}
   list.innerHTML='<div style="color:var(--dim);font-size:.74rem;padding:.5rem;text-align:center">Loading…</div>';
-  if(!currentSimId){list.innerHTML='<div style="color:var(--dim);font-size:.78rem;padding:1rem;text-align:center">Ask a question first to comment</div>';return;}
-  fetch(SB+'/rest/v1/simulation_comments?sim_id=eq.'+currentSimId+'&order=created_at.asc&limit=50',{
+  /* Load comments — show general if no sim */
+  var cFilter=currentSimId?'?sim_id=eq.'+currentSimId+'&order=created_at.asc&limit=50':'?order=created_at.desc&limit=20';
+  fetch(SB+'/rest/v1/simulation_comments'+cFilter,{
     headers:{'apikey':SBK,'Authorization':'Bearer '+SBK}
   }).then(function(r){return r.json();}).then(function(data){
     if(!data||!data.length){
@@ -3084,7 +3085,13 @@ if(urlDomain&&DOMAIN_ORDER.includes(urlDomain))simDomain=urlDomain;
 var liveParam=urlP.get('live');
 
 /* ── INIT AUTH ON LOAD ── */
-if(window.SS_AUTH){window.SS_AUTH.init().then(function(){if(typeof updateAuthUI==='function')updateAuthUI();}).catch(function(){});}
+if(window.SS_AUTH){
+  window.SS_AUTH.init().then(function(){
+    if(typeof updateAuthUI==='function')updateAuthUI();
+    /* Also update after short delay for slow sessions */
+    setTimeout(function(){if(typeof updateAuthUI==='function')updateAuthUI();},1500);
+  }).catch(function(){});
+}
 if(liveParam){setTimeout(function(){if(window.LIVE_API)LIVE_API.join(liveParam,simDomain);},1200);}
 
 /* ── QUESTION BAR ── */

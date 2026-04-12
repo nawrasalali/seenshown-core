@@ -1303,19 +1303,7 @@ var domIdx=DOMAIN_ORDER.indexOf(simDomain);
 /* Default questions for each domain — shown in question bar when swiping */
 
 function switchDomain(key,pill){
-  
-  simDomain=key;simPhase=0;_phaseMs=0;
-  if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
-  stopVoice();stopSound();
-  document.querySelectorAll(');
-  var activePill=pill||document.querySelector('
-  domIdx=DOMAIN_ORDER.indexOf(key);
-  initPhase(key,0,true);
-  updateNarr(key,0);
-  /* Show default question in question bar */
-  showQuestionBar(DOMAIN_QUESTIONS[key]||DOMAIN_LABELS[key]);
-  /* Scroll active pill into view */
-  var ap=document.querySelector(');
+  /* No-op — domain switching removed. Questions drive everything. */
 }
 
 function scheduleReinit(){if(reinitScheduled)return;reinitScheduled=true;setTimeout(function(){reinitScheduled=false;initPhase(simDomain,simPhase,false);},100);}

@@ -51,6 +51,8 @@ async function initAuth() {
     window.SS.user = s.user;
     updateAuthUI();
     loadProfile();
+    /* Ensure nav button updates */
+    setTimeout(updateAuthUI, 500);
   } catch(e) { console.warn('Auth init:', e.message); }
 }
 
@@ -187,6 +189,7 @@ async function recordSimCreated() {
 }
 
 /* ── EXPOSE ── */
+window.updateAuthUI = updateAuthUI;
 window.SS_AUTH = {
   init: initAuth,
   showAuth: function(reason) {

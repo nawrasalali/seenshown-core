@@ -3084,7 +3084,7 @@ if(urlDomain&&DOMAIN_ORDER.includes(urlDomain))simDomain=urlDomain;
 var liveParam=urlP.get('live');
 
 /* ── INIT AUTH ON LOAD ── */
-if(window.SS_AUTH){window.SS_AUTH.init().then(function(){updateAuthUI&&updateAuthUI();}).catch(function(){});}
+if(window.SS_AUTH){window.SS_AUTH.init().then(function(){if(typeof updateAuthUI==='function')updateAuthUI();}).catch(function(){});}
 if(liveParam){setTimeout(function(){if(window.LIVE_API)LIVE_API.join(liveParam,simDomain);},1200);}
 
 /* ── QUESTION BAR ── */

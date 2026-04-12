@@ -2088,6 +2088,7 @@ async function openLibrary(){
   }catch(e){showToast('Could not load library');}
 }
 
+function closeLibrary(){var m=document.getElementById("libraryModal");if(m)m.remove();}
 function showLibraryModal(sims,user){
   var existing=document.getElementById('libraryModal');
   if(existing)existing.remove();

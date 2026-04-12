@@ -17,6 +17,7 @@ module.exports = async function handler(req, res) {
 Design a 5-step particle simulation using REAL BIOLOGICAL AND PHYSICAL SHAPES — not abstract blobs. The simulation must show the actual entities involved in this process in recognisable forms.
 
 AVAILABLE SHAPES (use the exact shape name in the "shape" field):
+For questions OUTSIDE biology/anatomy, omit the shape field entirely and rely on positioning and colour to tell the story. The circular spread fallback still creates meaningful visuals when groups are positioned correctly.
 - "brain" — human brain with two hemispheres and folds
 - "cell" — animal cell with membrane, cytoplasm, and nucleus
 - "bacterium" — rod-shaped bacterium with flagella
@@ -58,6 +59,13 @@ Step 2: Same cell. Bacteria moved closer: (0.22,0.22),(0.78,0.22),(0.22,0.78),(0
 Step 3: Bacteria at cell edge: (0.35,0.35),(0.65,0.35),(0.35,0.65),(0.65,0.65). Cell starting to darken slightly.
 Step 4: Bacteria INSIDE cell position (0.5,0.5). Cell colour now r:120,g:100,b:40 (compromised). Bacteria smaller.
 Step 5: "cell" still damaged at center. Immune cells (no shape, white-gold) arriving from top edges.
+
+FOR NON-BIOLOGICAL QUESTIONS (physics, emotions, economics, history, etc.):
+Use group positions and colours to show the concept spatially:
+- Two forces colliding: one group left (x:0.15) moving right, one group right (x:0.85) moving left
+- Something spreading: one tight group at center step 1, spread to full screen by step 5  
+- An emotion: colours that feel like the emotion, motion that mirrors the feeling
+- A historical event: show scale with density, show change with colour shifts
 
 Return ONLY this JSON:
 {

@@ -1190,29 +1190,48 @@ function orbBirth(){
    ══════════════════════════════════════════════════════════ */
 
 function shapeBrain(n, cx, cy, scale, rr, gg, bb){
-  /* Human brain — two hemispheres with folds */
+  /* Brain silhouette: wide oval top, narrower bottom, medial groove, cerebellum */
   var out=[];
   for(var i=0;i<n;i++){
-    var side=i<n*0.5?-1:1; /* left/right hemisphere */
-    var t=Math.random()*Math.PI; /* angle 0-180 top arc */
-    var r=scale*(0.55+Math.random()*0.45);
-    /* Hemisphere base shape — rounded top, flat bottom */
-    var hx=side*(scale*0.28+Math.cos(t)*r*0.55);
-    var hy=-Math.abs(Math.sin(t))*r*0.72+scale*0.1;
-    /* Add folds — wrinkle effect with sine waves */
-    var fold=Math.sin(t*6+side*2)*scale*0.06;
-    hx+=fold*Math.cos(t);
-    hy+=fold*Math.sin(t);
-    /* Cerebellum — small bump at bottom center */
-    if(Math.random()<0.12){
-      hx=rnd(-scale*0.18,scale*0.18);
-      hy=scale*(0.28+Math.random()*0.18);
+    var px,py;
+    var roll=Math.random();
+    if(roll<0.80){
+      /* Main cerebrum — egg-shaped, wider at top */
+      var a=Math.random()*Math.PI*2;
+      /* Radii: wider horizontally, taller than wide, flat at bottom */
+      var rx=scale*(0.52+Math.random()*0.08);
+      var ry=scale*(0.40+Math.random()*0.08);
+      px=Math.cos(a)*rx*(0.85+Math.random()*0.15);
+      py=Math.sin(a)*ry*(0.85+Math.random()*0.15);
+      /* Flatten bottom: if below midline, push in */
+      if(py>0) py*=0.65;
+      /* Medial groove: thin gap at x~0 */
+      if(Math.abs(px)<scale*0.04) px+=scale*0.04*(px<0?-1:1);
+      /* Cortical folds: ripple on surface */
+      var surfDist=Math.sqrt(px*px/(rx*rx)+py*py/(ry*ry));
+      if(surfDist>0.75){
+        var foldAngle=Math.atan2(py,px);
+        var fold=Math.sin(foldAngle*8)*scale*0.045;
+        px+=Math.cos(foldAngle)*fold;
+        py+=Math.sin(foldAngle)*fold;
+      }
+    } else if(roll<0.93){
+      /* Cerebellum — small rounded lobe below and behind */
+      var ca=Math.random()*Math.PI+Math.PI*0.1; /* bottom arc */
+      px=(Math.random()*2-1)*scale*0.28;
+      py=scale*(0.32+Math.random()*0.18);
+    } else {
+      /* Brain stem — narrow column at bottom center */
+      px=rnd(-scale*0.07,scale*0.07);
+      py=scale*(0.42+Math.random()*0.18);
     }
-    out.push({tx:clamp(cx+hx,0,W()),ty:clamp(cy+hy,0,H()),
-      rr:clamp(rr+rnd(-15,15),0,255),
-      gg:clamp(gg+rnd(-15,15),0,255),
-      bb:clamp(bb+rnd(-15,15),0,255),
-      r:0.4+Math.random()*1.2});
+    out.push({
+      tx:clamp(cx+px,0,W()), ty:clamp(cy+py,0,H()),
+      rr:clamp(rr+rnd(-12,12),0,255),
+      gg:clamp(gg+rnd(-12,12),0,255),
+      bb:clamp(bb+rnd(-12,12),0,255),
+      r:0.4+Math.random()*1.1
+    });
   }
   return out;
 }

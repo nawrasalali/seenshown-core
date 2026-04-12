@@ -162,17 +162,6 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
   </div>
 </nav>
-  <div class="dpill" data-key="love" onclick="switchDomain('love',this)">❤️ Love</div>
-  <div class="dpill" data-key="grief" onclick="switchDomain('grief',this)">🌧 Grief</div>
-  <div class="dpill" data-key="anger" onclick="switchDomain('anger',this)">🔥 Anger</div>
-  <div class="dpill" data-key="joy" onclick="switchDomain('joy',this)">✨ Joy</div>
-  <div class="dpill" data-key="neuron" onclick="switchDomain('neuron',this)">🧠 Neuroscience</div>
-  <div class="dpill" data-key="immune" onclick="switchDomain('immune',this)">🛡 Immunity</div>
-  <div class="dpill" data-key="amr" onclick="switchDomain('amr',this)">💊 Antibiotic</div>
-  <div class="dpill" data-key="bh" onclick="switchDomain('bh',this)">🌑 Black Hole</div>
-  <div class="dpill" data-key="rumour" onclick="switchDomain('rumour',this)">💬 Rumour</div>
-  <div class="dpill" data-key="urban" onclick="switchDomain('urban',this)">🏙 Urban</div>
-  <div class="dpill" data-key="chem" onclick="switchDomain('chem',this)">⚗️ Chemistry</div>
 </div>
 
 <!-- AUTH MODAL -->
@@ -828,159 +817,8 @@ function shapeFirstStars(n,ox,oy,size){
 }
 
 /* ── DOMAIN SHAPE SPECS — 5 phases each ── */
-function getSpec(domain,phase,n){
-  /* Center in the available simulation area (between nav and bottom panel) */
-  var navH=46,panelH=185,railW=72;
-  var availW=W()-railW;
-  var availH=H()-navH-panelH;
-  var x=availW/2; /* horizontal center of sim area */
-  var y=navH+availH/2; /* vertical center of sim area */
-  var sz=Math.min(availW,availH); /* largest square that fits */
-  var sw=availW*.98;
-  var sh=availH*.96;
 
-  switch(domain){
-
-    /* BIG BANG — 12 phases, all white flash on 1, continuous morphing */
-    case 'bigbang':{
-      var tipX=(W()-72)/2;
-      var tipY=H()-185-28; /* fixed tip just above question bar */
-      if(_bbState===0||_bbState===6){
-        /* BLACK — park particles far below */
-        var outB=[];for(var i=0;i<n;i++)outB.push({tx:tipX,ty:H()+500,rr:0,gg:0,bb:0,r:0.01});
-        return outB;
-      }
-      if(_bbState===1||_bbState===2||_bbState===5){
-        /* SINGLE DOT at tip */
-        var outD=[];
-        for(var i=0;i<n;i++){
-          var core=i<n*0.2;
-          outD.push({tx:tipX+rnd(core?-1.5:-4,core?1.5:4),ty:tipY+rnd(core?-1.5:-4,core?1.5:4),rr:255,gg:252,bb:215,r:core?3:1});
-        }
-        return outD;
-      }
-      /* States 3,4: FULL HORN */
-      return shapeUniverseHorn(n,tipX,tipY,sz,1);
-    }
-
-    /* UNIVERSE
-    /* UNIVERSE — scale from quantum to cosmic */
-    case 'universe':
-      if(phase===0) return shapeScatter(n,x,y,sz*.08,180,180,255); /* quantum foam — tiny */
-      if(phase===1) return shapeRing(n,x,y,sz*.12,sz*.03,200,180,255); /* atom */
-      if(phase===2) return shapeRing(n,x,y,sz*.28,sz*.05,220,200,255); /* solar system */
-      if(phase===3) return shapeSpiral(n,x,y,Math.min(sz*.4,sw),3,180,200,255); /* galaxy */
-      return shapeCosmicWeb(n,x,y,Math.min(sz*.44,sw,sh)); /* observable universe */
-
-    /* HEARTBREAK — two faces merging then fracturing */
-    case 'heartbreak':
-      if(phase===0) return shapeTwoFaces(n,'\u{1F60A}','\u{1F60A}',x,y,Math.min(sw*.78,sh*.68)); /* two happy */
-      if(phase===1) return shapeFracture(n,x,y,Math.min(sw*.82,sh*.72),sz*.005);
-      if(phase===2) return shapeFracture(n,x,y,Math.min(sw*.84,sh*.74),sz*.08);
-      if(phase===3) return shapeFracture(n,x,y,Math.min(sw*.84,sh*.74),sz*.2);
-      return shapeFracture(n,x,y,Math.min(sw*.78,sh*.68),sz*.36);
-
-    /* LOVE — two separate fields merging */
-    case 'love':
-      if(phase===0) return shapeScatter(n,x-sw*.28,y,sw*.2,220,100,100).concat(shapeScatter(Math.floor(n/2),x+sw*.28,y,sw*.2,100,120,220));
-      if(phase===1) return shapeTwoFaces(n,'\u{1F60A}','\u{1F60A}',x,y,Math.min(sw*.78,sh*.68));
-      if(phase===2) return shapeFace(n,'\u{1F970}',x,y,Math.min(sw*.82,sh*.72));
-      if(phase===3) return shapeRing(n,x,y,Math.min(sw*.58,sh*.5),sz*.04,255,180,200);
-      return shapeExplosion(n,x,y,4,Math.min(sw*.88,sh*.78),255,150,180,false);
-
-    /* GRIEF — intact face → dissolves → void → integration */
-    case 'grief':
-      if(phase===0) return shapeFace(n,'\u{1F610}',x,y,Math.min(sw*.82,sh*.72)); /* neutral */
-      if(phase===1) return shapeFace(n,'\u{1F614}',x,y,Math.min(sw*.82,sh*.72)); /* downcast */
-      if(phase===2) return shapeVoid(n,x,y,sz*.04,Math.min(sw*.88,sh*.78),70,90,170);
-      if(phase===3) return shapeRing(n,x,y,Math.min(sw*.72,sh*.62),sz*.05,80,100,180);
-      return shapeFace(n,'\u{1F331}',x,y,Math.min(sw*.8,sh*.70)); /* new growth */
-
-    /* ANGER — tense → eruption → wave → cooling */
-    case 'anger':
-      if(phase===0) return shapeFace(n,'\u{1F624}',x,y,Math.min(sw*.82,sh*.72));
-      if(phase===1) return shapeExplosion(n,x,y,2,Math.min(sw*.8,sh*.7),255,40,0,true);
-      if(phase===2) return shapeExplosion(n,x,y,2,Math.min(sw*.9,sh*.8),255,80,0,true);
-      if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.03+t*W()*.94,wy=y+Math.sin(t*Math.PI*5)*Math.min(sw*.22,sh*.2)+rnd(-3,3);ow.push({tx:wx,ty:wy,rr:255,gg:70,bb:10,r:.5+Math.random()*2});}return ow;}
-      return shapeRing(n,x,y,Math.min(sw*.6,sh*.55),sz*.06,180,60,30); /* cooling ring */
-
-    /* JOY — point → face → radiating rings → explosion */
-    case 'joy':
-      if(phase===0) return shapePoint(n,x,y,255,230,60);
-      if(phase===1) return shapeFace(n,'\u{1F60A}',x,y,Math.min(sw*.82,sh*.72));
-      if(phase===2) return shapeRing(n,x,y,Math.min(sw*.58,sh*.5),sz*.04,255,220,80);
-      if(phase===3) return shapeExplosion(n,x,y,4,Math.min(sw*.88,sh*.78),255,230,100,false);
-      return shapeScatter(n,x,y,Math.min(sw*.88,sh*.78),255,240,180);
-
-    /* NEURON — point → axon → network → pulse → brain */
-    case 'neuron':
-      if(phase===0) return shapePoint(n,x,y,60,180,255);
-      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.03+t*W()*.94,wy=y+rnd(-sh*.04,sh*.04);ow.push({tx:wx,ty:wy,rr:60,gg:180,bb:255,r:.4+Math.random()*1.5});}return ow;}
-      if(phase===2) return shapeNeural(n,x,y,Math.min(sw*.88,sh*.78));
-      if(phase===3){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+Math.sin(t*Math.PI*7)*sh*.22+rnd(-2,2);ow.push({tx:wx,ty:wy,rr:80,gg:220,bb:255,r:.4+Math.random()*2});}return ow;}
-      return shapeNeural(n,x,y,Math.min(sw*.88,sh*.78));
-
-    /* IMMUNE — healthy cell → bacteria → infection → T-cells → resolution */
-    case 'immune':{
-      var cSz=sz*.14;
-      if(phase===0) return shapeCell(Math.floor(n*.6),x-sz*.1,y,cSz,100,160,255,false).concat(shapeBacteria(Math.ceil(n*.4),x+sz*.32,y,cSz*.5,3));
-      if(phase===1) return shapeCell(Math.floor(n*.52),x-sz*.06,y,cSz,100,160,255,false).concat(shapeBacteria(Math.ceil(n*.48),x+sz*.1,y,cSz*.55,5));
-      if(phase===2) return shapeCell(Math.floor(n*.48),x,y,cSz*1.1,255,100,80,true).concat(shapeBacteria(Math.ceil(n*.52),x,y,cSz*.36,8));
-      if(phase===3) return shapeCell(Math.floor(n*.3),x,y,cSz*1.08,255,100,80,true).concat(shapeBacteria(Math.ceil(n*.22),x+sz*.12,y,cSz*.3,3)).concat(shapeCell(Math.ceil(n*.48),x-sz*.06,y,sz*.32,38,220,176,false));
-      return shapeCell(n,x,y,cSz,100,200,255,false);
-    }
-
-    /* AMR — healthy colony → antibiotic wave → survivors → resistant colony */
-    case 'amr':
-      if(phase===0) return shapeGrid(n,x,y,Math.min(sz*.4,sw,sh),38,220,100);
-      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.02+t*W()*.96,wy=y+rnd(-sz*.05,sz*.05);ow.push({tx:wx,ty:wy,rr:240,gg:192,bb:64,r:.5+Math.random()*1.8});}return ow;}
-      if(phase===2) return shapeScatter(Math.floor(n*.08),x,y,Math.min(sz*.4,sw),200,80,80).concat(shapePoint(Math.ceil(n*.92),x,y,0,0,0));
-      if(phase===3) return shapeRing(n,x,y,sz*.16,sz*.05,255,60,60);
-      return shapeGrid(n,x,y,Math.min(sz*.4,sw,sh),220,60,60);
-
-    /* BLACK HOLE — star → collapse → accretion disk → event horizon → evaporation */
-    case 'bh':
-      if(phase===0) return shapeScatter(n,x,y,Math.min(sz*.42,sw),200,180,255); /* star */
-      if(phase===1) return shapeExplosion(n,x,y,2,Math.min(sz*.36,sw),255,160,40,true); /* supernova */
-      if(phase===2) return shapeRing(n,x,y,Math.min(sz*.32,sw*.75),sz*.08,255,140,30); /* accretion */
-      if(phase===3) return shapeRing(n,x,y,sz*.16,sz*.015,255,255,200); /* photon sphere */
-      return shapeVoid(n,x,y,sz*.1,Math.min(sz*.4,sw),80,60,200); /* event horizon */
-
-    /* RUMOUR — one node → cluster → cascade → mutation → exhaustion */
-    case 'rumour':
-      if(phase===0) return shapePoint(n,x,y,240,192,64);
-      if(phase===1) return shapeRing(n,x,y,sz*.06,sz*.02,240,192,64);
-      if(phase===2) return shapeNeural(n,x,y,Math.min(sz*.42,sw,sh));
-      if(phase===3) return shapeExplosion(n,x,y,4,Math.min(sz*.44,sw),240,192,64,false);
-      return shapeScatter(n,x,y,Math.min(sz*.44,sw),180,140,30);
-
-    /* URBAN — ordered flow → capacity → congestion → gridlock → cascade */
-    case 'urban':
-      if(phase===0) return shapeGrid(n,x,y,Math.min(sz*.4,sw,sh),100,140,220);
-      if(phase===1){var ow=[];for(var i=0;i<n;i++){var t=i/n,wx=W()*.03+t*W()*.94,wy=(i%2===0?y-sz*.07:y+sz*.07)+rnd(-2,2);ow.push({tx:wx,ty:wy,rr:80,gg:140,bb:255,r:.5+Math.random()*1.5});}return ow;}
-      if(phase===2) return shapeRing(n,x,y,sz*.09,sz*.04,255,80,80);
-      if(phase===3) return shapeVoid(n,x,y,sz*.08,Math.min(sz*.38,sw),90,100,200);
-      return shapeScatter(n,x,y,Math.min(sz*.44,sw),90,100,170);
-
-    /* CHEMISTRY — separated → collision → transition state → products → equilibrium */
-    case 'chem':
-      if(phase===0) return shapeScatter(Math.floor(n/2),x-sz*.22,y,sz*.18,40,180,255).concat(shapeScatter(Math.ceil(n/2),x+sz*.22,y,sz*.18,255,80,80));
-      if(phase===1) return shapeScatter(n,x,y,sz*.16,180,130,200); /* converging */
-      if(phase===2) return shapeRing(n,x,y,sz*.08,sz*.04,255,200,80); /* transition state */
-      if(phase===3) return shapeExplosion(n,x,y,4,Math.min(sz*.36,sw),255,220,100,false); /* energy release */
-      return shapeGrid(n,x,y,Math.min(sz*.36,sw,sh),80,220,255); /* equilibrium */
-
-    /* FIREWORKS — point → ascent → burst → multi-burst → finale */
-    case 'fireworks':
-      if(phase===0) return shapePoint(n,W()/2,H()*.35,255,220,100);
-      if(phase===1) return shapeFireworks(n,1);
-      if(phase===2) return shapeFireworks(n,2);
-      if(phase===3) return shapeFireworks(n,3);
-      return shapeFireworks(n,4);
-
-    default: return shapeScatter(n,x,y,Math.min(sz*.4,sw),100,150,200);
-  }
-}
+function getSpec(d,p,n){var o=[];for(var i=0;i<n;i++)o.push({tx:Math.random()*W(),ty:Math.random()*H(),rr:10,gg:10,bb:15,r:0.2});return o;}
 
 /* ── FORMATION ENGINE ── */
 function allocBuffers(n){
@@ -1233,7 +1071,7 @@ function playEmotionalSound(domain){
   stopSound();
   try{
     var ac=getAudioCtx();
-    var energy=DOMAIN_ENERGY[domain]&&DOMAIN_ENERGY[domain].sound||'neutral';
+    var energy='neutral';
     var presets={
       celebration:{freq:[523,659,784,1047],type:'sine',vol:.12,dur:3},
       cosmic:{freq:[55,82,110],type:'sine',vol:.06,dur:8},
@@ -1544,7 +1382,7 @@ function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrol
 function autoResizeMQ(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
 
 /* -- COMPETE -- */
-var compCtx1,compCtx2,compTimeLeft=180,compDomain1='bigbang',compDomain2='heartbreak';
+var compCtx1,compCtx2,compTimeLeft=180,compDomain1='_q',compDomain2='_q';
 var COMP_DURATION=180;
 var cP1={N:0,X:null,Y:null,TX:null,TY:null,BX:null,BY:null,R:null,G:null,B:null,Sz:null,D:null,T:0};
 var cP2={N:0,X:null,Y:null,TX:null,TY:null,BX:null,BY:null,R:null,G:null,B:null,Sz:null,D:null,T:0};

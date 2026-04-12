@@ -2152,7 +2152,8 @@ async function loadLibrarySim(id){
 
 function shareLibrarySim(id,title){
   var url='https://www.seenshown.com/?sim='+id;
-  if(navigator.share)navigator.share({title:'SeenShown: '+decodeURIComponent(title),url:url});
+  var decoded=title?decodeURIComponent(title):'SeenShown Simulation';
+  if(navigator.share)navigator.share({title:decoded,text:'Watch: '+decoded,url:url});
   else{navigator.clipboard&&navigator.clipboard.writeText(url);showToast('🔗 Link copied!');}
 }
 
@@ -2273,7 +2274,7 @@ async function saveSimulation(q,domain){
     });
     var d=await r.json();if(d&&d[0])currentSimId=d[0].id;
     loadCommentCount();
-  }catch(e){console.warn('saveSimulation:',e);}
+  }catch(e){console.warn('saveSimulation:',e.message);}
 }
 
 /* ── TIKTOK HEARTS ── */
@@ -2309,7 +2310,7 @@ function doLike(){spawnHeartBurst(window.innerWidth/2,window.innerHeight*.35,tru
 
 /* ── RAIL ACTIONS ── */
 function doShare(){
-  var q=document.getElementById('mainQ').value||DOMAIN_LABELS[simDomain];
+  var q=(document.getElementById('questionBar')&&document.getElementById('questionBarText')&&document.getElementById('questionBarText').textContent)||DOMAIN_LABELS[simDomain]||'SeenShown Simulation';
   var url='https://seenshown.com/?domain='+simDomain+'&q='+encodeURIComponent(q);
   if(navigator.share)navigator.share({title:'SeenShown',text:'"'+q+'"',url:url});
   else{navigator.clipboard&&navigator.clipboard.writeText(url);showToast('🔗 Copied!');}
@@ -2389,7 +2390,7 @@ async function submitComment(){
     showToast('💬 Comment posted!');
   }catch(e){
     console.error('Comment error:',e);
-    showToast('Comment error: '+e.message.slice(0,40));
+    showToast(e.message.includes('fetch')?'Connection error — try again':e.message.slice(0,50));
   }
 }
 function updateCommentCount(n){
@@ -3122,7 +3123,9 @@ function toggleRail(){
   if(_railHidden){
     /* Hide all rail buttons except the toggle itself */
     Array.from(rail.children).forEach(function(el){
-      if(el.id!=='railToggleBtn'){el.style.opacity='0';el.style.pointerEvents='none';}
+      if(el.id!=='railToggleBtn'&&el.id!=='railSave'&&el.id!=='railPost'){
+        el.style.opacity='0';el.style.pointerEvents='none';
+      }
     });
     if(icon)icon.textContent='🔓';
     var lbl=document.getElementById('railToggleLabel');

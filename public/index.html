@@ -162,8 +162,7 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <button id="authNavBtn" onclick="showAuthOrProfile()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:var(--dim);padding:3px 8px;font-size:.62rem;cursor:pointer;white-space:nowrap">Sign in</button>
   </div>
 </nav>
-  <div class="dpill active" data-key="bigbang" onclick="switchDomain('bigbang',this)" style="background:#ffeecc;color:#02040e;border-color:#ffeecc">💥 Big Bang</div>
-  <div class="dpill" data-key="heartbreak" onclick="switchDomain('heartbreak',this)">💔 Heartbreak</div>
+    <div class="dpill" data-key="heartbreak" onclick="switchDomain('heartbreak',this)">💔 Heartbreak</div>
   <div class="dpill" data-key="love" onclick="switchDomain('love',this)">❤️ Love</div>
   <div class="dpill" data-key="grief" onclick="switchDomain('grief',this)">🌧 Grief</div>
   <div class="dpill" data-key="anger" onclick="switchDomain('anger',this)">🔥 Anger</div>
@@ -535,23 +534,6 @@ var DOMAIN_LABELS={};
    'full_to_zero' = starts complete, dissolves
    'form' = shapes appear and transform
    'zoom' = perspective zoom */
-var DOMAIN_ENERGY={
-  fireworks:{dir:'zero_to_full',sound:'celebration',temp:'warm'},
-  bigbang:{dir:'zero_to_full',sound:'cosmic',temp:'hot'},
-  universe:{dir:'zoom',sound:'cosmic',temp:'cool'},
-  heartbreak:{dir:'form',sound:'sad',temp:'warm_to_cold'},
-  love:{dir:'form',sound:'warm',temp:'warm'},
-  grief:{dir:'full_to_zero',sound:'sad',temp:'cool'},
-  anger:{dir:'form',sound:'danger',temp:'hot'},
-  joy:{dir:'zero_to_full',sound:'happy',temp:'warm'},
-  neuron:{dir:'zero_to_full',sound:'electric',temp:'cool'},
-  immune:{dir:'form',sound:'warning',temp:'neutral'},
-  amr:{dir:'full_to_zero',sound:'warning',temp:'neutral'},
-  bh:{dir:'full_to_zero',sound:'cosmic',temp:'dark'},
-  rumour:{dir:'zero_to_full',sound:'warning',temp:'neutral'},
-  urban:{dir:'full_to_zero',sound:'neutral',temp:'cool'},
-  chem:{dir:'form',sound:'electric',temp:'neutral'}
-};
 
 /* ── SHAPE GENERATORS ── */
 function shapePoint(n,x,y,rr,gg,bb){

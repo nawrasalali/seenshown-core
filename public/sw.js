@@ -1,5 +1,5 @@
 /* SeenShown Service Worker — v12 */
-var CACHE='seenshown-v17';
+var CACHE='seenshown-v18';
 var PRECACHE=['/manifest.json'];
 
 self.addEventListener('install',function(e){

@@ -2198,7 +2198,7 @@ function openExplore(){
   el.appendChild(grid);
   document.body.appendChild(el);
 }
-function openLibrary(){
+async function openLibrary(){
   var user=window.SS&&window.SS.user;
   var url=user?
     SB+'/rest/v1/simulations?user_id=eq.'+user.id+'&order=created_at.desc&limit=20':

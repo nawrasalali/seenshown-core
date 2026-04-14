@@ -889,6 +889,8 @@ function snapshot(){
 /* Velocity buffers for living particle behaviour */
 var pVX,pVY;
 function allocVelocity(n){pVX=new Float32Array(n);pVY=new Float32Array(n);}
+var pGID=new Uint8Array(1); /* group ID per particle — for steering */
+var _groupTargets=[]; /* [{gid, tx, ty, attractGid}] — set by applyGroups */
 
 /* Pre-computed noise table for fast breathing — avoids Math.sin in render loop */
 var NOISE_TBL=(function(){var t=new Float32Array(4096);for(var i=0;i<4096;i++)t[i]=Math.sin(i/4096*Math.PI*2);return t;})();
@@ -940,8 +942,28 @@ function render(dt){
         else{pVX[i]+=ddx/dist*str*3*dtSec*55;pVY[i]+=ddy/dist*str*3*dtSec*55;}
       }
     }
+    /* ── GROUP STEERING — particles seek/flee other group centers ── */
+    if(_orbState==='done'&&_groupTargets.length>1&&t>0.6){
+      var myGid=pGID[i];
+      /* Find my group's target */
+      var myTarget=_groupTargets[myGid]||null;
+      if(myTarget&&myTarget.attractGid>=0){
+        /* Seek the center of the attract group */
+        var attT=_groupTargets[myTarget.attractGid];
+        if(attT){
+          var sdx=attT.tx-fx, sdy=attT.ty-fy;
+          var sd=Math.sqrt(sdx*sdx+sdy*sdy)||1;
+          var str=(myTarget.seekStr||0.008)*dtSec*60;
+          /* Only steer when not yet at target — beyond 30px */
+          if(sd>30){
+            pVX[i]+=sdx/sd*str;
+            pVY[i]+=sdy/sd*str;
+          }
+        }
+      }
+    }
     fx+=pVX[i];fy+=pVY[i];
-    pVX[i]*=0.80;pVY[i]*=0.80;
+    pVX[i]*=0.82;pVY[i]*=0.82;
     /* Soft screen boundary — particles within 8px of edge bounce back gently */
     var margin=8;
     if(fx<margin){fx=margin;pVX[i]=Math.abs(pVX[i])*.3;}
@@ -1913,6 +1935,7 @@ function applyGroups(groups,motion){
         clamp(Math.round(grp.b)||180,0,255));
     }
     for(var i=0;i<count&&idx<N;i++,idx++){
+      pGID[idx]=g; /* assign group ID */
       var pt=shapePts?shapePts[i%shapePts.length]:null;
       if(pt){
         pTX[idx]=pt.tx; pTY[idx]=pt.ty;
@@ -1939,7 +1962,23 @@ function applyGroups(groups,motion){
     pTX[idx]=FW*0.5;pTY[idx]=topY+FH2*0.3;
     pR[idx]=5;pG[idx]=5;pB[idx]=10;pSz[idx]=0.1;
     pDelay[idx]=0;pBX[idx]=pTX[idx];pBY[idx]=pTY[idx];pLife[idx]=1;
+    pGID[idx]=255; /* background */
   }
+  /* Store group target centers and steering rules */
+  _groupTargets=[];
+  for(var gi=0;gi<groups.length;gi++){
+    var grp2=groups[gi];
+    _groupTargets.push({
+      gid:gi,
+      tx:clamp((grp2.x||0.5),0,1)*FW,
+      ty:topY+clamp((grp2.y||0.5),0,1)*FH2,
+      /* AI can specify attract field: which group to seek */
+      attractGid:(grp2.attractGid!=null?grp2.attractGid:-1),
+      seekStr:grp2.seekStrength||0
+    });
+  }
+  /* Resize pGID if needed */
+  if(pGID.length<N){pGID=new Uint8Array(N);}
   formT=0;
 }
 

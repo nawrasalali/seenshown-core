@@ -105,7 +105,13 @@ Return ONLY this JSON:
   ]
 }
 
-motion options: pulse/drift/explode/collapse/converge/scatter/flow/surge`;
+motion options: pulse/drift/explode/collapse/converge/scatter/flow/surge
+
+STEERING (optional but powerful — makes particles actually MOVE toward targets):
+Add "attractGid": N and "seekStrength": 0.008 to a group to make its particles continuously seek the center of group N.
+Example: bacteria group (gid 1) with "attractGid": 0, "seekStrength": 0.012 will swarm TOWARD the cell (gid 0) across all 5 seconds of the step — showing actual pursuit behavior.
+Use seekStrength 0.005-0.015. Higher = faster seeking. Only use when the group should actively move toward another.
+This is the key to showing causality: bacteria → cell, virus → nucleus, immune cell → pathogen.`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

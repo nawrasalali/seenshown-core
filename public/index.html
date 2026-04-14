@@ -300,6 +300,10 @@ html,body{height:100%;overflow:hidden;background:#000;color:var(--w);font-family
     <div class="rail-icon">↗️</div>
     <div class="rail-label">Share</div>
   </div>
+  <div class="rail-btn" id="recordBtn" onclick="toggleRecording()">
+    <div class="rail-icon" id="recordIcon">⏺</div>
+    <div class="rail-label">Record</div>
+  </div>
   <div class="rail-btn" onclick="startCompete()">
     <div class="rail-icon">⚔️</div>
     <div class="rail-label">Compete</div>
@@ -1099,42 +1103,60 @@ function toggleVoice(){
   else{var narrs=NARR[simDomain];if(narrs&&narrs[simPhase])startVoice(narrs[simPhase][1]);}
 }
 
-/* ── SOUND TRACKS — Web Audio API synthesis ── */
+
 function stopSound(){soundNodes.forEach(function(n){try{n.stop();}catch(e){}});soundNodes=[];}
-function playEmotionalSound(domain){
-  if(!soundOn)return;
-  stopSound();
+function playSimulationAudio(groups,motion){
+  if(!soundOn)return;stopSound();
   try{
-    var ac=getAudioCtx();
-    var energy='neutral';
-    var presets={
-      celebration:{freq:[523,659,784,1047],type:'sine',vol:.12,dur:3},
-      cosmic:{freq:[55,82,110],type:'sine',vol:.06,dur:8},
-      sad:{freq:[220,277,330],type:'sine',vol:.07,dur:6},
-      warm:{freq:[330,415,523],type:'sine',vol:.08,dur:5},
-      danger:{freq:[100,150,200],type:'sawtooth',vol:.09,dur:4},
-      happy:{freq:[523,659,784],type:'triangle',vol:.1,dur:4},
-      electric:{freq:[440,880,1320],type:'square',vol:.05,dur:3},
-      warning:{freq:[330,370,415],type:'sawtooth',vol:.07,dur:4},
-      neutral:{freq:[220,330,440],type:'sine',vol:.05,dur:5},
-      dark:{freq:[55,73,82],type:'sine',vol:.06,dur:8}
-    };
-    var p=presets[energy]||presets.neutral;
-    p.freq.forEach(function(f,i){
-      var osc=ac.createOscillator();
-      var gain=ac.createGain();
-      var filter=ac.createBiquadFilter();
-      filter.type='lowpass';filter.frequency.value=800+i*200;
-      osc.type=p.type;osc.frequency.value=f;
-      gain.gain.setValueAtTime(0,ac.currentTime);
-      gain.gain.linearRampToValueAtTime(p.vol/(i+1),ac.currentTime+1.5);
-      gain.gain.linearRampToValueAtTime(0,ac.currentTime+p.dur);
-      osc.connect(filter);filter.connect(gain);gain.connect(ac.destination);
-      osc.start();osc.stop(ac.currentTime+p.dur+.1);
-      soundNodes.push(osc);
-    });
+    var ac=getAudioCtx();if(!ac)return;
+    var now=ac.currentTime;
+    var totalR=128,totalG=128,totalB=128;
+    if(groups&&groups.length){
+      var gc=groups.length;totalR=totalG=totalB=0;
+      groups.forEach(function(g){totalR+=g.r||0;totalG+=g.g||0;totalB+=g.b||0;});
+      totalR/=gc;totalG/=gc;totalB/=gc;
+    }
+    var warmth=(totalR-totalB)/255;
+    var brightness=(totalR+totalG+totalB)/765;
+    var baseFreq=60+warmth*40;
+    var master=ac.createGain();
+    master.gain.setValueAtTime(0,now);
+    master.gain.linearRampToValueAtTime(0.05,now+2);
+    master.gain.linearRampToValueAtTime(0,now+10);
+    master.connect(ac.destination);
+    var osc1=ac.createOscillator();osc1.type='sine';osc1.frequency.value=baseFreq;
+    var g1=ac.createGain();g1.gain.value=0.5;osc1.connect(g1);g1.connect(master);
+    osc1.start();osc1.stop(now+11);soundNodes.push(osc1);
+    var osc2=ac.createOscillator();osc2.type='sine';osc2.frequency.value=baseFreq*1.5;
+    var g2=ac.createGain();g2.gain.value=0.25;
+    var filt=ac.createBiquadFilter();filt.type='lowpass';filt.frequency.value=400+warmth*200;
+    osc2.connect(filt);filt.connect(g2);g2.connect(master);
+    osc2.start();osc2.stop(now+11);soundNodes.push(osc2);
+    if(motion==='disperse'||motion==='explode'){
+      var imp=ac.createOscillator();imp.type='sawtooth';imp.frequency.setValueAtTime(100,now);
+      imp.frequency.linearRampToValueAtTime(25,now+1.5);
+      var ig=ac.createGain();ig.gain.setValueAtTime(0.12,now);ig.gain.exponentialRampToValueAtTime(0.001,now+2);
+      imp.connect(ig);ig.connect(master);imp.start();imp.stop(now+2.5);soundNodes.push(imp);
+    }
+    if(motion==='pulse'||motion==='oscillate'){
+      var lfo=ac.createOscillator();lfo.type='sine';lfo.frequency.value=1.0;
+      var lg=ac.createGain();lg.gain.value=0.025;
+      lfo.connect(lg);lg.connect(master.gain);lfo.start();lfo.stop(now+11);soundNodes.push(lfo);
+    }
+    if(motion==='emerge'||motion==='settle'){
+      var rise=ac.createOscillator();rise.type='sine';
+      rise.frequency.setValueAtTime(baseFreq*2,now);rise.frequency.linearRampToValueAtTime(baseFreq*3,now+3);
+      var rg=ac.createGain();rg.gain.setValueAtTime(0,now);rg.gain.linearRampToValueAtTime(0.06,now+1.5);rg.gain.linearRampToValueAtTime(0,now+5);
+      rise.connect(rg);rg.connect(master);rise.start();rise.stop(now+6);soundNodes.push(rise);
+    }
   }catch(e){}
 }
+function playEmotionalSound(domain){
+  if(!soundOn)return;
+  playSimulationAudio(SIM_STEPS&&SIM_STEPS[simPhase]?SIM_STEPS[simPhase].groups:null,
+    SIM_STEPS&&SIM_STEPS[simPhase]?SIM_STEPS[simPhase].motion:'drift');
+}
+
 function toggleSound(){
   soundOn=!soundOn;
   var ico=document.getElementById('soundIco');if(ico)ico.textContent=soundOn?'🔊':'🔇';
@@ -2115,7 +2137,65 @@ setTimeout(loadCommunityFeed, 2000);
 /* ── USER LIBRARY ── */
 var ADMIN_EMAIL='nawraselali@gmail.com';
 
-async function openLibrary(){
+async 
+/* ── EXPLORE MODE — curated simulations ── */
+var EXPLORE_SIMS=[
+  {title:'How do bacteria attack cells',emoji:'🦠'},
+  {title:'What is love',emoji:'❤️'},
+  {title:'How does consciousness work',emoji:'🧠'},
+  {title:'Why do stars explode',emoji:'💥'},
+  {title:'How does grief work',emoji:'🌧️'},
+  {title:'What causes revolutions',emoji:'⚡'},
+  {title:'How does DNA replicate',emoji:'🧬'},
+  {title:'What is quantum entanglement',emoji:'🔮'},
+  {title:'How does the immune system fight viruses',emoji:'🛡️'},
+  {title:'Why do we dream',emoji:'🌙'},
+  {title:'How does memory form',emoji:'💭'},
+  {title:'What is entropy',emoji:'♾️'},
+  {title:'How do black holes form',emoji:'🕳️'},
+  {title:'What happens when we fall in love',emoji:'💘'},
+  {title:'How do neurons fire',emoji:'⚡'},
+  {title:'Why do societies collapse',emoji:'🏛️'},
+  {title:'How does addiction work',emoji:'🧪'},
+  {title:'What is consciousness',emoji:'👁️'},
+  {title:'How do emotions form in the brain',emoji:'🧠'},
+  {title:'What is dark matter',emoji:'🌌'}
+];
+
+function openExplore(){
+  var existing=document.getElementById('exploreModal');
+  if(existing)existing.remove();
+  var el=document.createElement('div');
+  el.id='exploreModal';
+  el.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(2,4,14,0.97);overflow-y:auto;padding:16px;box-sizing:border-box;backdrop-filter:blur(20px)';
+  var header=document.createElement('div');
+  header.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(38,232,176,0.15)';
+  header.innerHTML='<div style="color:#26e8b0;font-size:.9rem;font-weight:700;letter-spacing:.12em">EXPLORE</div><div onclick="document.getElementById('exploreModal').remove()" style="color:rgba(255,255,255,0.4);font-size:1.4rem;cursor:pointer">✕</div>';
+  el.appendChild(header);
+  var sub=document.createElement('div');
+  sub.style.cssText='font-size:.7rem;color:rgba(255,255,255,0.3);letter-spacing:.06em;margin-bottom:20px';
+  sub.textContent='Tap any question to watch it come alive';
+  el.appendChild(sub);
+  var grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:10px';
+  EXPLORE_SIMS.forEach(function(sim){
+    var card=document.createElement('div');
+    card.style.cssText='background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 12px;cursor:pointer;transition:border-color 0.2s';
+    card.innerHTML='<div style="font-size:1.4rem;margin-bottom:8px">'+sim.emoji+'</div><div style="font-size:.75rem;color:rgba(255,255,255,0.85);line-height:1.4">'+sim.title+'?</div>';
+    card.onclick=function(){
+      document.getElementById('exploreModal').remove();
+      var el2=document.getElementById('mainQ');
+      if(el2){el2.value=sim.title;autoResizeMQ(el2);}
+      askQuestion();
+    };
+    card.onmouseover=function(){this.style.borderColor='rgba(38,232,176,0.35)';};
+    card.onmouseout=function(){this.style.borderColor='rgba(255,255,255,0.08)';};
+    grid.appendChild(card);
+  });
+  el.appendChild(grid);
+  document.body.appendChild(el);
+}
+function openLibrary(){
   var user=window.SS&&window.SS.user;
   var url=user?
     SB+'/rest/v1/simulations?user_id=eq.'+user.id+'&order=created_at.desc&limit=20':
@@ -2215,6 +2295,7 @@ function competeSim(id){
 async function askQuestion(){
   var q=(document.getElementById('mainQ').value||'').trim();
   if(!q)return;
+  if(!checkProGate())return;
 
   /* Stop previous simulation and narration immediately */
   if(phaseAutoTimer){clearTimeout(phaseAutoTimer);phaseAutoTimer=null;}
@@ -2968,6 +3049,54 @@ function weeklySimsLeft(){
 }
 
 /* Show auth modal or profile depending on state */
+
+function dismissOnboard(){
+  var ov=document.getElementById('lodOv');
+  if(ov){ov.style.transition='opacity 0.5s';ov.style.opacity='0';setTimeout(function(){ov.style.display='none';},500);}
+}
+function runExample(q,e){
+  if(e)e.stopPropagation();
+  dismissOnboard();
+  setTimeout(function(){
+    var el=document.getElementById('mainQ');
+    if(el){el.value=q;autoResizeMQ(el);}
+    askQuestion();
+  },400);
+}
+
+var _mediaRecorder=null,_recordChunks=[],_isRecording=false;
+function startRecording(){
+  if(_isRecording)return;
+  var canvas=document.getElementById('simCanvas');
+  if(!canvas)return;
+  try{
+    var stream=canvas.captureStream(30);
+    _recordChunks=[];
+    _mediaRecorder=new MediaRecorder(stream,{mimeType:'video/webm'});
+    _mediaRecorder.ondataavailable=function(e){if(e.data.size>0)_recordChunks.push(e.data);};
+    _mediaRecorder.onstop=exportVideo;
+    _mediaRecorder.start();_isRecording=true;
+    var ri=document.getElementById('recordIcon');if(ri)ri.textContent='⏹';
+    showToast('Recording... tap again to stop (max 15s)');
+    setTimeout(function(){if(_isRecording)stopRecording();},15000);
+  }catch(e){showToast('Recording not supported here');}
+}
+function stopRecording(){
+  if(!_isRecording||!_mediaRecorder)return;
+  _mediaRecorder.stop();_isRecording=false;
+  var ri=document.getElementById('recordIcon');if(ri)ri.textContent='⏺';
+}
+function toggleRecording(){if(_isRecording)stopRecording();else startRecording();}
+function exportVideo(){
+  var blob=new Blob(_recordChunks,{type:'video/webm'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='seenshown-'+Date.now()+'.webm';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  var isPro=window.SS&&window.SS.tier==='pro';
+  showToast(isPro?'Video saved!':'Video saved! Upgrade Pro to remove watermark');
+}
 function showAuthOrProfile(){
   if(window.SS&&window.SS.user){showProfileMenu();}
   else{showAuthModal('Join SeenShown');}
@@ -3051,6 +3180,48 @@ async function doCompeteNow(){
 }
 
 /* ── SIM LIMIT CHECK ── */
+
+/* ── PRO TIER — $9/month, unlimited sims + HD video ── */
+var FREE_WEEKLY_SIMS=5;
+function checkProGate(){
+  if(window.SS&&window.SS.tier==='pro')return true;
+  var week=getWeekKey();
+  var used=parseInt(localStorage.getItem('ss_week_'+week)||'0');
+  if(used>=FREE_WEEKLY_SIMS){
+    showProModal();
+    return false;
+  }
+  localStorage.setItem('ss_week_'+week,used+1);
+  return true;
+}
+function getWeekKey(){
+  var d=new Date();
+  return d.getFullYear()+'_'+Math.floor((d-new Date(d.getFullYear(),0,1))/604800000);
+}
+function showProModal(){
+  var el=document.createElement('div');
+  el.id='proModal';
+  el.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:center;justify-content:center;background:rgba(2,4,14,0.92);backdrop-filter:blur(16px)';
+  var box=document.createElement('div');
+  box.style.cssText='background:rgba(8,14,36,0.98);border:1px solid rgba(38,232,176,0.3);border-radius:20px;padding:32px 24px;max-width:320px;text-align:center';
+  box.innerHTML='<div style="font-size:1.6rem;margin-bottom:8px">✨</div>'+
+    '<div style="color:#fff;font-size:1rem;font-weight:600;margin-bottom:8px">5 free simulations used this week</div>'+
+    '<div style="color:rgba(255,255,255,0.5);font-size:.78rem;line-height:1.6;margin-bottom:24px">Upgrade to Pro for unlimited sims, HD video without watermark, and priority AI.</div>'+
+    '<div style="color:#26e8b0;font-size:1.4rem;font-weight:700;margin-bottom:4px">$9/month</div>'+
+    '<div style="color:rgba(255,255,255,0.3);font-size:.68rem;margin-bottom:20px">Cancel anytime</div>';
+  var proBtn=document.createElement('button');proBtn.textContent='Upgrade to Pro';
+  proBtn.style.cssText='width:100%;padding:13px;border-radius:12px;border:none;background:#26e8b0;color:#02040e;font-size:.88rem;font-weight:700;cursor:pointer;margin-bottom:10px';
+  proBtn.onclick=goPro;box.appendChild(proBtn);
+  var skipLink=document.createElement('div');skipLink.textContent='Continue free next week';
+  skipLink.style.cssText='color:rgba(255,255,255,0.3);font-size:.72rem;cursor:pointer';
+  skipLink.onclick=function(){var m=document.getElementById('proModal');if(m)m.remove();};
+  box.appendChild(skipLink);el.appendChild(box);
+  document.body.appendChild(el);
+}
+function goPro(){
+  showToast('Redirecting to checkout...');
+  window.location.href='/upgrade';
+}
 function checkSimLimit(){
   var total=totalSimsCreated();
   if(total>=5&&(!window.SS||!window.SS.isSubscriber)){
@@ -3241,7 +3412,8 @@ setTimeout(function(){
 lastTs=performance.now();
 requestAnimationFrame(loop);
 document.getElementById('lodOv').style.transition='opacity .5s';
-setTimeout(function(){document.getElementById('lodOv').style.opacity='0';setTimeout(function(){document.getElementById('lodOv').style.display='none';showGuide();},600);},300);
+/* Onboarding: user must interact to dismiss */
+showGuide();
 updateNarr(simDomain,0);
 /* Show default question on first load */
 
